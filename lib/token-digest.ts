@@ -1,6 +1,6 @@
 import crypto from "crypto";
 
-const TEST_TOKEN_DIGEST_SECRET = "triptally-test-token-digest-secret";
+const TEST_TOKEN_DIGEST_SECRET = "seddleup-test-token-digest-secret";
 const TOKEN_DIGEST_HEX_LENGTH = 64;
 
 function tokenDigestSecret() {
