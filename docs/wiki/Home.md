@@ -37,3 +37,7 @@ docker pull ghcr.io/cryptnetworks/seddleup:sha-292a632@sha256:9a2387e29e29bf862a
 - Docker healthcheck at `/api/health`
 - SQLite persistence in the Docker volume at `/app/data`
 - CI, Docker image publishing, dependency review, Dependabot, and security scan automation
+
+---
+
+[Wiki Home](Home) | [Running with Docker](Running-with-Docker) | [Configuration](Configuration) | [Troubleshooting](Troubleshooting)

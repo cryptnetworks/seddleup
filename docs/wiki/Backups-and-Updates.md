@@ -49,3 +49,7 @@ docker compose up -d --build
 ```
 
 If your Compose deployment builds locally, `--build` rebuilds the app image from the checked-out source.
+
+---
+
+[Wiki Home](Home) | [Running with Docker](Running-with-Docker) | [Configuration](Configuration) | [Troubleshooting](Troubleshooting)

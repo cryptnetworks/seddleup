@@ -76,3 +76,7 @@ Refactor trip server actions
 ```
 
 Mention migrations, environment variables, and deployment changes in the commit body when they affect operators.
+
+---
+
+[Wiki Home](Home) | [Running with Docker](Running-with-Docker) | [Configuration](Configuration) | [Troubleshooting](Troubleshooting)
