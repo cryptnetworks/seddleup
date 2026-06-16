@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it } from "vitest";
 import {
+  buildInvitationEmail,
   buildEmailVerificationEmail,
   buildPasswordResetEmail,
   buildTwoFactorEmail
@@ -70,6 +71,26 @@ describe("SeddleUp emails", () => {
     expect(message.subject).toBe("SeddleUp sign-in code");
     expect(message.text).toContain("Your SeddleUp sign-in code is 123456.");
     expect(message.html).toContain("123456");
+    expectSeddleUpBranding(message);
+  });
+
+  it("builds a SeddleUp invitation email with inviter and trip context", () => {
+    process.env.APP_BASE_URL = "https://app.seddleup.com";
+
+    const message = buildInvitationEmail({
+      to: "person@example.com",
+      inviteUrl: "https://app.seddleup.com/invite/accept?token=abc",
+      expiresInDays: 7,
+      inviterName: "Admin User",
+      inviterEmail: "admin@seddleup.com",
+      tripName: "Cape Weekend"
+    });
+
+    expect(message.subject).toBe("You're invited to SeddleUp");
+    expect(message.text).toContain("Admin User invited you to join SeddleUp for Cape Weekend.");
+    expect(message.text).toContain("https://app.seddleup.com/invite/accept?token=abc");
+    expect(message.html).toContain(">Accept invitation</a>");
+    expect(message.html).toContain('alt="SeddleUp"');
     expectSeddleUpBranding(message);
   });
 

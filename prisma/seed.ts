@@ -7,7 +7,7 @@ const prisma = new PrismaClient({ adapter: createPrismaAdapter() });
 
 async function main() {
   const existingUser = await prisma.user.findUnique({
-    where: { email: "demo@triptally.app" }
+    where: { email: "demo@seddleup.app" }
   });
 
   if (existingUser) {
@@ -18,7 +18,7 @@ async function main() {
   const user = await prisma.user.create({
     data: {
       username: "demo",
-      email: "demo@triptally.app",
+      email: "demo@seddleup.app",
       emailVerifiedAt: new Date(),
       passwordHash: await bcrypt.hash("DemoPass123", 12),
       trips: {
@@ -90,7 +90,7 @@ async function main() {
   }
 
   console.log("Seeded demo data.");
-  console.log("Email: demo@triptally.app");
+  console.log("Email: demo@seddleup.app");
   console.log("Password: DemoPass123");
 }
 

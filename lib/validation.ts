@@ -63,6 +63,12 @@ export const forgotPasswordSchema = z.object({
   email: z.email().trim().toLowerCase().max(120)
 });
 
+export const adminInvitationSchema = z.object({
+  email: z.email().trim().toLowerCase().max(120),
+  displayName: optionalText(120),
+  role: z.enum(["user", "readonly"]).optional().default("user")
+});
+
 export const resetPasswordSchema = z
   .object({
     token: z.string().trim().min(32).max(256),
@@ -91,6 +97,18 @@ export const accountPasswordSchema = z
   });
 
 export const verificationTokenSchema = z.string().trim().min(32).max(256);
+
+export const acceptInvitationSchema = z
+  .object({
+    token: z.string().trim().min(32).max(256),
+    username: z.string().trim().min(3).max(80),
+    password: z.string().min(8).max(128),
+    confirmPassword: z.string().min(8).max(128)
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords must match.",
+    path: ["confirmPassword"]
+  });
 
 export const twoFactorCodeSchema = z.object({
   code: z

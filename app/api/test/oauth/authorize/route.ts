@@ -1,10 +1,5 @@
 import { NextResponse } from "next/server";
-
-function testOAuthEnabled() {
-  return (
-    process.env.NODE_ENV !== "production" && process.env.TEST_OAUTH_PROVIDER_ENABLED === "true"
-  );
-}
+import { testOAuthEnabled } from "@/lib/oauth-providers";
 
 export async function GET(request: Request) {
   if (!testOAuthEnabled()) {

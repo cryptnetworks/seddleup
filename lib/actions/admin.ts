@@ -7,8 +7,10 @@ import { writeAuditLog } from "@/lib/audit";
 import { countActiveAdmins, requireAdminAction } from "@/lib/authorization";
 import { encryptProviderSecret, oauthProviderDefinitions } from "@/lib/oauth-providers";
 import { prisma } from "@/lib/prisma";
+import { checkRateLimit } from "@/lib/rate-limit";
 import { setAuthSettings } from "@/lib/settings";
-import { formString } from "@/lib/validation";
+import { adminInvitationSchema, formString } from "@/lib/validation";
+import { createAndSendInvitation, resendInvitation, revokeInvitation } from "@/lib/invitations";
 
 function checked(formData: FormData, key: string) {
   return formData.get(key) === "on";
@@ -111,6 +113,91 @@ export async function resetUserPassword(formData: FormData) {
     targetId: userId
   });
   revalidatePath("/admin/users");
+}
+
+export async function inviteUser(formData: FormData) {
+  const actor = await requireAdminAction();
+  const parsed = adminInvitationSchema.safeParse({
+    email: formString(formData, "email"),
+    displayName: formString(formData, "displayName"),
+    role: formString(formData, "role") || "user"
+  });
+
+  if (!parsed.success) {
+    redirect("/admin/users?invite=invalid");
+  }
+
+  const rateLimit = checkRateLimit(`admin-invite:${actor.id}`, {
+    limit: 10,
+    windowMs: 60 * 60 * 1000
+  });
+  if (!rateLimit.allowed) {
+    redirect("/admin/users?invite=rate-limit");
+  }
+
+  const inviteCreation = await createAndSendInvitation({
+    email: parsed.data.email,
+    displayName: parsed.data.displayName,
+    role: parsed.data.role,
+    invitedByUserId: actor.id
+  });
+
+  if (!inviteCreation.ok) {
+    redirect(`/admin/users?invite=${inviteCreation.reason}`);
+  }
+
+  await writeAuditLog({
+    actorUserId: actor.id,
+    action: "invitation.created",
+    targetType: "invitation",
+    targetId: inviteCreation.invitation.id,
+    metadata: {
+      email: parsed.data.email,
+      role: parsed.data.role
+    }
+  });
+  revalidatePath("/admin/users");
+  redirect("/admin/users?invite=sent");
+}
+
+export async function resendUserInvitation(formData: FormData) {
+  const actor = await requireAdminAction();
+  const invitationId = formString(formData, "invitationId");
+  const rateLimit = checkRateLimit(`admin-invite-resend:${actor.id}`, {
+    limit: 10,
+    windowMs: 60 * 60 * 1000
+  });
+  if (!rateLimit.allowed) {
+    redirect("/admin/users?invite=rate-limit");
+  }
+
+  const sent = await resendInvitation(invitationId, actor.id);
+  if (!sent) redirect("/admin/users?invite=resend-blocked");
+
+  await writeAuditLog({
+    actorUserId: actor.id,
+    action: "invitation.resent",
+    targetType: "invitation",
+    targetId: invitationId
+  });
+  revalidatePath("/admin/users");
+  redirect("/admin/users?invite=resent");
+}
+
+export async function revokeUserInvitation(formData: FormData) {
+  const actor = await requireAdminAction();
+  const invitationId = formString(formData, "invitationId");
+  const revoked = await revokeInvitation(invitationId, actor.id);
+  if (!revoked) redirect("/admin/users?invite=revoke-blocked");
+
+  await writeAuditLog({
+    actorUserId: actor.id,
+    action: "invitation.revoked",
+    targetType: "invitation",
+    targetId: invitationId
+  });
+  revalidatePath("/admin/users");
+  redirect("/admin/users?invite=revoked");
 }
 
 export async function updateAuthProviderConfig(formData: FormData) {

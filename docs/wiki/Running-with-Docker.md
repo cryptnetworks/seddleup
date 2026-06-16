@@ -5,7 +5,7 @@ SeddleUp is intended to run as a Docker container in production. The container s
 ## Pull the Image
 
 ```bash
-docker pull ghcr.io/cryptnetworks/seddleup:sha-292a632@sha256:9a2387e29e29bf862a056619192a3cf3256b74a5d4fc67e97467321c43957207
+docker pull ghcr.io/cryptnetworks/seddleup:latest
 ```
 
 ## Prepare Environment
@@ -41,7 +41,7 @@ docker run --name seddleup \
   -p 3000:3000 \
   -v seddleup_data:/app/data \
   --env-file .env \
-  ghcr.io/cryptnetworks/seddleup:sha-292a632@sha256:9a2387e29e29bf862a056619192a3cf3256b74a5d4fc67e97467321c43957207
+  ghcr.io/cryptnetworks/seddleup:latest
 ```
 
 Open `http://localhost:3000`.
@@ -69,12 +69,12 @@ the old volume before switching names. On startup, SeddleUp migrates
 `/app/data/triptally.db` to `/app/data/seddleup.db` when the old file exists in
 the mounted volume and the new file is absent.
 
-To use the pinned GHCR image instead of building locally, override the service image:
+To use the GHCR image instead of building locally, override the service image:
 
 ```yaml
 services:
   seddleup:
-    image: ghcr.io/cryptnetworks/seddleup:sha-292a632@sha256:9a2387e29e29bf862a056619192a3cf3256b74a5d4fc67e97467321c43957207
+    image: ghcr.io/cryptnetworks/seddleup:latest
     build: null
 ```
 

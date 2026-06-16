@@ -1,8 +1,31 @@
 import { AdminShell } from "@/components/AdminShell";
 import { PageHeader } from "@/components/PageHeader";
-import { deleteUser, resetUserPassword, setUserDisabled, updateUserRole } from "@/lib/actions";
+import {
+  deleteUser,
+  inviteUser,
+  resendUserInvitation,
+  resetUserPassword,
+  revokeUserInvitation,
+  setUserDisabled,
+  updateUserRole
+} from "@/lib/actions";
 import { requireAdmin } from "@/lib/authorization";
 import { prisma } from "@/lib/prisma";
+
+function inviteStatusMessage(status?: string) {
+  if (!status) return "";
+  if (status === "sent") return "Invitation sent.";
+  if (status === "resent") return "Invitation resent.";
+  if (status === "revoked") return "Invitation revoked.";
+  if (status === "existing-user") return "That email already belongs to an existing user.";
+  if (status === "duplicate-pending") return "A pending invitation already exists for that email.";
+  if (status === "rate-limit") return "Too many invitation requests. Try again later.";
+  return `Invitation action blocked: ${status}.`;
+}
+
+function isInviteSuccess(status?: string) {
+  return status === "sent" || status === "resent" || status === "revoked";
+}
 
 export default async function AdminUsersPage({
   searchParams
@@ -13,6 +36,7 @@ export default async function AdminUsersPage({
     status?: string;
     page?: string;
     error?: string;
+    invite?: string;
   }>;
 }) {
   await requireAdmin();
@@ -27,7 +51,7 @@ export default async function AdminUsersPage({
       ? [{ email: { contains: query.q } }, { username: { contains: query.q } }]
       : undefined
   };
-  const [users, total] = await Promise.all([
+  const [users, total, pendingInvites] = await Promise.all([
     prisma.user.findMany({
       where,
       orderBy: { createdAt: "desc" },
@@ -35,8 +59,18 @@ export default async function AdminUsersPage({
       take: pageSize,
       include: { authAccounts: true }
     }),
-    prisma.user.count({ where })
+    prisma.user.count({ where }),
+    prisma.invitation.findMany({
+      where: { status: "pending", expiresAt: { gt: new Date() } },
+      orderBy: { createdAt: "desc" },
+      take: 25,
+      include: {
+        invitedBy: { select: { email: true, username: true } },
+        trip: { select: { name: true } }
+      }
+    })
   ]);
+  const inviteMessage = inviteStatusMessage(query.invite);
 
   return (
     <AdminShell>
@@ -50,6 +84,94 @@ export default async function AdminUsersPage({
           Action blocked: {query.error}.
         </p>
       ) : null}
+      {inviteMessage ? (
+        <p
+          className={`mb-4 rounded-lg border border-line p-3 text-sm ${
+            isInviteSuccess(query.invite) ? "bg-teal-50 text-ocean" : "bg-surface text-coral"
+          }`}
+        >
+          {inviteMessage}
+        </p>
+      ) : null}
+      <section className="card mb-4 grid gap-4 p-4">
+        <div>
+          <h2 className="text-lg font-semibold text-ink">Invite user</h2>
+          <p className="text-sm text-muted">Send a SeddleUp invitation to create a new account.</p>
+        </div>
+        <form className="grid gap-3 md:grid-cols-[1fr_1fr_160px_auto]" action={inviteUser}>
+          <input
+            className="field"
+            name="email"
+            type="email"
+            placeholder="Email address"
+            maxLength={120}
+            required
+          />
+          <input
+            className="field"
+            name="displayName"
+            placeholder="Display name optional"
+            maxLength={120}
+          />
+          <select className="field" name="role" defaultValue="user">
+            <option value="user">User</option>
+            <option value="readonly">Readonly</option>
+          </select>
+          <button className="btn-primary" type="submit">
+            Invite user
+          </button>
+        </form>
+      </section>
+
+      <section className="card mb-4 p-4">
+        <div className="mb-4 flex items-center justify-between gap-3">
+          <div>
+            <h2 className="text-lg font-semibold text-ink">Pending invitations</h2>
+            <p className="text-sm text-muted">Open SeddleUp invites that have not been accepted.</p>
+          </div>
+          <span className="rounded-full bg-surface px-3 py-1 text-xs font-semibold text-muted">
+            {pendingInvites.length} pending
+          </span>
+        </div>
+        {pendingInvites.length === 0 ? (
+          <p className="text-sm text-muted">No pending invitations.</p>
+        ) : (
+          <div className="grid gap-3">
+            {pendingInvites.map((invite) => (
+              <article
+                key={invite.id}
+                className="flex flex-col gap-3 rounded-lg border border-line p-3 lg:flex-row lg:items-center lg:justify-between"
+              >
+                <div className="min-w-0">
+                  <h3 className="truncate font-semibold text-ink">{invite.email}</h3>
+                  <p className="text-sm text-muted">
+                    {invite.role || "user"} · Expires {invite.expiresAt.toLocaleDateString()}
+                    {invite.trip ? ` · Trip: ${invite.trip.name}` : ""}
+                  </p>
+                  <p className="text-xs text-muted">
+                    Invited by {invite.invitedBy.username || invite.invitedBy.email}
+                  </p>
+                </div>
+                <div className="grid gap-2 sm:grid-cols-2">
+                  <form action={resendUserInvitation}>
+                    <input name="invitationId" type="hidden" value={invite.id} />
+                    <button className="btn-secondary w-full" type="submit">
+                      Resend
+                    </button>
+                  </form>
+                  <form action={revokeUserInvitation}>
+                    <input name="invitationId" type="hidden" value={invite.id} />
+                    <button className="btn-danger w-full" type="submit">
+                      Revoke
+                    </button>
+                  </form>
+                </div>
+              </article>
+            ))}
+          </div>
+        )}
+      </section>
+
       <form className="card mb-4 grid gap-3 p-4 md:grid-cols-4">
         <input className="field" name="q" placeholder="Search users" defaultValue={query.q || ""} />
         <select className="field" name="role" defaultValue={query.role || "all"}>

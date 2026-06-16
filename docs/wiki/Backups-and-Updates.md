@@ -26,13 +26,13 @@ docker start seddleup
 ## Update a Single Docker Container
 
 ```bash
-docker pull ghcr.io/cryptnetworks/seddleup:sha-292a632@sha256:9a2387e29e29bf862a056619192a3cf3256b74a5d4fc67e97467321c43957207
+docker pull ghcr.io/cryptnetworks/seddleup:latest
 docker rm -f seddleup
 docker run --name seddleup \
   -p 3000:3000 \
   -v seddleup_data:/app/data \
   --env-file .env \
-  ghcr.io/cryptnetworks/seddleup:sha-292a632@sha256:9a2387e29e29bf862a056619192a3cf3256b74a5d4fc67e97467321c43957207
+  ghcr.io/cryptnetworks/seddleup:latest
 ```
 
 The startup entrypoint applies database migrations automatically.

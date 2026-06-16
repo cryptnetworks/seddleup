@@ -4,6 +4,7 @@ SeddleUp uses email for:
 
 - Account verification
 - Password reset links
+- User and trip invitations
 - Email-based two-factor codes
 
 SMTP is optional for private testing but recommended for production.
@@ -31,6 +32,13 @@ New users must verify email before login when email verification is enabled in a
 ## Password Reset
 
 Password reset tokens are random, stored only as SHA-256 hashes, expire, and are single-use.
+
+## Invitations
+
+Invitation emails use the SeddleUp branded email template and include inviter
+details plus the trip name when an invite is tied to a trip. Tokens are random,
+stored only as keyed digests, expire after seven days, and can be accepted only
+by the invited email address.
 
 ## MFA Options
 

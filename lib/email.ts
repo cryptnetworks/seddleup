@@ -19,6 +19,15 @@ type TwoFactorEmailInput = {
   expiresInMinutes: number;
 };
 
+export type InvitationEmailInput = {
+  to: string;
+  inviteUrl: string;
+  expiresInDays: number;
+  inviterName?: string | null;
+  inviterEmail?: string | null;
+  tripName?: string | null;
+};
+
 type EmailMessage = {
   from: string;
   to: string;
@@ -177,6 +186,34 @@ export async function sendTwoFactorEmail({ to, code, expiresInMinutes }: TwoFact
   logger.info("email.two_factor.sent", { to });
 }
 
+export async function sendInvitationEmail(input: InvitationEmailInput) {
+  if (!smtpConfigured()) {
+    logger.info("email.invitation.disabled");
+    if (process.env.NODE_ENV !== "production") {
+      logger.info("email.invitation.dev_link", { inviteUrl: input.inviteUrl });
+    }
+    return;
+  }
+
+  const from = process.env.SMTP_FROM as string;
+  const email = buildInvitationEmail(input);
+
+  try {
+    await sendSmtpEmail({
+      from,
+      to: input.to,
+      ...email
+    });
+  } catch (error) {
+    logger.error("email.invitation.failed", {
+      error: error instanceof Error ? error.message : "Unknown email error"
+    });
+    return;
+  }
+
+  logger.info("email.invitation.sent", { to: input.to });
+}
+
 export function buildPasswordResetEmail(input: ResetEmailInput) {
   const appName = emailAppName();
   return {
@@ -240,6 +277,32 @@ export function buildTwoFactorEmail(input: TwoFactorEmailInput) {
       intro: `Use this code to finish signing in. It expires in ${input.expiresInMinutes} minutes.`,
       code: input.code,
       footer: "If you did not try to sign in, change your password."
+    })
+  };
+}
+
+export function buildInvitationEmail(input: InvitationEmailInput) {
+  const appName = emailAppName();
+  const inviter = input.inviterName || input.inviterEmail || "An administrator";
+  const tripText = input.tripName ? ` for ${input.tripName}` : "";
+  return {
+    subject: `You're invited to ${appName}`,
+    text: [
+      `You're invited to ${appName}`,
+      "",
+      `${inviter} invited you to join ${appName}${tripText}.`,
+      `Open this link within ${input.expiresInDays} days to accept the invitation:`,
+      input.inviteUrl,
+      "",
+      "If you were not expecting this invitation, you can ignore this email."
+    ].join("\n"),
+    html: brandedEmailTemplate({
+      appName,
+      title: `You're invited to ${appName}`,
+      intro: `${inviter} invited you to join ${appName}${tripText}. This link expires in ${input.expiresInDays} days.`,
+      ctaLabel: "Accept invitation",
+      ctaUrl: input.inviteUrl,
+      footer: "If you were not expecting this invitation, you can ignore this email."
     })
   };
 }

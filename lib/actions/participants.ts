@@ -8,6 +8,7 @@ import { logger } from "@/lib/logger";
 import { prisma } from "@/lib/prisma";
 import { requireTripManager } from "@/lib/trip-access";
 import { formString, idSchema, participantSchema } from "@/lib/validation";
+import { createAndSendTripInvitation } from "@/lib/invitations";
 
 async function findUserForParticipantEmail(email?: string) {
   if (!email) return null;
@@ -24,6 +25,32 @@ async function ensureParticipantMembership(tripId: string, userId?: string | nul
     update: {},
     create: { tripId, userId, role: "member" }
   });
+}
+
+async function ensureTripInvitationForUnknownUser(input: {
+  tripId: string;
+  actorUserId: string;
+  email?: string;
+  displayName?: string;
+}) {
+  if (!input.email) return null;
+  const tripInvite = await createAndSendTripInvitation({
+    email: input.email,
+    displayName: input.displayName,
+    tripId: input.tripId,
+    invitedByUserId: input.actorUserId
+  });
+  if (
+    !tripInvite.ok &&
+    tripInvite.reason !== "duplicate-pending" &&
+    tripInvite.reason !== "existing-user"
+  ) {
+    logger.warn("participant.invitation.skipped", {
+      tripId: input.tripId,
+      reason: tripInvite.reason
+    });
+  }
+  return tripInvite;
 }
 
 export async function createParticipant(tripId: string, formData: FormData) {
@@ -53,6 +80,14 @@ export async function createParticipant(tripId: string, formData: FormData) {
     }
   });
   await ensureParticipantMembership(tripId, linkedUser?.id);
+  if (!linkedUser) {
+    await ensureTripInvitationForUnknownUser({
+      tripId,
+      actorUserId: userId,
+      email: parsed.data.email,
+      displayName: parsed.data.name
+    });
+  }
   await writeAuditLog({
     actorUserId: userId,
     tripId,
@@ -103,6 +138,14 @@ export async function updateParticipant(tripId: string, participantId: string, f
     }
   });
   await ensureParticipantMembership(tripId, linkedUser?.id);
+  if (!linkedUser) {
+    await ensureTripInvitationForUnknownUser({
+      tripId,
+      actorUserId: userId,
+      email: parsed.data.email,
+      displayName: parsed.data.name
+    });
+  }
   await writeAuditLog({
     actorUserId: userId,
     tripId,

@@ -10,6 +10,7 @@ import { prisma } from "@/lib/prisma";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { bootstrapRole } from "@/lib/roles";
 import { emailDomainAllowed, getAuthSettings } from "@/lib/settings";
+import { acceptInvitationForExistingUser, acceptInvitationWithNewUser } from "@/lib/invitations";
 import {
   createAuthenticatorSetup,
   enableAuthenticator,
@@ -19,6 +20,7 @@ import {
 import {
   accountPasswordSchema,
   accountProfileSchema,
+  acceptInvitationSchema,
   forgotPasswordSchema,
   formString,
   registerSchema,
@@ -182,6 +184,64 @@ export async function resendVerificationEmail(formData: FormData) {
   }
 
   redirect("/login?verificationSent=1");
+}
+
+function invitationRedirectForResult(
+  result: Awaited<ReturnType<typeof acceptInvitationForExistingUser>>
+) {
+  if (result.ok) {
+    redirect(
+      result.tripId ? `/trips/${result.tripId}?invite=accepted` : "/dashboard?invite=accepted"
+    );
+  }
+  redirect(`/invite/accept?error=${result.reason}`);
+}
+
+export async function acceptInvitationAsCurrentUser(formData: FormData) {
+  await assertSameOriginRequest("invitation.accept.current_user");
+  const sessionUser = await requireUser();
+  const token = formString(formData, "token");
+  const parsed = verificationTokenSchema.safeParse(token);
+  if (!parsed.success) {
+    redirect("/invite/accept?error=invalid");
+  }
+
+  const user = await prisma.user.findUniqueOrThrow({
+    where: { id: sessionUser.id },
+    select: { id: true, email: true }
+  });
+  const result = await acceptInvitationForExistingUser(parsed.data, user);
+  invitationRedirectForResult(result);
+}
+
+export async function acceptInvitationAndCreateAccount(formData: FormData) {
+  await assertSameOriginRequest("invitation.accept.new_user");
+  const parsed = acceptInvitationSchema.safeParse({
+    token: formString(formData, "token"),
+    username: formString(formData, "username"),
+    password: formString(formData, "password"),
+    confirmPassword: formString(formData, "confirmPassword")
+  });
+
+  if (!parsed.success) {
+    redirect(
+      `/invite/accept?token=${encodeURIComponent(formString(formData, "token"))}&error=invalid-form`
+    );
+  }
+
+  const rateLimit = checkRateLimit(`invite-accept:${parsed.data.token}`, {
+    limit: 5,
+    windowMs: 15 * 60 * 1000
+  });
+  if (!rateLimit.allowed) {
+    redirect(`/invite/accept?token=${encodeURIComponent(parsed.data.token)}&error=rate-limit`);
+  }
+
+  const result = await acceptInvitationWithNewUser(parsed.data);
+  if (result.ok) {
+    redirect("/login?registered=1&verified=1");
+  }
+  redirect(`/invite/accept?token=${encodeURIComponent(parsed.data.token)}&error=${result.reason}`);
 }
 
 export async function updateAccountProfile(formData: FormData) {
