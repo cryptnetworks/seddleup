@@ -76,3 +76,7 @@ curl http://localhost:3000/api/health
 ```
 
 The `/api/health` endpoint checks database connectivity.
+
+---
+
+[Wiki Home](Home) | [Running with Docker](Running-with-Docker) | [Configuration](Configuration) | [Troubleshooting](Troubleshooting)

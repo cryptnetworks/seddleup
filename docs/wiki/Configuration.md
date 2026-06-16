@@ -124,3 +124,7 @@ Set `DISCORD_ENABLED=true` only when the public key and bot credentials are
 configured. Configure Discord interactions to call `/api/discord/interactions`
 on the public app URL. `DISCORD_GUILD_ID` is optional and useful for development
 command registration.
+
+---
+
+[Wiki Home](Home) | [Running with Docker](Running-with-Docker) | [Configuration](Configuration) | [Troubleshooting](Troubleshooting)

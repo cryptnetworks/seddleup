@@ -61,3 +61,7 @@ SeddleUp sends SMTP mail through EmailJS. Do not reintroduce a direct Nodemailer
 ## Release Workflow
 
 Version tags matching `v*.*.*` create a GitHub release with generated notes. Docker image publishing is handled by the Docker workflow for tag pushes.
+
+---
+
+[Wiki Home](Home) | [Running with Docker](Running-with-Docker) | [Configuration](Configuration) | [Troubleshooting](Troubleshooting)

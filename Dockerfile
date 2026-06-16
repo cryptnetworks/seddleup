@@ -52,7 +52,8 @@ COPY --chown=nextjs:nodejs docker-entrypoint.sh ./docker-entrypoint.sh
 
 RUN mkdir -p /app/data \
   && chown -R nextjs:nodejs /app/data \
-  && chmod +x /app/docker-entrypoint.sh
+  && chmod +x /app/docker-entrypoint.sh \
+  && rm -rf /usr/local/lib/node_modules/npm /usr/local/bin/npm /usr/local/bin/npx
 
 USER nextjs
 
@@ -62,4 +63,4 @@ HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
   CMD wget -qO- http://127.0.0.1:3000/api/health >/dev/null || exit 1
 
 ENTRYPOINT ["./docker-entrypoint.sh"]
-CMD ["npm", "start"]
+CMD ["node_modules/.bin/next", "start", "-H", "0.0.0.0"]

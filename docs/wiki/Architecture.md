@@ -92,3 +92,7 @@ Lookup results are cached in `RetailerLookupCache`.
 Discord uses the HTTP interactions model. The app verifies Discord signatures,
 supports private `/link` account linking, and handles basic trip commands for
 linked users.
+
+---
+
+[Wiki Home](Home) | [Running with Docker](Running-with-Docker) | [Configuration](Configuration) | [Troubleshooting](Troubleshooting)

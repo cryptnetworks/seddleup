@@ -61,3 +61,7 @@ Automated coverage includes:
 - CodeQL is expected to run through GitHub default setup in repository settings.
 
 `npm run security:audit` currently fails high or critical advisories. The dependency tree is expected to audit cleanly; vulnerable transitive dependencies are remediated with scoped npm overrides when upstream packages lag patched versions.
+
+---
+
+[Wiki Home](Home) | [Running with Docker](Running-with-Docker) | [Configuration](Configuration) | [Troubleshooting](Troubleshooting)

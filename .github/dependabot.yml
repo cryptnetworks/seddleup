@@ -6,7 +6,7 @@ updates:
       interval: weekly
     labels:
       - dependencies
-      - npm
+      - javascript
     groups:
       nextjs-stack:
         patterns:
@@ -55,7 +55,7 @@ updates:
       interval: weekly
     labels:
       - dependencies
-      - github-actions
+      - github_actions
     groups:
       github-actions:
         patterns:

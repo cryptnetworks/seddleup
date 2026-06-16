@@ -41,3 +41,7 @@ Users can configure MFA from account settings:
 - Authenticator app TOTP
 
 Authenticator secrets are encrypted at rest.
+
+---
+
+[Wiki Home](Home) | [Running with Docker](Running-with-Docker) | [Configuration](Configuration) | [Troubleshooting](Troubleshooting)

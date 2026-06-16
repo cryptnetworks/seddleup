@@ -41,3 +41,7 @@ Signed-in users can link OAuth providers from the account page. SeddleUp prevent
 ## Token Handling
 
 SeddleUp does not store provider access or refresh tokens. OAuth login creates a local short-lived, single-use handoff token in an HTTP-only cookie. That token is consumed to create the app session and then invalidated.
+
+---
+
+[Wiki Home](Home) | [Running with Docker](Running-with-Docker) | [Configuration](Configuration) | [Troubleshooting](Troubleshooting)

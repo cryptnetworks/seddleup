@@ -127,9 +127,9 @@ case "${TOKEN_DIGEST_SECRET:-}" in
     ;;
 esac
 
-retry "Prisma Client generation" 2 2 npx prisma generate
-retry "Config validation" 2 2 npm run validate:config
-retry "Prisma migrations" 5 3 npx prisma migrate deploy
+retry "Prisma Client generation" 2 2 node_modules/.bin/prisma generate
+retry "Config validation" 2 2 node scripts/validate-config.mjs
+retry "Prisma migrations" 5 3 node_modules/.bin/prisma migrate deploy
 
 log "info" "startup.ready" "Starting SeddleUp"
 exec "$@"

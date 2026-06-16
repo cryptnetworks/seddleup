@@ -87,3 +87,7 @@ SQLite lives at:
 ```
 
 Always mount `/app/data` to a persistent Docker volume.
+
+---
+
+[Wiki Home](Home) | [Running with Docker](Running-with-Docker) | [Configuration](Configuration) | [Troubleshooting](Troubleshooting)

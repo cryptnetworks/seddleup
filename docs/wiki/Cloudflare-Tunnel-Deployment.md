@@ -42,3 +42,7 @@ docker compose --profile cloudflare up -d --build
 - No public inbound ports are required.
 - Do not also run the `nginx` profile unless intentionally deploying both paths.
 - If the site is unavailable, confirm the Cloudflare hostname service is exactly `http://seddleup:3000`.
+
+---
+
+[Wiki Home](Home) | [Running with Docker](Running-with-Docker) | [Configuration](Configuration) | [Troubleshooting](Troubleshooting)
