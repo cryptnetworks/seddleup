@@ -5,7 +5,7 @@ The first registered user becomes the bootstrap administrator. Admin pages are a
 ## Admin Areas
 
 - `/admin` - overview and recent audit events
-- `/admin/users` - user search, role changes, disable/enable, password reset, deletion
+- `/admin/users` - user search, invitations, role changes, disable/enable, password reset, deletion
 - `/admin/auth` - OAuth provider configuration and callback URLs
 - `/admin/settings` - local auth, registration, email verification, allowed domains, default role
 - `/admin/audit` - searchable audit events
@@ -20,6 +20,16 @@ SeddleUp supports configurable OAuth login for:
 - Facebook
 
 Provider client secrets are encrypted before storage with `AUTH_CONFIG_ENCRYPTION_KEY`.
+
+## User Invitations
+
+Admins can invite new users from `/admin/users`. Pending invitations show on the
+same page and can be resent or revoked. SeddleUp stores only a keyed digest of
+the invitation token; the raw token appears only in the emailed acceptance link.
+
+Invitation acceptance lets a new user create an account or lets an existing user
+sign in and accept. Admin-created invitations can assign the normal `user` or
+`readonly` role.
 
 ## Callback URLs
 

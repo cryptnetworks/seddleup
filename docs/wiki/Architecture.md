@@ -37,6 +37,7 @@ Main entities:
 - `DiscordLinkToken`
 - `PasswordResetToken`
 - `EmailVerificationToken`
+- `Invitation`
 - `TwoFactorChallenge`
 - `UserAuthAccount`
 - `AuthProviderConfig`
@@ -53,6 +54,7 @@ Main entities:
 - `app/api/auth` - NextAuth, custom login, OAuth start/callback
 - `lib/actions` - server actions grouped by domain
 - `lib/auth.ts` - NextAuth options and credential flow
+- `lib/invitations.ts` - invitation token creation, resend/revoke, and acceptance
 - `lib/trip-access.ts` - trip membership lookup and manager enforcement
 - `lib/trip-permissions.ts` - pure permission and expense status rules
 - `lib/receipts` - local receipt storage, parsing, and itemized split helpers
@@ -67,6 +69,9 @@ Trips have explicit memberships in `TripMember`. The trip owner is also recorded
 as an `owner` member for consistent access checks. Participant records may link
 to app users through `Participant.userId`; when a manager adds a participant
 whose email matches an account, that user is added as a trip member.
+When the email does not match an account, SeddleUp creates a pending invitation
+for that email and trip. Accepting it links matching participant records and
+creates the trip membership.
 
 Expenses track `createdByUserId`, `paidByUserId`, `updatedByUserId`, and
 `status`. Draft expenses are private to the creator and managers and are not

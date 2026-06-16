@@ -13,6 +13,7 @@ participants, balances, and settlement suggestions.
 - Server-side retail item lookup abstraction with mock/development provider
 - Discord account linking and slash-command interaction endpoint
 - Credentials login with email verification and password reset
+- Admin and trip-member invitation flows for new users
 - Email-code or authenticator-app MFA
 - Admin portal for users, auth providers, settings, and audit logs
 - OAuth login and account linking for Google, GitHub, Discord, and Facebook
@@ -24,10 +25,10 @@ Screenshots are not committed yet. Add current dashboard, trip detail, account, 
 
 ## Docker Image
 
-Pinned GHCR image:
+Current GHCR image:
 
 ```bash
-docker pull ghcr.io/cryptnetworks/seddleup:sha-292a632@sha256:9a2387e29e29bf862a056619192a3cf3256b74a5d4fc67e97467321c43957207
+docker pull ghcr.io/cryptnetworks/seddleup:latest
 ```
 
 ## Required Configuration
@@ -70,9 +71,9 @@ AUTH_URL=https://app.example.com
 PUBLIC_APP_URL=https://app.example.com
 ```
 
-`TOKEN_DIGEST_SECRET` keys one-time token digests for password reset, email
-verification, MFA session handoff, and OAuth login handoff tokens. Changing it
-invalidates outstanding one-time tokens safely. `AUTH_CONFIG_ENCRYPTION_KEY`
+`TOKEN_DIGEST_SECRET` keys one-time token digests for invitations, password
+reset, email verification, MFA session handoff, and OAuth login handoff tokens.
+Changing it invalidates outstanding one-time tokens safely. `AUTH_CONFIG_ENCRYPTION_KEY`
 encrypts stored OAuth provider secrets. Keep it backed up; losing it prevents
 decrypting saved provider secrets.
 
@@ -87,7 +88,7 @@ docker run --name seddleup \
   -p 3000:3000 \
   -v seddleup_data:/app/data \
   --env-file .env \
-  ghcr.io/cryptnetworks/seddleup:sha-292a632@sha256:9a2387e29e29bf862a056619192a3cf3256b74a5d4fc67e97467321c43957207
+  ghcr.io/cryptnetworks/seddleup:latest
 ```
 
 Open `http://localhost:3000`.
@@ -118,13 +119,13 @@ the old volume before switching names. On startup, SeddleUp migrates
 `/app/data/triptally.db` to `/app/data/seddleup.db` when the old file exists in
 the mounted volume and the new file is absent.
 
-To use the pinned GHCR image with Compose instead of building locally, either edit
+To use the GHCR image with Compose instead of building locally, either edit
 `docker-compose.yml` or override the service image in your deployment tooling:
 
 ```yaml
 services:
   seddleup:
-    image: ghcr.io/cryptnetworks/seddleup:sha-292a632@sha256:9a2387e29e29bf862a056619192a3cf3256b74a5d4fc67e97467321c43957207
+    image: ghcr.io/cryptnetworks/seddleup:latest
     build: null
 ```
 
@@ -229,7 +230,7 @@ Manual renewal:
 ## Email And MFA
 
 SMTP is optional but recommended for production. SeddleUp uses email for account
-verification, password reset links, and email two-factor codes.
+verification, password reset links, invitations, and email two-factor codes.
 
 ```env
 SMTP_ENABLED=true
@@ -293,6 +294,11 @@ docker compose --profile discord run --rm discord-commands
 The first registered user becomes the bootstrap administrator. Admin pages are
 available under `/admin`.
 
+Admins can invite new users from `/admin/users`. Invitations are emailed with
+SeddleUp branding, expire after seven days, and can be resent or revoked while
+pending. Invitation tokens are sent only in the email link; the database stores
+only keyed token digests.
+
 OAuth provider callback URLs:
 
 ```txt
@@ -322,6 +328,9 @@ Expense statuses control visibility and balances:
 
 Participant records can link to app users by matching email. Linked users become
 trip members automatically when a manager adds or updates the participant.
+When a trip manager adds a participant email that does not belong to an app user,
+SeddleUp creates one pending invitation for that email and trip. Accepting the
+invite creates or links the account and adds the user to the trip as a member.
 Expense, participant, and trip changes are written to the audit log with trip
 context.
 
@@ -415,13 +424,13 @@ docker start seddleup
 Pull the new image, recreate the container, and keep the same volume:
 
 ```bash
-docker pull ghcr.io/cryptnetworks/seddleup:sha-292a632@sha256:9a2387e29e29bf862a056619192a3cf3256b74a5d4fc67e97467321c43957207
+docker pull ghcr.io/cryptnetworks/seddleup:latest
 docker rm -f seddleup
 docker run --name seddleup \
   -p 3000:3000 \
   -v seddleup_data:/app/data \
   --env-file .env \
-  ghcr.io/cryptnetworks/seddleup:sha-292a632@sha256:9a2387e29e29bf862a056619192a3cf3256b74a5d4fc67e97467321c43957207
+  ghcr.io/cryptnetworks/seddleup:latest
 ```
 
 The startup entrypoint applies database migrations automatically.

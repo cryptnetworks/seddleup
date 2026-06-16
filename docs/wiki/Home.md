@@ -22,7 +22,7 @@ This wiki is the operational and contributor documentation for the project.
 ## Current Published Image
 
 ```bash
-docker pull ghcr.io/cryptnetworks/seddleup:sha-292a632@sha256:9a2387e29e29bf862a056619192a3cf3256b74a5d4fc67e97467321c43957207
+docker pull ghcr.io/cryptnetworks/seddleup:latest
 ```
 
 ## Main Capabilities
@@ -31,6 +31,7 @@ docker pull ghcr.io/cryptnetworks/seddleup:sha-292a632@sha256:9a2387e29e29bf862a
 - Collaborative trip memberships with owner/admin/member/viewer permissions
 - Member-created expenses with draft, submitted, disputed, approved, and settled states
 - Credentials login with email verification and password reset
+- Admin and trip invitations for new users
 - Email-code or authenticator-app MFA
 - Admin portal for users, auth providers, settings, and audit logs
 - OAuth login and account linking for Google, GitHub, Discord, and Facebook

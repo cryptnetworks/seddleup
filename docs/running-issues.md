@@ -7,7 +7,7 @@
 - Root cause: Nodemailer was upgraded past the peer range supported by the current NextAuth version.
 - Files changed: `package.json`, `package-lock.json`, `Dockerfile`.
 - Fix applied: Initially pinned Nodemailer to `^7.0.13`, regenerated the lockfile, and changed Docker dependency installation from `npm install` to `npm ci`. Nodemailer was later removed in Issue 6.
-- Verification commands: `npm ci`, `npm run build`, `docker build -t triptally:latest .`.
+- Verification commands: `npm ci`, `npm run build`, `docker build -t seddleup:latest .`.
 - Status: Fixed.
 
 ## Issue 2: Docker builds were not using the lockfile strictly
@@ -17,7 +17,7 @@
 - Root cause: `npm install` can resolve dependencies differently from CI and can surface peer resolution drift during image builds.
 - Files changed: `Dockerfile`.
 - Fix applied: Replaced `npm install --no-audit --no-fund --loglevel=error` with `npm ci --no-audit --no-fund --loglevel=error`.
-- Verification commands: `docker build -t triptally:latest .`, `docker compose build`.
+- Verification commands: `docker build -t seddleup:latest .`, `docker compose build`.
 - Status: Fixed.
 
 ## Issue 3: CodeQL default setup conflicts with advanced workflow
@@ -37,7 +37,7 @@
 - Root cause: Same Nodemailer peer dependency conflict as Issue 1.
 - Files changed: `package.json`, `package-lock.json`, `Dockerfile`, `.github/workflows/security.yml`.
 - Fix applied: Resolved the dependency conflict, later replaced Nodemailer with EmailJS in Issue 6, and made Docker installs reproducible with `npm ci`.
-- Verification commands: `docker build -t triptally:latest .`, `npm run security:scan`.
+- Verification commands: `docker build -t seddleup:latest .`, `npm run security:scan`.
 - Status: Fixed.
 
 ## Issue 5: CodeQL flagged one-time token digests as weak password hashing
@@ -57,7 +57,7 @@
 - Root cause: The app used Nodemailer directly, NextAuth depended on vulnerable `uuid`, Next bundled vulnerable PostCSS, and Prisma dev tooling depended on vulnerable `@hono/node-server`.
 - Files changed: `package.json`, `package-lock.json`, `lib/email.ts`, `.github/dependabot.yml`, `README.md`, `SECURITY.md`, and wiki automation/security docs.
 - Fix applied: Replaced direct Nodemailer usage with EmailJS, removed `@types/nodemailer`, added scoped npm overrides for `uuid@11.1.1`, `postcss@8.5.15`, and `@hono/node-server@1.19.13`, and improved Dependabot grouping.
-- Verification commands: `npm ci`, `npm audit --json`, `npm run lint`, `npm run typecheck`, `npm test`, `npm run test:e2e`, `npm run build`, `npm run security:audit`, `npm run security:scan`, `docker build -t triptally:latest .`, `docker compose build triptally`.
+- Verification commands: `npm ci`, `npm audit --json`, `npm run lint`, `npm run typecheck`, `npm test`, `npm run test:e2e`, `npm run build`, `npm run security:audit`, `npm run security:scan`, `docker build -t seddleup:latest .`, `docker compose build seddleup`.
 - Status: Fixed.
 
 ## Issue 7: CVE-2026-33671 picomatch ReDoS finding
@@ -67,7 +67,7 @@
 - Root cause: `picomatch` is transitive through lint/build/test tooling, so it is not declared directly in `package.json`.
 - Files changed: `package-lock.json`.
 - Fix applied: Ran `npm update picomatch` and verified the installed tree resolves to patched versions: `picomatch@2.3.2` for the micromatch branch and `picomatch@4.0.4` for Vite/Vitest branches.
-- Verification commands: `npm ls picomatch --all`, `npm audit --audit-level=high`, `npm audit --json`, `npm run security:scan`, `docker build -t triptally:latest .`.
+- Verification commands: `npm ls picomatch --all`, `npm audit --audit-level=high`, `npm audit --json`, `npm run security:scan`, `docker build -t seddleup:latest .`.
 - Status: Fixed.
 
 ## Issue 8: Remaining Dependabot major updates review
@@ -77,7 +77,7 @@
 - Root cause: Dependabot grouped safe action major updates with ecosystem updates that still require compatibility confirmation. ESLint 10 is newer than peer ranges declared by the Next.js ESLint plugin chain, and Node 26 is currently a Current release rather than the production LTS runtime used by the app.
 - Files changed: `.github/workflows/docker-image.yml`, `.github/workflows/release.yml`, `.github/dependabot.yml`, `README.md`, `SECURITY.md`, `docs/wiki/Repository-Automation.md`, and `docs/wiki/Contributing.md`.
 - Fix applied: Accepted the GitHub Actions group update for Docker login, Docker metadata, Docker build/push, and release creation. Deferred ESLint 10 with a Dependabot major ignore because the compatibility test produced peer dependency warnings from `eslint-plugin-import`, `eslint-plugin-jsx-a11y`, and `eslint-plugin-react`. Deferred Node 26 Alpine with a Dependabot major ignore while production remains on Node 22 Alpine LTS. Documented the stale Nodemailer PR as replaced by EmailJS.
-- Verification commands: `npm install eslint@10.4.0 --package-lock-only --no-audit --no-fund`, `npm ci`, `npm run format:check`, `npm run lint`, `npm run typecheck`, `npm test`, `npm run test:e2e`, `npm run build`, `docker build -t triptally:latest .`, `docker compose build triptally`, `npm run security:audit`, `npm run security:scan`.
+- Verification commands: `npm install eslint@10.4.0 --package-lock-only --no-audit --no-fund`, `npm ci`, `npm run format:check`, `npm run lint`, `npm run typecheck`, `npm test`, `npm run test:e2e`, `npm run build`, `docker build -t seddleup:latest .`, `docker compose build seddleup`, `npm run security:audit`, `npm run security:scan`.
 - Status: Fixed in repository configuration; pending hosted Actions confirmation for updated action versions.
 
 ## Issue 9: Collaborative purchase permissions
