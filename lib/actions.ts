@@ -1,4 +1,6 @@
 export {
+  acceptInvitationAndCreateAccount,
+  acceptInvitationAsCurrentUser,
   registerUser,
   requestPasswordReset,
   resendVerificationEmail,
@@ -13,7 +15,10 @@ export {
 } from "@/lib/actions/auth";
 export {
   deleteUser,
+  inviteUser,
+  resendUserInvitation,
   resetUserPassword,
+  revokeUserInvitation,
   setUserDisabled,
   updateAuthProviderConfig,
   updateLocalAuthSettings,

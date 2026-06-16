@@ -49,7 +49,7 @@ export const oauthProviderDefinitions: OAuthProviderDefinition[] = [
   }
 ];
 
-function testOAuthEnabled() {
+export function testOAuthEnabled() {
   return (
     process.env.NODE_ENV !== "production" && process.env.TEST_OAUTH_PROVIDER_ENABLED === "true"
   );
