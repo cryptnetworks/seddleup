@@ -12,21 +12,25 @@ export function sqliteDatabasePath() {
 }
 
 export function configureTestAuthSettings() {
-  const db = new DatabaseSync(sqliteDatabasePath());
-  for (const [key, value] of [
-    ["requireEmailVerification", "false"],
-    ["localAuthEnabled", "true"],
-    ["publicRegistrationEnabled", "true"],
-    ["allowedEmailDomains", ""],
-    ["defaultUserRole", "user"]
-  ]) {
-    db.prepare(
-      `INSERT INTO app_settings (key, value, updatedAt)
-       VALUES (?, ?, CURRENT_TIMESTAMP)
-       ON CONFLICT(key) DO UPDATE SET value = excluded.value, updatedAt = CURRENT_TIMESTAMP`
-    ).run(key, value);
+  const db = new DatabaseSync(sqliteDatabasePath(), { timeout: 5000 });
+  try {
+    db.exec("PRAGMA busy_timeout = 5000");
+    for (const [key, value] of [
+      ["requireEmailVerification", "false"],
+      ["localAuthEnabled", "true"],
+      ["publicRegistrationEnabled", "true"],
+      ["allowedEmailDomains", ""],
+      ["defaultUserRole", "user"]
+    ]) {
+      db.prepare(
+        `INSERT INTO app_settings (key, value, updatedAt)
+         VALUES (?, ?, CURRENT_TIMESTAMP)
+         ON CONFLICT(key) DO UPDATE SET value = excluded.value, updatedAt = CURRENT_TIMESTAMP`
+      ).run(key, value);
+    }
+  } finally {
+    db.close();
   }
-  db.close();
 }
 
 export function uniqueLabel(testInfo: TestInfo, prefix: string) {
@@ -71,13 +75,15 @@ export async function createTripWithParticipants(page: Page, name: string) {
   await expect(page.getByRole("heading", { name })).toBeVisible();
 
   for (const participant of ["Alice", "Bob"]) {
-    await page.getByPlaceholder("Name").fill(participant);
-    await page.getByPlaceholder("Email optional").fill(`${participant.toLowerCase()}@example.com`);
-    await page.getByRole("button", { name: "Add" }).click();
-    await expect(
-      page.getByTestId("participant-card").filter({ hasText: participant })
-    ).toBeVisible();
+    await addParticipant(page, participant, `${participant.toLowerCase()}@example.com`);
   }
+}
+
+export async function addParticipant(page: Page, name: string, email: string) {
+  await page.getByTestId("participant-name").fill(name);
+  await page.getByTestId("participant-email").fill(email);
+  await page.getByTestId("participant-submit").click();
+  await expect(page.getByTestId("participant-card").filter({ hasText: name })).toBeVisible();
 }
 
 export async function addExpense(page: Page, title: string, amount: string) {
