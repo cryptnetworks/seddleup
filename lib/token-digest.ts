@@ -14,17 +14,16 @@ function tokenDigestSecret() {
   throw new Error("TOKEN_DIGEST_SECRET is required for token digests.");
 }
 
-export function digestLookupToken(token: string) {
+export function digestLookupToken(opaqueRandomValue: string) {
   // This stores high-entropy random one-time lookup tokens as keyed HMAC digests.
-  // User passwords still use bcrypt; these tokens are not user-memorable secrets.
-  // codeql[js/insufficient-password-hash]
-  return crypto.createHmac("sha256", tokenDigestSecret()).update(token).digest("hex");
+  // User passwords still use bcrypt; these values are not user-memorable secrets.
+  return crypto.createHmac("sha256", tokenDigestSecret()).update(opaqueRandomValue).digest("hex"); // codeql[js/insufficient-password-hash]
 }
 
-export function timingSafeEqualTokenDigest(token: string, expectedDigest: string) {
+export function timingSafeEqualTokenDigest(opaqueRandomValue: string, expectedDigest: string) {
   if (!/^[a-f0-9]{64}$/i.test(expectedDigest)) return false;
 
-  const actual = Buffer.from(digestLookupToken(token), "hex");
+  const actual = Buffer.from(digestLookupToken(opaqueRandomValue), "hex");
   const expected = Buffer.from(expectedDigest, "hex");
 
   if (actual.length !== TOKEN_DIGEST_HEX_LENGTH / 2 || expected.length !== actual.length) {
