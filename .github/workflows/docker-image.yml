@@ -106,6 +106,7 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha,scope=${{ matrix.artifact }}
           cache-to: type=gha,mode=max,scope=${{ matrix.artifact }}
+          provenance: false
 
       - name: Build and push image
         if: github.event_name != 'pull_request'
@@ -119,6 +120,7 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha,scope=${{ matrix.artifact }}
           cache-to: type=gha,mode=max,scope=${{ matrix.artifact }}
+          provenance: false
 
       - name: Export image digest
         if: github.event_name != 'pull_request'
