@@ -31,6 +31,8 @@ Current GHCR image:
 docker pull ghcr.io/cryptnetworks/seddleup:latest
 ```
 
+The `latest` image is published for `linux/amd64` and `linux/arm64/v8` (aarch64).
+
 ## Required Configuration
 
 Start from the Docker env example:
@@ -105,11 +107,12 @@ curl http://localhost:3000/api/health
 
 ## Run With Docker Compose
 
-The included Compose file is production-oriented. It builds the local Dockerfile by
-default and runs SeddleUp privately on the Docker network.
+The included Compose file is production-oriented. It pulls the GHCR image and
+runs SeddleUp privately on the Docker network.
 
 ```bash
-docker compose up -d --build seddleup
+docker compose pull seddleup
+docker compose up -d seddleup
 ```
 
 Compose mounts `seddleup_data` at `/app/data`.

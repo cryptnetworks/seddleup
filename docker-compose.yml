@@ -1,8 +1,6 @@
 services:
   seddleup:
-    build:
-      context: .
-    image: seddleup:latest
+    image: ghcr.io/cryptnetworks/seddleup:latest
     container_name: seddleup
     env_file:
       - .env
@@ -73,7 +71,7 @@ services:
     restart: unless-stopped
 
   discord-commands:
-    image: seddleup:latest
+    image: ghcr.io/cryptnetworks/seddleup:latest
     profiles:
       - discord
     env_file:

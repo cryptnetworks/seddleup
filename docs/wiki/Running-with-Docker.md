@@ -8,6 +8,8 @@ SeddleUp is intended to run as a Docker container in production. The container s
 docker pull ghcr.io/cryptnetworks/seddleup:latest
 ```
 
+The `latest` image is published for `linux/amd64` and `linux/arm64/v8` (aarch64).
+
 ## Prepare Environment
 
 ```bash
@@ -56,10 +58,11 @@ The Docker image also defines a healthcheck that calls `/api/health` every 30 se
 
 ## Run with Docker Compose
 
-The included Compose file builds the local Dockerfile by default and runs SeddleUp privately on the Docker network:
+The included Compose file pulls the GHCR image and runs SeddleUp privately on the Docker network:
 
 ```bash
-docker compose up -d --build seddleup
+docker compose pull seddleup
+docker compose up -d seddleup
 ```
 
 Compose mounts the `seddleup_data` volume at `/app/data`.
@@ -69,13 +72,14 @@ the old volume before switching names. On startup, SeddleUp migrates
 `/app/data/triptally.db` to `/app/data/seddleup.db` when the old file exists in
 the mounted volume and the new file is absent.
 
-To use the GHCR image instead of building locally, override the service image:
+To build locally instead of using GHCR, add a local override:
 
 ```yaml
 services:
   seddleup:
-    image: ghcr.io/cryptnetworks/seddleup:latest
-    build: null
+    build:
+      context: .
+    image: seddleup:latest
 ```
 
 ## Data Persistence
