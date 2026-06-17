@@ -77,6 +77,44 @@ export function providerDefinition(providerId: string) {
   return allProviderDefinitions().find((provider) => provider.id === providerId);
 }
 
+function stripEnvQuotes(value: string | undefined) {
+  if (!value) return "";
+  const trimmed = value.trim();
+  if (
+    (trimmed.startsWith('"') && trimmed.endsWith('"')) ||
+    (trimmed.startsWith("'") && trimmed.endsWith("'"))
+  ) {
+    return trimmed.slice(1, -1);
+  }
+  return trimmed;
+}
+
+async function seedDiscordOAuthFromEnv() {
+  const clientId = stripEnvQuotes(process.env.DISCORD_CLIENT_ID);
+  const clientSecret = stripEnvQuotes(process.env.DISCORD_CLIENT_SECRET);
+  if (!clientId || !clientSecret) return;
+
+  const existing = await prisma.authProviderConfig.findUnique({ where: { id: "discord" } });
+  if (existing?.clientId && existing.encryptedClientSecret) return;
+
+  await prisma.authProviderConfig.upsert({
+    where: { id: "discord" },
+    create: {
+      id: "discord",
+      name: "Discord",
+      enabled: true,
+      clientId,
+      encryptedClientSecret: encryptProviderSecret(clientSecret),
+      scopesJson: JSON.stringify(["identify", "email"])
+    },
+    update: {
+      enabled: true,
+      clientId,
+      encryptedClientSecret: encryptProviderSecret(clientSecret)
+    }
+  });
+}
+
 export async function ensureProviderConfigs() {
   await prisma.$transaction(
     allProviderDefinitions().map((provider) =>
@@ -92,6 +130,7 @@ export async function ensureProviderConfigs() {
       })
     )
   );
+  await seedDiscordOAuthFromEnv();
 }
 
 export async function listAuthProviders() {
