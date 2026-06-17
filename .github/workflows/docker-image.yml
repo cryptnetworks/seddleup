@@ -50,6 +50,10 @@ permissions:
   contents: read
   packages: write
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 env:
   IMAGE_NAME: ghcr.io/${{ github.repository_owner }}/seddleup
 
@@ -64,9 +68,6 @@ jobs:
           - platform: linux/amd64
             artifact: linux-amd64
             manifest: true
-          - platform: linux/arm64
-            artifact: linux-arm64
-            manifest: false
           - platform: linux/arm64/v8
             artifact: linux-arm64-v8
             manifest: true

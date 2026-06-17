@@ -26,6 +26,10 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   validate:
     runs-on: ubuntu-latest
@@ -87,6 +91,3 @@ jobs:
 
       - name: Production build
         run: npm run build
-
-      - name: Docker build
-        run: docker build -t seddleup:ci .
