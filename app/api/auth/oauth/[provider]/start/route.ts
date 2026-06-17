@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
 import {
   generateOAuthState,
   generatePkceVerifier,
@@ -46,13 +47,19 @@ export async function GET(request: Request, { params }: { params: Promise<{ prov
     path: "/"
   });
   if (session?.user?.id && isSameOriginRequest(request.headers)) {
-    response.cookies.set(`oauth_link_${provider}`, session.user.id, {
-      httpOnly: true,
-      sameSite: "lax",
-      secure: process.env.NODE_ENV === "production",
-      maxAge: 600,
-      path: "/"
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { id: true, disabledAt: true }
     });
+    if (user && !user.disabledAt) {
+      response.cookies.set(`oauth_link_${provider}`, user.id, {
+        httpOnly: true,
+        sameSite: "lax",
+        secure: process.env.NODE_ENV === "production",
+        maxAge: 600,
+        path: "/"
+      });
+    }
   }
 
   return response;

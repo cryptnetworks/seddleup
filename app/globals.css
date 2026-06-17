@@ -29,6 +29,10 @@
   --app-ocean: var(--app-accent);
   --app-coral: #dc2626;
   --app-brand-soft: #dbeafe;
+  --app-button-primary: #0f172a;
+  --app-button-primary-hover: #1e293b;
+  --app-button-secondary: #ffffff;
+  --app-button-secondary-hover: #f8fafc;
   --app-page-start: #ffffff;
   --app-page-mid: #f8fafc;
   --app-page-end: #e2e8f0;
@@ -49,9 +53,13 @@
   --app-muted: #cbd5e1;
   --app-line: #334155;
   --app-surface: #0f172a;
-  --app-ocean: var(--app-accent);
+  --app-ocean: #60a5fa;
   --app-coral: #f87171;
   --app-brand-soft: #1e293b;
+  --app-button-primary: #2563eb;
+  --app-button-primary-hover: #1d4ed8;
+  --app-button-secondary: #1e293b;
+  --app-button-secondary-hover: #334155;
   --app-page-start: #020617;
   --app-page-mid: #0f172a;
   --app-page-end: #1e293b;
@@ -92,12 +100,21 @@ textarea {
 
 @layer components {
   .btn-primary {
-    @apply inline-flex min-h-11 items-center justify-center rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-white shadow-soft transition hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60;
+    @apply inline-flex min-h-11 items-center justify-center rounded-lg px-4 py-2.5 text-sm font-semibold text-white shadow-soft transition focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60;
+    background-color: var(--app-button-primary);
+  }
+
+  .btn-primary:hover {
+    background-color: var(--app-button-primary-hover);
   }
 
   .btn-secondary {
-    @apply inline-flex min-h-11 items-center justify-center rounded-lg border border-line bg-white px-4 py-2.5 text-sm font-semibold text-ink transition hover:bg-surface focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2;
-    background-color: var(--app-card-solid);
+    @apply inline-flex min-h-11 items-center justify-center rounded-lg border border-line px-4 py-2.5 text-sm font-semibold text-ink transition focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2;
+    background-color: var(--app-button-secondary);
+  }
+
+  .btn-secondary:hover {
+    background-color: var(--app-button-secondary-hover);
   }
 
   .btn-danger {

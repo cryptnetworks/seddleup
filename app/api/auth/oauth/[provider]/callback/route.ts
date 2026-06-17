@@ -167,6 +167,12 @@ export async function GET(request: Request, { params }: { params: Promise<{ prov
   const profileEmail = profile.email;
 
   if (linkUserId) {
+    const linkUser = await prisma.user.findUnique({
+      where: { id: linkUserId },
+      select: { id: true, disabledAt: true }
+    });
+    if (!linkUser || linkUser.disabledAt) return redirect("/login?oauth=invalid");
+
     const existing = await prisma.userAuthAccount.findUnique({
       where: {
         providerId_providerAccountId: { providerId: provider, providerAccountId: profile.id }

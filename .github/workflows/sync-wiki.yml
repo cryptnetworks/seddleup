@@ -1,0 +1,51 @@
+name: Sync Wiki
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - "docs/wiki/**"
+      - ".github/workflows/sync-wiki.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  sync-wiki:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout docs source
+        uses: actions/checkout@v6
+
+      - name: Clone GitHub wiki
+        env:
+          GH_TOKEN: ${{ secrets.WIKI_TOKEN || github.token }}
+        run: |
+          set -euo pipefail
+          git clone "https://x-access-token:${GH_TOKEN}@github.com/cryptnetworks/seddleup.wiki.git" wiki
+
+      - name: Sync docs/wiki pages
+        run: |
+          set -euo pipefail
+
+          find wiki -maxdepth 1 -type f -name '*.md' -delete
+          cp docs/wiki/*.md wiki/
+
+      - name: Commit and push wiki changes
+        working-directory: wiki
+        run: |
+          set -euo pipefail
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add --all
+          if git diff --cached --quiet; then
+            echo "Wiki is already up to date."
+            exit 0
+          fi
+
+          git commit -m "Sync wiki docs from main"
+          git push origin HEAD:master

@@ -3,7 +3,25 @@ name: CI
 on:
   push:
     branches: ["main"]
+    paths-ignore:
+      - "**/*.md"
+      - "docs/**"
+      - ".github/ISSUE_TEMPLATE/**"
+      - ".github/pull_request_template.md"
+      - ".github/CODEOWNERS"
+      - "LICENSE"
+      - "CODE_OF_CONDUCT.md"
+      - "CONTRIBUTING.md"
   pull_request:
+    paths-ignore:
+      - "**/*.md"
+      - "docs/**"
+      - ".github/ISSUE_TEMPLATE/**"
+      - ".github/pull_request_template.md"
+      - ".github/CODEOWNERS"
+      - "LICENSE"
+      - "CODE_OF_CONDUCT.md"
+      - "CONTRIBUTING.md"
 
 permissions:
   contents: read

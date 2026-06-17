@@ -4,7 +4,47 @@ on:
   push:
     branches: ["main"]
     tags: ["v*.*.*"]
+    paths:
+      - "Dockerfile"
+      - ".dockerignore"
+      - "docker-compose.yml"
+      - "docker-entrypoint.sh"
+      - "package.json"
+      - "package-lock.json"
+      - "next.config.mjs"
+      - "postcss.config.mjs"
+      - "prisma.config.ts"
+      - "tsconfig.json"
+      - "app/**"
+      - "components/**"
+      - "lib/**"
+      - "prisma/**"
+      - "proxy.ts"
+      - "public/**"
+      - "scripts/**"
+      - "types/**"
+      - ".github/workflows/docker-image.yml"
   pull_request:
+    paths:
+      - "Dockerfile"
+      - ".dockerignore"
+      - "docker-compose.yml"
+      - "docker-entrypoint.sh"
+      - "package.json"
+      - "package-lock.json"
+      - "next.config.mjs"
+      - "postcss.config.mjs"
+      - "prisma.config.ts"
+      - "tsconfig.json"
+      - "app/**"
+      - "components/**"
+      - "lib/**"
+      - "prisma/**"
+      - "proxy.ts"
+      - "public/**"
+      - "scripts/**"
+      - "types/**"
+      - ".github/workflows/docker-image.yml"
 
 permissions:
   contents: read
