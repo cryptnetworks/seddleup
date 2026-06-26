@@ -43,13 +43,6 @@ export const loginSchema = z.object({
     .optional()
     .or(z.literal(""))
     .transform((value) => value || undefined),
-  oauthLoginToken: z
-    .string()
-    .trim()
-    .max(256)
-    .optional()
-    .or(z.literal(""))
-    .transform((value) => value || undefined),
   loginToken: z
     .string()
     .trim()
