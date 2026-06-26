@@ -50,6 +50,8 @@ const BRAND = {
   brandSoft: "#DBEAFE"
 } as const;
 
+const legacyAppNamePattern = /^(triptally|trip tally|trip-tally)$/i;
+
 function smtpConfigured() {
   if (process.env.SMTP_ENABLED === "false") {
     return false;
@@ -308,7 +310,11 @@ export function buildInvitationEmail(input: InvitationEmailInput) {
 }
 
 function emailAppName() {
-  return process.env.EMAIL_APP_NAME || BRAND.appName;
+  const configuredName = process.env.EMAIL_APP_NAME?.trim();
+  if (!configuredName || legacyAppNamePattern.test(configuredName)) {
+    return BRAND.appName;
+  }
+  return configuredName;
 }
 
 function publicAssetUrl(path: string) {

@@ -25,6 +25,23 @@ PASSWORD_RESET_TOKEN_MINUTES=45
 
 Use `SMTP_SECURE=false` for port `587` with STARTTLS. Use `SMTP_SECURE=true` for implicit TLS ports such as `465`.
 
+Outbound email subjects, plain text, and HTML templates use SeddleUp branding.
+Known stale legacy `EMAIL_APP_NAME` values such as `TripTally`, `Trip Tally`,
+and `trip-tally` are treated as SeddleUp to avoid leaking old user-facing
+branding.
+
+## Deferred Compatibility Names
+
+These names are intentionally not changed by email branding work:
+
+| Name area                                                                | Why it remains                                                            |
+| ------------------------------------------------------------------------ | ------------------------------------------------------------------------- |
+| `package.json` / lockfile package name `triptally`                       | Avoids package metadata churn during app rebrand cleanup.                 |
+| Legacy `TRIPTALLY_*` Docker env aliases                                  | Keeps existing deployments bootable while operators move to `SEDDLEUP_*`. |
+| Legacy SQLite filename migration from `triptally.db`                     | Preserves existing Docker volume data during the rename.                  |
+| Test domains, fixtures, and generated test emails using `triptally.test` | Test-only identifiers; broad fixture renames should stay isolated.        |
+| Historical docs and migration history                                    | Audit and migration history should remain truthful.                       |
+
 ## Email Verification
 
 New users must verify email before login when email verification is enabled in admin settings. Tokens are random, stored only as SHA-256 hashes, expire, and are marked used after success.
