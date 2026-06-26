@@ -60,7 +60,6 @@ env:
 jobs:
   docker:
     name: docker (${{ matrix.platform }})
-    runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
@@ -68,15 +67,23 @@ jobs:
           - platform: linux/amd64
             artifact: linux-amd64
             manifest: true
+            runner: ubuntu-latest
+            qemu: false
           - platform: linux/arm64/v8
             artifact: linux-arm64-v8
             manifest: true
+            runner: ubuntu-24.04-arm
+            qemu: false
+
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 60
 
     steps:
       - name: Checkout
         uses: actions/checkout@v7
 
       - name: Set up QEMU
+        if: matrix.qemu
         uses: docker/setup-qemu-action@v4
 
       - name: Set up Docker Buildx
