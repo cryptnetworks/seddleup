@@ -19,10 +19,6 @@ participants, balances, and settlement suggestions.
 - OAuth login and account linking for Google, GitHub, Discord, and Facebook
 - Docker healthcheck at `/api/health`
 
-## Screenshots
-
-Screenshots are not committed yet. Add current dashboard, trip detail, account, and admin views here when a stable release UI is captured.
-
 ## Docker Image
 
 Current GHCR image:
@@ -122,14 +118,14 @@ the old volume before switching names. On startup, SeddleUp migrates
 `/app/data/triptally.db` to `/app/data/seddleup.db` when the old file exists in
 the mounted volume and the new file is absent.
 
-To use the GHCR image with Compose instead of building locally, either edit
-`docker-compose.yml` or override the service image in your deployment tooling:
+To build from the checked-out source instead of using GHCR, add a local override:
 
 ```yaml
 services:
   seddleup:
-    image: ghcr.io/cryptnetworks/seddleup:latest
-    build: null
+    build:
+      context: .
+    image: seddleup:latest
 ```
 
 ## Public Deployment Options
@@ -154,7 +150,7 @@ COMPOSE_PROFILES=nginx
 Then start the selected deployment:
 
 ```bash
-docker compose up -d --build
+docker compose up -d
 ```
 
 ## Cloudflare Tunnel
@@ -178,11 +174,14 @@ In Cloudflare Zero Trust, create a tunnel and public hostname:
 Start:
 
 ```bash
-docker compose --profile cloudflare up -d --build
+docker compose --profile cloudflare up -d
 ```
 
 No public inbound ports are required. The `cloudflared` container connects
 outbound to Cloudflare and forwards traffic to the private `seddleup` service.
+The included Compose profile uses the token-based tunnel command; the
+`cloudflare/config.yml.example` file is only for operators who prefer a named
+tunnel configuration.
 
 ## Nginx And Let's Encrypt
 
@@ -201,7 +200,8 @@ CLOUDFLARE_API_TOKEN=your-cloudflare-token
 ```
 
 The Cloudflare API token must have `Zone:DNS:Edit` and `Zone:Zone:Read` for the
-zone that owns `DOMAIN`.
+zone that owns `DOMAIN`. The helper script creates `certbot/cloudflare.ini` from
+`CLOUDFLARE_API_TOKEN` when the credentials file does not already exist.
 
 Issue staging certificates first:
 
