@@ -157,6 +157,8 @@ export const expenseSchema = z.object({
   sharedParticipantIds: z.array(idSchema).optional().default([])
 });
 
+export type ExpenseFormData = z.infer<typeof expenseSchema>;
+
 export function formString(formData: FormData, key: string) {
   const value = formData.get(key);
   return typeof value === "string" ? value : "";

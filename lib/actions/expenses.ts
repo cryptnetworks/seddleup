@@ -16,7 +16,13 @@ import {
   coerceExpenseStatusForRole,
   isTripManager
 } from "@/lib/trip-permissions";
-import { expenseSchema, formString, idSchema, parseDateInput } from "@/lib/validation";
+import {
+  expenseSchema,
+  formString,
+  idSchema,
+  parseDateInput,
+  type ExpenseFormData
+} from "@/lib/validation";
 
 function parseExpenseForm(formData: FormData) {
   return expenseSchema.safeParse({
@@ -40,8 +46,9 @@ function selectedExpenseParticipants(
     fallbackToAll && sharedParticipantIds.length === 0
       ? participants.map((participant) => participant.id)
       : sharedParticipantIds;
+  const selectedIdSet = new Set(selectedIds);
 
-  return participants.filter((participant) => selectedIds.includes(participant.id));
+  return participants.filter((participant) => selectedIdSet.has(participant.id));
 }
 
 function userCanUsePayer(
@@ -70,6 +77,41 @@ function expenseSnapshot(expense: {
     notes: expense.notes,
     status: expense.status
   };
+}
+
+function expenseShareData(amount: number, participants: Participant[]) {
+  const shares = calculateEqualShares(amount, participants.length);
+  return participants.map((participant, index) => ({
+    participantId: participant.id,
+    shareAmount: shares[index]
+  }));
+}
+
+function expenseDataFromInput(
+  input: ExpenseFormData,
+  payer: Participant,
+  selectedParticipants: Participant[],
+  role: string,
+  userId: string
+) {
+  return {
+    title: input.title,
+    amount: input.amount,
+    category: input.category,
+    payerId: input.payerId,
+    paidByUserId: payer.userId || null,
+    updatedByUserId: userId,
+    status: coerceExpenseStatusForRole(input.status, role),
+    date: parseDateInput(input.date) ?? new Date(),
+    notes: input.notes || null,
+    shares: {
+      create: expenseShareData(input.amount, selectedParticipants)
+    }
+  };
+}
+
+function sharedParticipantIds(participants: Participant[]) {
+  return participants.map((participant) => participant.id);
 }
 
 export async function createExpense(tripId: string, formData: FormData) {
@@ -112,28 +154,17 @@ export async function createExpense(tripId: string, formData: FormData) {
     redirect(`/trips/${tripId}/expenses/new?error=payer`);
   }
 
-  const shares = calculateEqualShares(parsed.data.amount, selectedParticipants.length);
-  const status = coerceExpenseStatusForRole(parsed.data.status, resolved.access.role);
-
   const expense = await prisma.expense.create({
     data: {
-      title: parsed.data.title,
-      amount: parsed.data.amount,
-      category: parsed.data.category,
-      payerId: parsed.data.payerId,
+      ...expenseDataFromInput(
+        parsed.data,
+        payer,
+        selectedParticipants,
+        resolved.access.role,
+        userId
+      ),
       tripId,
-      createdByUserId: userId,
-      paidByUserId: payer.userId || null,
-      updatedByUserId: userId,
-      status,
-      date: parseDateInput(parsed.data.date) ?? new Date(),
-      notes: parsed.data.notes || null,
-      shares: {
-        create: selectedParticipants.map((participant, index) => ({
-          participantId: participant.id,
-          shareAmount: shares[index]
-        }))
-      }
+      createdByUserId: userId
     }
   });
   await writeAuditLog({
@@ -143,7 +174,7 @@ export async function createExpense(tripId: string, formData: FormData) {
     targetType: "expense",
     targetId: expense.id,
     after: expenseSnapshot(expense),
-    metadata: { shareParticipantIds: selectedParticipants.map((participant) => participant.id) }
+    metadata: { shareParticipantIds: sharedParticipantIds(selectedParticipants) }
   });
 
   logger.info("expense.create.success", { userId, tripId });
@@ -195,30 +226,17 @@ export async function updateExpense(tripId: string, expenseId: string, formData:
     redirect(`/trips/${tripId}/expenses/${expenseId}/edit?error=payer`);
   }
 
-  const shares = calculateEqualShares(parsed.data.amount, selectedParticipants.length);
-  const status = coerceExpenseStatusForRole(parsed.data.status, resolved.access.role);
-
   const [, updatedExpense] = await prisma.$transaction([
     prisma.expenseShare.deleteMany({ where: { expenseId } }),
     prisma.expense.update({
       where: { id: expenseId },
-      data: {
-        title: parsed.data.title,
-        amount: parsed.data.amount,
-        category: parsed.data.category,
-        payerId: parsed.data.payerId,
-        paidByUserId: payer.userId || null,
-        updatedByUserId: userId,
-        status,
-        date: parseDateInput(parsed.data.date) ?? new Date(),
-        notes: parsed.data.notes || null,
-        shares: {
-          create: selectedParticipants.map((participant, index) => ({
-            participantId: participant.id,
-            shareAmount: shares[index]
-          }))
-        }
-      }
+      data: expenseDataFromInput(
+        parsed.data,
+        payer,
+        selectedParticipants,
+        resolved.access.role,
+        userId
+      )
     })
   ]);
   await writeAuditLog({
@@ -229,7 +247,7 @@ export async function updateExpense(tripId: string, expenseId: string, formData:
     targetId: expenseId,
     before: expenseSnapshot(existingExpense),
     after: expenseSnapshot(updatedExpense),
-    metadata: { shareParticipantIds: selectedParticipants.map((participant) => participant.id) }
+    metadata: { shareParticipantIds: sharedParticipantIds(selectedParticipants) }
   });
 
   logger.info("expense.update.success", { userId, tripId, expenseId });
