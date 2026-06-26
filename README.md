@@ -385,8 +385,8 @@ tests.
 
 The browser matrix includes desktop Chromium, Firefox, WebKit, Mobile Chrome,
 and a Mobile Safari project using Playwright's iPhone WebKit profile. The iOS
-regression test covers decimal amount entry and submit behavior for the add
-expense flow.
+regression coverage includes decimal amount entry for add and edit expense
+flows, saving from the mobile viewport, and the supported test OAuth login path.
 
 ## Repository Automation
 
