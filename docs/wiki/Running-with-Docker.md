@@ -96,6 +96,14 @@ SQLite lives at:
 
 Always mount `/app/data` to a persistent Docker volume.
 
+## Rate Limiting
+
+The built-in limiter uses process-local memory. It provides basic throttling for
+a single SeddleUp container, but it resets on restart and is not shared across
+replicas. Multi-replica production deployments should add shared rate limiting
+at the reverse proxy, load balancer, edge, or platform layer until app-level
+shared store support is added.
+
 ---
 
 [Wiki Home](Home) | [Running with Docker](Running-with-Docker) | [Configuration](Configuration) | [Troubleshooting](Troubleshooting)

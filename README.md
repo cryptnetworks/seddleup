@@ -465,6 +465,10 @@ The startup entrypoint applies database migrations automatically.
 - Sessions use NextAuth JWT cookies.
 - Production cookies are secure and HTTP-only where applicable.
 - State-changing requests include same-origin CSRF checks.
+- Built-in rate limits use in-memory process-local buckets. This is suitable
+  for a single app container, but multi-replica production deployments should
+  add shared rate limiting at the proxy/platform layer until a shared store is
+  implemented in the app.
 - OAuth login callbacks create the NextAuth session server-side after provider
   state, PKCE, profile, account, and registration checks pass.
 - Receipt files are stored outside the public asset tree and require trip
