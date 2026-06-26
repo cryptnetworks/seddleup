@@ -27,6 +27,18 @@
 - The custom login API rejects cross-origin posts.
 - NextAuth handles CSRF for its built-in endpoints.
 
+## Rate Limiting
+
+- Login, registration, password reset, email verification resend, invitation
+  acceptance, and admin invitation actions use rate limits.
+- The current limiter stores buckets in process memory. It resets on process
+  restart and is not shared across app replicas.
+- Single-container deployments get basic abuse throttling from the built-in
+  limiter.
+- Multi-replica production deployments should add shared rate limiting at the
+  reverse proxy, load balancer, edge, or platform layer until a shared store such
+  as Redis is implemented in the app.
+
 ## XSS
 
 - User-controlled values are rendered as React text, not raw HTML.

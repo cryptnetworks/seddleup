@@ -80,6 +80,16 @@ PASSWORD_RESET_TOKEN_MINUTES=45
 
 Use `SMTP_SECURE=false` for port `587` with STARTTLS. Use `SMTP_SECURE=true` for implicit TLS ports such as `465`.
 
+## Rate Limiting
+
+The built-in limiter uses process-local memory. There is no required Redis or
+shared-store dependency today, and no `RATE_LIMIT_STORE` setting is supported
+yet.
+
+This is acceptable for a single app container. For multi-replica production
+deployments, add shared rate limiting at the reverse proxy, load balancer, edge,
+or hosting platform layer until app-level shared store support is added.
+
 ## Receipts
 
 ```env
