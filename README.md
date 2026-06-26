@@ -65,6 +65,10 @@ ITEM_LOOKUP_ENABLED=false
 ITEM_LOOKUP_PROVIDER=mock
 ```
 
+SeddleUp currently supports SQLite only. `DATABASE_URL` must use a `file:` URL;
+Postgres URLs are rejected until a future schema and migration plan explicitly
+adds Postgres support.
+
 For a public deployment, use the public HTTPS URL everywhere:
 
 ```env
@@ -74,8 +78,8 @@ PUBLIC_APP_URL=https://app.example.com
 ```
 
 `TOKEN_DIGEST_SECRET` keys one-time token digests for invitations, password
-reset, email verification, MFA session handoff, and OAuth login handoff tokens.
-Changing it invalidates outstanding one-time tokens safely. `AUTH_CONFIG_ENCRYPTION_KEY`
+reset, email verification, and MFA session handoff tokens. Changing it
+invalidates outstanding one-time tokens safely. `AUTH_CONFIG_ENCRYPTION_KEY`
 encrypts stored OAuth provider secrets. Keep it backed up; losing it prevents
 decrypting saved provider secrets.
 
@@ -98,6 +102,7 @@ Open `http://localhost:3000`.
 The container starts as a non-root user, validates configuration, generates Prisma
 Client, applies Prisma migrations, and then starts the Next.js production server.
 SQLite data is stored in `/app/data`, so mount a persistent volume there.
+Postgres is not currently supported by the Prisma schema or migrations.
 
 Healthcheck:
 
@@ -115,7 +120,9 @@ docker compose pull seddleup
 docker compose up -d seddleup
 ```
 
-Compose mounts `seddleup_data` at `/app/data`.
+Compose mounts `seddleup_data` at `/app/data` and sets `SEDDLEUP_SQLITE_PATH`
+so a relative local `DATABASE_URL` cannot accidentally put SQLite data outside
+the persistent Docker volume.
 
 Existing deployments that used the old `triptally_data` volume should back up
 the old volume before switching names. On startup, SeddleUp migrates
@@ -286,7 +293,9 @@ the command registration helper when bot credentials are available:
 npm run discord:register
 ```
 
-With Docker Compose, use the optional `discord` profile to register commands:
+The production Docker image intentionally does not include `npm`. With Docker
+Compose, use the optional `discord` profile to register commands through the
+image's Node runtime:
 
 ```bash
 docker compose --profile discord run --rm discord-commands
@@ -460,8 +469,8 @@ The startup entrypoint applies database migrations automatically.
   for a single app container, but multi-replica production deployments should
   add shared rate limiting at the proxy/platform layer until a shared store is
   implemented in the app.
-- OAuth app-login handoff tokens are short-lived, single-use, and stored in an
-  HTTP-only cookie.
+- OAuth login callbacks create the NextAuth session server-side after provider
+  state, PKCE, profile, account, and registration checks pass.
 - Receipt files are stored outside the public asset tree and require trip
   membership for download.
 - Payment methods store only external handles or links, never credentials.

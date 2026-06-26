@@ -18,6 +18,7 @@ import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/session";
 import { enabledLoginProviders } from "@/lib/oauth-providers";
 import { paymentProviderLabel, paymentProviders } from "@/lib/payments";
+import { pendingAuthenticatorSetup } from "@/lib/two-factor";
 
 function profileMessage(status?: string) {
   if (status === "updated") return "Account details updated.";
@@ -36,6 +37,7 @@ function passwordMessage(status?: string) {
 function twoFactorMessage(status?: string) {
   if (status === "updated") return "Two-factor preference updated.";
   if (status === "authenticator-enabled") return "Authenticator app verification is enabled.";
+  if (status === "authenticator-setup") return "Authenticator setup key generated.";
   if (status === "setup-required") return "Set up and verify an authenticator app first.";
   if (status === "invalid-code") return "That authenticator code was not valid.";
   if (status === "invalid") return "Choose a valid two-factor option.";
@@ -63,8 +65,6 @@ export default async function AccountPage({
     profile?: string;
     password?: string;
     twoFactor?: string;
-    authenticatorSecret?: string;
-    authenticatorUri?: string;
     payment?: string;
     discord?: string;
     discordLinkToken?: string;
@@ -80,6 +80,7 @@ export default async function AccountPage({
       emailVerifiedAt: true,
       twoFactorMethod: true,
       authenticatorEnabled: true,
+      authenticatorSecretEncrypted: true,
       authAccounts: true,
       paymentMethods: { orderBy: { createdAt: "asc" } },
       discordAccount: true,
@@ -92,6 +93,7 @@ export default async function AccountPage({
   const twoFactorStatus = twoFactorMessage(query.twoFactor);
   const paymentStatus = paymentMessage(query.payment);
   const discordStatus = discordMessage(query.discord);
+  const authenticatorSetup = pendingAuthenticatorSetup(user);
 
   return (
     <PageShell>
@@ -358,18 +360,18 @@ export default async function AccountPage({
                 </button>
               </form>
             </div>
-            {query.authenticatorSecret && query.authenticatorUri ? (
+            {authenticatorSetup ? (
               <div className="mt-4 grid gap-4">
                 <div>
                   <p className="text-sm font-semibold text-ink">Manual setup key</p>
                   <code className="mt-2 block break-all rounded-lg border border-line bg-brand-soft p-3 text-sm text-ink">
-                    {query.authenticatorSecret}
+                    {authenticatorSetup.secret}
                   </code>
                 </div>
                 <div>
                   <p className="text-sm font-semibold text-ink">Authenticator URI</p>
                   <code className="mt-2 block break-all rounded-lg border border-line bg-brand-soft p-3 text-xs text-ink">
-                    {query.authenticatorUri}
+                    {authenticatorSetup.uri}
                   </code>
                 </div>
                 <form

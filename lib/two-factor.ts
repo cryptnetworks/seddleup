@@ -90,6 +90,26 @@ export async function createAuthenticatorSetup(user: { id: string; email: string
   };
 }
 
+export function pendingAuthenticatorSetup(user: {
+  email: string;
+  authenticatorEnabled: boolean;
+  authenticatorSecretEncrypted: string | null;
+}) {
+  if (user.authenticatorEnabled || !user.authenticatorSecretEncrypted) {
+    return null;
+  }
+
+  const secret = decryptSecret(user.authenticatorSecretEncrypted);
+  return {
+    secret,
+    uri: buildAuthenticatorUri({
+      appName: process.env.EMAIL_APP_NAME || "SeddleUp",
+      email: user.email,
+      secret
+    })
+  };
+}
+
 export async function enableAuthenticator(userId: string, code: string) {
   const user = await prisma.user.findUnique({
     where: { id: userId },

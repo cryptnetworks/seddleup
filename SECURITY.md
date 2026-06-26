@@ -27,8 +27,10 @@ Maintainers will acknowledge valid reports, investigate, and coordinate a fix be
 ## Security Model Summary
 
 - Provider OAuth access and refresh tokens are not stored.
-- OAuth app-login handoff tokens are short-lived, single-use, and stored in HTTP-only cookies.
-- Password reset, email verification, MFA session handoff, and OAuth handoff tokens are stored only as HMAC-SHA-256 digests keyed by `TOKEN_DIGEST_SECRET`.
+- OAuth login callbacks create the NextAuth session server-side after provider
+  state, PKCE, profile, account, and registration checks pass.
+- Password reset, email verification, and MFA session handoff tokens are stored
+  only as HMAC-SHA-256 digests keyed by `TOKEN_DIGEST_SECRET`.
 - Protected server access validates the current session user against the database.
 - Disabled or deleted users lose access on the next protected server request.
 - State-changing requests include same-origin CSRF checks.

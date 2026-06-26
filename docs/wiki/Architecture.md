@@ -5,7 +5,8 @@
 - Next.js App Router
 - React and TypeScript
 - Prisma ORM
-- SQLite in Docker by default
+- SQLite only; Postgres is not supported until a future schema and migration plan
+  explicitly adds it
 - NextAuth credentials sessions
 - Docker startup entrypoint for validation and migrations
 
@@ -41,7 +42,6 @@ Main entities:
 - `TwoFactorChallenge`
 - `UserAuthAccount`
 - `AuthProviderConfig`
-- `OAuthLoginToken`
 - `AuditLog`
 
 ## Core Application Areas

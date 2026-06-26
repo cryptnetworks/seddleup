@@ -14,6 +14,10 @@ TOKEN_DIGEST_SECRET=generate-a-long-random-secret
 AUTH_CONFIG_ENCRYPTION_KEY=generate-a-long-random-secret
 ```
 
+SeddleUp currently supports SQLite only. `DATABASE_URL` must use a `file:` URL.
+Postgres URLs are rejected until a future schema and migration plan explicitly
+adds Postgres support.
+
 `AUTH_URL` should also match the public URL when deployed behind a proxy:
 
 ```env
@@ -34,7 +38,10 @@ openssl rand -base64 32
 - `TOKEN_DIGEST_SECRET` keys stored one-time token digests.
 - `AUTH_CONFIG_ENCRYPTION_KEY` encrypts saved OAuth provider client secrets.
 
-Changing `TOKEN_DIGEST_SECRET` invalidates outstanding password reset, email verification, MFA session handoff, and OAuth handoff tokens. Back up `AUTH_CONFIG_ENCRYPTION_KEY`. Losing it prevents decrypting stored provider secrets.
+Changing `TOKEN_DIGEST_SECRET` invalidates outstanding password reset, email
+verification, and MFA session handoff tokens. Back up
+`AUTH_CONFIG_ENCRYPTION_KEY`. Losing it prevents decrypting stored provider
+secrets.
 
 ## Public URL Values
 
