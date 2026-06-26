@@ -38,6 +38,7 @@ jobs:
       NEXTAUTH_URL: http://localhost:3000
       NEXTAUTH_SECRET: ci-secret-that-is-long-enough-for-tests
       TOKEN_DIGEST_SECRET: ci-token-digest-secret-for-tests
+      AUTH_CONFIG_ENCRYPTION_KEY: ci-auth-config-encryption-key-for-tests
       SMTP_ENABLED: "false"
       PASSWORD_RESET_TOKEN_MINUTES: "45"
     steps:
@@ -47,7 +48,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v6
         with:
-          node-version: 22
+          node-version: 24.18.0
           cache: npm
 
       - name: Install dependencies
@@ -64,6 +65,9 @@ jobs:
 
       - name: Apply migrations
         run: npx prisma migrate deploy
+
+      - name: Format check
+        run: npm run format:check
 
       - name: Lint
         run: npm run lint

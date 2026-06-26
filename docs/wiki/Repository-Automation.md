@@ -4,13 +4,17 @@ SeddleUp includes GitHub automation for validation, Docker images, dependency up
 
 ## CI
 
-The CI workflow runs on pushes and pull requests. It installs dependencies, validates configuration, validates Prisma, runs formatting checks, lint, TypeScript, unit/integration tests, e2e tests, and a production build.
+The CI workflow runs on pushes and pull requests. It installs dependencies,
+validates configuration, validates Prisma, applies migrations, runs formatting
+checks, lint, TypeScript, unit/integration tests, Chromium and Mobile Safari E2E
+smoke tests, and a production build.
 
 Local equivalent:
 
 ```bash
 npm run validate:config
 npx prisma validate
+npx prisma migrate deploy
 npm run format:check
 npm run lint
 npm run typecheck
@@ -19,11 +23,43 @@ npm run test:e2e
 npm run build
 ```
 
+If host Node/npm is unavailable but Docker works, use a throwaway Node container
+for the core validation path:
+
+```bash
+docker build -t seddleup:local-check -f - . <<'EOF'
+FROM node:24.18.0-alpine
+WORKDIR /app
+ENV NODE_ENV=test
+ENV DATABASE_URL=file:/tmp/seddleup-local-check.db
+ENV NEXTAUTH_URL=http://localhost:3000
+ENV PUBLIC_APP_URL=http://localhost:3000
+ENV NEXTAUTH_SECRET=local-nextauth-secret-that-is-long-enough
+ENV TOKEN_DIGEST_SECRET=local-token-digest-secret-that-is-long-enough
+ENV AUTH_CONFIG_ENCRYPTION_KEY=local-auth-config-key-that-is-long-enough
+ENV SMTP_ENABLED=false
+ENV PASSWORD_RESET_TOKEN_MINUTES=45
+ENV TEST_OAUTH_PROVIDER_ENABLED=true
+RUN apk add --no-cache openssl
+COPY package.json package-lock.json ./
+RUN npm ci --no-audit --no-fund --loglevel=error
+COPY . .
+RUN npm run validate:config
+RUN npx prisma validate
+RUN npx prisma migrate deploy
+RUN npm run format:check
+RUN npm run lint
+RUN npm run typecheck
+RUN npm test
+RUN npm run build
+EOF
+```
+
 ## Docker Image Publishing
 
-The Docker workflow builds the app image and publishes to GitHub Container Registry from `main` and tags. Images are tagged by branch, SHA, and `latest` where applicable.
-
-The repository README and wiki currently pin the published image by digest for reproducible deployments.
+The Docker workflow builds the app image on Docker-relevant pull requests and
+publishes to GitHub Container Registry from `main` and tags. Images are tagged
+by branch, SHA, and `latest` where applicable.
 
 ## Security Workflow
 
@@ -51,10 +87,18 @@ Dependabot checks:
 
 Minor and patch updates are grouped where practical. Security updates should be reviewed promptly and tested through CI before merge.
 
-Current major-version deferrals:
+Current major-version deferrals and update plan:
 
-- ESLint 10 is ignored until `eslint-config-next` and its bundled React/import/accessibility plugins publish compatible peer ranges.
-- Node 26 Docker image updates are ignored while Node 26 is a Current release. Production Docker images stay on Node 22 Alpine LTS until the runtime stack has clean support.
+- ESLint 10 is ignored until `eslint-config-next` and its bundled
+  React/import/accessibility plugins publish compatible peer ranges. Test this
+  in its own PR with lint, typecheck, unit tests, E2E smoke, and production
+  build.
+- Node 26 Docker image updates are ignored while Node 26 is a Current release.
+  Production Docker images stay on Node 24.18.0 Alpine LTS until the Next.js,
+  Prisma, better-sqlite3, and Playwright stack has clean support. Test runtime
+  image startup, migrations, Discord command registration, and E2E separately.
+- `@types/node` 26 should wait until the runtime target moves beyond Node 24, so
+  type definitions do not get ahead of deployed APIs.
 
 SeddleUp sends SMTP mail through EmailJS. Do not reintroduce a direct Nodemailer dependency unless NextAuth and the app email layer are reviewed together for peer compatibility.
 

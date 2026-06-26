@@ -339,9 +339,8 @@ context.
 
 ## Local Development
 
-Use Node.js 22. The Docker image remains pinned to the Node 22 Alpine LTS line
-until Node 26 leaves Current status and the Next.js/Prisma/native-module stack
-has clean support for it.
+Use Node.js 24.18.0 LTS with its bundled npm 11.16.0. The Docker image is
+pinned to the matching `node:24.18.0-alpine` release for reproducible builds.
 
 ```bash
 npm install
@@ -356,6 +355,9 @@ Open `http://localhost:3000`.
 ## Testing And Quality Checks
 
 ```bash
+npm run validate:config
+npx prisma validate
+npx prisma migrate deploy
 npm run format:check
 npm run lint
 npm run typecheck
@@ -364,6 +366,38 @@ npm run test:e2e
 npm run build
 npm run security:audit
 docker build -t seddleup:ci .
+```
+
+If host Node/npm is unavailable but Docker works, run the same validation in a
+throwaway Node container:
+
+```bash
+docker build -t seddleup:local-check -f - . <<'EOF'
+FROM node:24.18.0-alpine
+WORKDIR /app
+ENV NODE_ENV=test
+ENV DATABASE_URL=file:/tmp/seddleup-local-check.db
+ENV NEXTAUTH_URL=http://localhost:3000
+ENV PUBLIC_APP_URL=http://localhost:3000
+ENV NEXTAUTH_SECRET=local-nextauth-secret-that-is-long-enough
+ENV TOKEN_DIGEST_SECRET=local-token-digest-secret-that-is-long-enough
+ENV AUTH_CONFIG_ENCRYPTION_KEY=local-auth-config-key-that-is-long-enough
+ENV SMTP_ENABLED=false
+ENV PASSWORD_RESET_TOKEN_MINUTES=45
+ENV TEST_OAUTH_PROVIDER_ENABLED=true
+RUN apk add --no-cache openssl
+COPY package.json package-lock.json ./
+RUN npm ci --no-audit --no-fund --loglevel=error
+COPY . .
+RUN npm run validate:config
+RUN npx prisma validate
+RUN npx prisma migrate deploy
+RUN npm run format:check
+RUN npm run lint
+RUN npm run typecheck
+RUN npm test
+RUN npm run build
+EOF
 ```
 
 End-to-end tests use Playwright:
@@ -390,14 +424,26 @@ expense flow.
 
 ## Repository Automation
 
-GitHub Actions provide CI, Docker image publishing, dependency review, security scanning, and release creation. Dependabot checks npm packages, GitHub Actions, and Docker base images weekly.
+GitHub Actions provide CI, Docker image publishing, dependency review, security
+scanning, and release creation. CI runs config validation, Prisma validation and
+migrations, formatting, lint, typecheck, unit/integration tests, Chromium and
+Mobile Safari E2E smoke coverage, and a production build. The Docker Image
+workflow builds the production image on Docker-relevant pull requests and
+publishes multi-platform images from `main` and version tags.
 
-The security workflow runs high-severity npm audit, Trivy filesystem scanning, and Trivy Docker image scanning. CodeQL is expected to run through GitHub default setup in repository settings.
+Dependabot checks npm packages, GitHub Actions, and Docker base images weekly.
 
-Current dependency remediation replaces Nodemailer with EmailJS for direct SMTP sending and uses scoped npm overrides for vulnerable transitive packages that upstream dependencies have not yet bumped.
-Major ESLint and Docker Node runtime updates are intentionally deferred until
-their peer dependency/runtime support is clean; minor and patch dependency
-updates remain grouped for routine review.
+The security workflow runs high-severity npm audit, Trivy filesystem scanning,
+and Trivy Docker image scanning. CodeQL is expected to run through GitHub default
+setup in repository settings.
+
+Current dependency remediation replaces Nodemailer with EmailJS for direct SMTP
+sending and uses scoped npm overrides for vulnerable transitive packages that
+upstream dependencies have not yet bumped. Patch and minor dependency updates
+are safe to take first when validation is green. Major updates should remain
+phased: ESLint 10 after Next.js/plugin peer compatibility is proven, and Node
+26 only after it becomes LTS and the Next.js/Prisma/native-module stack supports
+it cleanly.
 
 ## Backups
 
