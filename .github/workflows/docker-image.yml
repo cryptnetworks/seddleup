@@ -74,7 +74,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v4
@@ -130,7 +130,7 @@ jobs:
 
       - name: Upload image digest
         if: github.event_name != 'pull_request'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: digest-${{ matrix.artifact }}
           path: /tmp/digests/${{ matrix.artifact }}
@@ -139,7 +139,7 @@ jobs:
 
       - name: Upload manifest digest
         if: github.event_name != 'pull_request' && matrix.manifest
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: digest-manifest-${{ matrix.artifact }}
           path: /tmp/digests/${{ matrix.artifact }}
@@ -154,7 +154,7 @@ jobs:
 
     steps:
       - name: Download image digests
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           path: /tmp/digests
           pattern: digest-manifest-*
