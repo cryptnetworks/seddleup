@@ -369,13 +369,9 @@ export async function startAuthenticatorSetup() {
     where: { id: sessionUser.id },
     select: { id: true, email: true }
   });
-  const setup = await createAuthenticatorSetup(user);
-  const params = new URLSearchParams({
-    authenticatorSecret: setup.secret,
-    authenticatorUri: setup.uri
-  });
+  await createAuthenticatorSetup(user);
 
-  redirect(`/account?${params.toString()}`);
+  redirect("/account?twoFactor=authenticator-setup");
 }
 
 export async function verifyAuthenticatorSetup(formData: FormData) {
