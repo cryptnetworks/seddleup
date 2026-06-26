@@ -45,5 +45,6 @@ The repository security workflow runs high-severity npm audit, Trivy filesystem 
 Dependabot major updates are reviewed before adoption. ESLint 10 is deferred
 until the Next.js ESLint plugin chain advertises compatible peer ranges, and
 Node 26 Docker images are deferred while that release is Current rather than
-LTS for this stack. The app uses EmailJS for SMTP delivery and does not keep a
-direct Nodemailer dependency.
+LTS for this stack. The app uses Node.js 24.18.0 LTS with bundled npm 11.16.0,
+uses EmailJS for SMTP delivery, and does not keep a direct Nodemailer
+dependency.

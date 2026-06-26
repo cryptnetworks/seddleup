@@ -2,7 +2,8 @@
 
 ## Setup
 
-Use Node.js 22.
+Use Node.js 24.18.0 LTS. The bundled npm 11.16.0 version is supported; do not
+pin a newer npm unless the reason is documented.
 
 ```bash
 npm install
