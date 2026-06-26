@@ -286,7 +286,9 @@ the command registration helper when bot credentials are available:
 npm run discord:register
 ```
 
-With Docker Compose, use the optional `discord` profile to register commands:
+The production Docker image intentionally does not include `npm`. With Docker
+Compose, use the optional `discord` profile to register commands through the
+image's Node runtime:
 
 ```bash
 docker compose --profile discord run --rm discord-commands
