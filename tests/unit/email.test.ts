@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import { afterEach, describe, expect, it } from "vitest";
 import {
   buildInvitationEmail,
@@ -7,6 +8,7 @@ import {
 } from "@/lib/email";
 
 const staleBrandPattern = /TripTally|triptally|trip-tally|Trip Tally|TRIPTALLY/;
+const logoSvg = readFileSync("public/logo.svg", "utf8");
 
 function expectSeddleUpBranding(message: { subject: string; text: string; html: string }) {
   expect(message.subject).toContain("SeddleUp");
@@ -46,6 +48,21 @@ describe("SeddleUp emails", () => {
     expect(message.html).toContain('alt="SeddleUp"');
     expect(message.html).toContain(">Reset password</a>");
     expectSeddleUpBranding(message);
+  });
+
+  it("uses the checked-in SeddleUp logo palette and tagline in email templates", () => {
+    const message = buildPasswordResetEmail({
+      to: "person@example.com",
+      resetUrl: "https://app.seddleup.com/reset-password?token=abc",
+      expiresInMinutes: 45
+    });
+
+    for (const color of ["#2563EB", "#0F172A", "#64748B"]) {
+      expect(logoSvg).toContain(color);
+      expect(message.html).toContain(color);
+    }
+    expect(logoSvg).toContain("Travel together. Settle up easily.");
+    expect(message.html).toContain("Travel together. Settle up easily.");
   });
 
   it("builds a SeddleUp verification email", () => {
@@ -104,5 +121,19 @@ describe("SeddleUp emails", () => {
     expect(message.html).not.toContain("<img");
     expect(message.html).toContain("<strong");
     expect(message.html).toContain("SeddleUp");
+  });
+
+  it("falls back to SeddleUp when a stale legacy email app name is configured", () => {
+    process.env.EMAIL_APP_NAME = "TripTally";
+
+    const message = buildTwoFactorEmail({
+      to: "person@example.com",
+      code: "123456",
+      expiresInMinutes: 10
+    });
+
+    expect(message.subject).toBe("SeddleUp sign-in code");
+    expect(message.text).toContain("Your SeddleUp sign-in code is 123456.");
+    expectSeddleUpBranding(message);
   });
 });
