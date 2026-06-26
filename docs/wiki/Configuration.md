@@ -14,6 +14,10 @@ TOKEN_DIGEST_SECRET=generate-a-long-random-secret
 AUTH_CONFIG_ENCRYPTION_KEY=generate-a-long-random-secret
 ```
 
+SeddleUp currently supports SQLite only. `DATABASE_URL` must use a `file:` URL.
+Postgres URLs are rejected until a future schema and migration plan explicitly
+adds Postgres support.
+
 `AUTH_URL` should also match the public URL when deployed behind a proxy:
 
 ```env

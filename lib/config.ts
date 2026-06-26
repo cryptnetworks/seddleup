@@ -12,11 +12,8 @@ export const appConfigSchema = z
       .string()
       .min(1)
       .refine(
-        (value) =>
-          value.startsWith("file:") ||
-          value.startsWith("postgres://") ||
-          value.startsWith("postgresql://"),
-        "DATABASE_URL must use file:, postgres://, or postgresql://."
+        (value) => value.startsWith("file:"),
+        "DATABASE_URL must use file:. SQLite is the only supported database engine."
       ),
     nextAuthUrl: z.url(),
     tokenDigestSecret: z.string().min(24),
