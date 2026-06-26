@@ -74,8 +74,8 @@ PUBLIC_APP_URL=https://app.example.com
 ```
 
 `TOKEN_DIGEST_SECRET` keys one-time token digests for invitations, password
-reset, email verification, MFA session handoff, and OAuth login handoff tokens.
-Changing it invalidates outstanding one-time tokens safely. `AUTH_CONFIG_ENCRYPTION_KEY`
+reset, email verification, and MFA session handoff tokens. Changing it
+invalidates outstanding one-time tokens safely. `AUTH_CONFIG_ENCRYPTION_KEY`
 encrypts stored OAuth provider secrets. Keep it backed up; losing it prevents
 decrypting saved provider secrets.
 
@@ -458,8 +458,8 @@ The startup entrypoint applies database migrations automatically.
 - Sessions use NextAuth JWT cookies.
 - Production cookies are secure and HTTP-only where applicable.
 - State-changing requests include same-origin CSRF checks.
-- OAuth app-login handoff tokens are short-lived, single-use, and stored in an
-  HTTP-only cookie.
+- OAuth login callbacks create the NextAuth session server-side after provider
+  state, PKCE, profile, account, and registration checks pass.
 - Receipt files are stored outside the public asset tree and require trip
   membership for download.
 - Payment methods store only external handles or links, never credentials.

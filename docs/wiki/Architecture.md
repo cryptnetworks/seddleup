@@ -41,7 +41,6 @@ Main entities:
 - `TwoFactorChallenge`
 - `UserAuthAccount`
 - `AuthProviderConfig`
-- `OAuthLoginToken`
 - `AuditLog`
 
 ## Core Application Areas

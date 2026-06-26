@@ -34,7 +34,10 @@ openssl rand -base64 32
 - `TOKEN_DIGEST_SECRET` keys stored one-time token digests.
 - `AUTH_CONFIG_ENCRYPTION_KEY` encrypts saved OAuth provider client secrets.
 
-Changing `TOKEN_DIGEST_SECRET` invalidates outstanding password reset, email verification, MFA session handoff, and OAuth handoff tokens. Back up `AUTH_CONFIG_ENCRYPTION_KEY`. Losing it prevents decrypting stored provider secrets.
+Changing `TOKEN_DIGEST_SECRET` invalidates outstanding password reset, email
+verification, and MFA session handoff tokens. Back up
+`AUTH_CONFIG_ENCRYPTION_KEY`. Losing it prevents decrypting stored provider
+secrets.
 
 ## Public URL Values
 

@@ -16,9 +16,10 @@
 ## OAuth
 
 - Provider access tokens and refresh tokens are not stored.
-- OAuth login uses a local short-lived, single-use handoff token.
-- The handoff token is stored in an HTTP-only cookie and consumed by the credentials provider.
-- Password reset, email verification, MFA session handoff, and OAuth handoff tokens are stored only as HMAC-SHA-256 digests keyed by `TOKEN_DIGEST_SECRET`.
+- OAuth callback creates the NextAuth session server-side after provider state,
+  PKCE, profile, account, and registration checks pass.
+- Password reset, email verification, and MFA session handoff tokens are stored
+  only as HMAC-SHA-256 digests keyed by `TOKEN_DIGEST_SECRET`.
 - OAuth account linking requires a current app session.
 
 ## CSRF

@@ -36,7 +36,6 @@ model User {
   invitationsAccepted          Invitation[]             @relation("InvitationAcceptedBy")
   twoFactorChallenges          TwoFactorChallenge[]
   authAccounts                 UserAuthAccount[]
-  oauthLoginTokens             OAuthLoginToken[]
   auditLogs                    AuditLog[]               @relation("AuditActor")
 
   @@index([role])
@@ -71,20 +70,6 @@ model AuthProviderConfig {
   updatedAt             DateTime @updatedAt
 
   @@map("auth_provider_configs")
-}
-
-model OAuthLoginToken {
-  id        String    @id @default(cuid())
-  tokenHash String    @unique
-  expiresAt DateTime
-  usedAt    DateTime?
-  createdAt DateTime  @default(now())
-  userId    String
-  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([userId])
-  @@index([expiresAt])
-  @@map("oauth_login_tokens")
 }
 
 model AuditLog {

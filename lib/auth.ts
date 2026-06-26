@@ -1,10 +1,8 @@
 import type { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import * as bcrypt from "bcryptjs";
-import { OAUTH_LOGIN_COOKIE, readCookieValue } from "@/lib/cookies";
 import { logger } from "@/lib/logger";
 import { consumeSessionLoginToken } from "@/lib/login-token";
-import { consumeOAuthLoginToken } from "@/lib/oauth-login";
 import { prisma } from "@/lib/prisma";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { getAuthSettings } from "@/lib/settings";
@@ -80,16 +78,14 @@ export const authOptions: NextAuthOptions = {
         email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" },
         twoFactorCode: { label: "Verification code", type: "text" },
-        loginToken: { label: "Login token", type: "text" },
-        oauthLoginToken: { label: "OAuth login token", type: "text" }
+        loginToken: { label: "Login token", type: "text" }
       },
-      async authorize(credentials, request) {
+      async authorize(credentials) {
         const parsed = loginSchema.safeParse({
           email: credentials?.email,
           password: credentials?.password,
           twoFactorCode: credentials?.twoFactorCode,
-          loginToken: credentials?.loginToken,
-          oauthLoginToken: credentials?.oauthLoginToken
+          loginToken: credentials?.loginToken
         });
 
         if (!parsed.success) {
@@ -97,7 +93,7 @@ export const authOptions: NextAuthOptions = {
           return null;
         }
 
-        const { email, password, twoFactorCode, loginToken, oauthLoginToken } = parsed.data;
+        const { email, password, twoFactorCode, loginToken } = parsed.data;
 
         if (loginToken) {
           const loginUser = await consumeSessionLoginToken(loginToken);
@@ -116,38 +112,6 @@ export const authOptions: NextAuthOptions = {
             id: loginUser.id,
             name: loginUser.username,
             email: loginUser.email
-          };
-        }
-
-        if (oauthLoginToken) {
-          const requestHeaders = request?.headers as
-            | Headers
-            | Record<string, string | undefined>
-            | undefined;
-          const cookieHeader =
-            requestHeaders instanceof Headers
-              ? requestHeaders.get("cookie")
-              : requestHeaders?.cookie;
-          const token =
-            oauthLoginToken === "cookie"
-              ? readCookieValue(cookieHeader, OAUTH_LOGIN_COOKIE)
-              : oauthLoginToken;
-          const oauthUser = token ? await consumeOAuthLoginToken(token) : null;
-          if (!oauthUser || oauthUser.disabledAt) {
-            logger.warn("auth.oauth_login_token.invalid");
-            return null;
-          }
-
-          await prisma.user.update({
-            where: { id: oauthUser.id },
-            data: { lastLoginAt: new Date() }
-          });
-
-          logger.info("auth.oauth_login.success", { userId: oauthUser.id });
-          return {
-            id: oauthUser.id,
-            name: oauthUser.username,
-            email: oauthUser.email
           };
         }
 
