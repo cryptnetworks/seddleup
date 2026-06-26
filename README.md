@@ -65,6 +65,10 @@ ITEM_LOOKUP_ENABLED=false
 ITEM_LOOKUP_PROVIDER=mock
 ```
 
+SeddleUp currently supports SQLite only. `DATABASE_URL` must use a `file:` URL;
+Postgres URLs are rejected until a future schema and migration plan explicitly
+adds Postgres support.
+
 For a public deployment, use the public HTTPS URL everywhere:
 
 ```env
@@ -98,6 +102,7 @@ Open `http://localhost:3000`.
 The container starts as a non-root user, validates configuration, generates Prisma
 Client, applies Prisma migrations, and then starts the Next.js production server.
 SQLite data is stored in `/app/data`, so mount a persistent volume there.
+Postgres is not currently supported by the Prisma schema or migrations.
 
 Healthcheck:
 
@@ -115,7 +120,9 @@ docker compose pull seddleup
 docker compose up -d seddleup
 ```
 
-Compose mounts `seddleup_data` at `/app/data`.
+Compose mounts `seddleup_data` at `/app/data` and sets `SEDDLEUP_SQLITE_PATH`
+so a relative local `DATABASE_URL` cannot accidentally put SQLite data outside
+the persistent Docker volume.
 
 Existing deployments that used the old `triptally_data` volume should back up
 the old volume before switching names. On startup, SeddleUp migrates

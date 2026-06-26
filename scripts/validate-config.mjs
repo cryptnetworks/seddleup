@@ -74,12 +74,8 @@ if (!databaseUrl) {
   fail("DATABASE_URL is required.");
 }
 
-if (
-  !databaseUrl.startsWith("file:") &&
-  !databaseUrl.startsWith("postgres://") &&
-  !databaseUrl.startsWith("postgresql://")
-) {
-  fail("DATABASE_URL must start with file:, postgres://, or postgresql://.");
+if (!databaseUrl.startsWith("file:")) {
+  fail("DATABASE_URL must start with file:. SQLite is the only supported database engine.");
 }
 
 if (!nextAuthUrl) {

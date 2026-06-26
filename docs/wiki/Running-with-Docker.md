@@ -34,6 +34,10 @@ AUTH_CONFIG_ENCRYPTION_KEY=paste-generated-secret-here
 SMTP_ENABLED=false
 ```
 
+SeddleUp currently supports SQLite only. `DATABASE_URL` must use a `file:` URL.
+Postgres URLs are rejected until a future schema and migration plan explicitly
+adds Postgres support.
+
 ## Run a Single Container
 
 ```bash
