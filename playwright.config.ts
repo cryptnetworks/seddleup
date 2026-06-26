@@ -3,8 +3,7 @@ import path from "node:path";
 
 const baseURL = process.env.PLAYWRIGHT_BASE_URL ?? "http://127.0.0.1:3000";
 const databaseUrl = process.env.DATABASE_URL ?? `file:${path.resolve("prisma/playwright.db")}`;
-const nextAuthSecret =
-  process.env.NEXTAUTH_SECRET ?? "playwright-nextauth-secret-for-tests";
+const nextAuthSecret = process.env.NEXTAUTH_SECRET ?? "playwright-nextauth-secret-for-tests";
 const tokenDigestSecret = process.env.TOKEN_DIGEST_SECRET ?? "playwright-token-digest-secret";
 const authConfigEncryptionKey =
   process.env.AUTH_CONFIG_ENCRYPTION_KEY ?? "playwright-auth-config-key-for-tests";
