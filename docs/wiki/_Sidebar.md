@@ -9,6 +9,7 @@
 - [Email and MFA](Email-and-MFA)
 - [Backups and Updates](Backups-and-Updates)
 - [Security Model](Security-Model)
+- [Screenshots](Screenshots)
 - [Repository Automation](Repository-Automation)
 - [Architecture](Architecture)
 - [Contributing](Contributing)

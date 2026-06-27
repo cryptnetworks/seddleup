@@ -52,6 +52,16 @@ docker run --name seddleup \
 
 Open `http://localhost:3000`.
 
+After creating the first account and trip, a healthy install should render the
+application shell, dashboard cards, trip summaries, and settlement queue like
+this:
+
+![SeddleUp dashboard after a successful install](https://raw.githubusercontent.com/cryptnetworks/seddleup/main/docs/assets/screenshots/seddleup-dashboard.png)
+
+If the page loads without styling, logos, or navigation, check the public URL
+values in [Configuration](Configuration) and confirm the reverse proxy is
+forwarding static asset requests.
+
 ## Healthcheck
 
 ```bash

@@ -14,6 +14,7 @@ This wiki is the operational and contributor documentation for the project.
 - [Email and MFA](Email-and-MFA)
 - [Backups and Updates](Backups-and-Updates)
 - [Security Model](Security-Model)
+- [Screenshots](Screenshots)
 - [Repository Automation](Repository-Automation)
 - [Architecture](Architecture)
 - [Contributing](Contributing)
@@ -38,6 +39,14 @@ docker pull ghcr.io/cryptnetworks/seddleup:latest
 - Docker healthcheck at `/api/health`
 - SQLite persistence in the Docker volume at `/app/data`
 - CI, Docker image publishing, dependency review, Dependabot, and security scan automation
+
+## Application Preview
+
+The dashboard and trip ledger are the quickest way to understand the shape of the app once it is configured.
+
+![SeddleUp dashboard showing trip summaries, status mix, and settlement queue](https://raw.githubusercontent.com/cryptnetworks/seddleup/main/docs/assets/screenshots/seddleup-dashboard.png)
+
+See the full [Screenshots](Screenshots) gallery for the trip ledger, expense entry, and account/payment handle views.
 
 ---
 

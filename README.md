@@ -27,6 +27,18 @@ the balance, and the simplest reimbursement suggestions for settling up.
   log controls.
 - Includes an optional Discord interactions endpoint for linked users.
 
+## Screenshots
+
+The dashboard shows the core trip, expense, review, and settlement flow at a glance.
+
+![SeddleUp dashboard with trip summaries and settlement queue](docs/assets/screenshots/seddleup-dashboard.png)
+
+Trip detail pages keep participants, expense history, balances, settlement suggestions, and activity in one ledger view.
+
+![SeddleUp trip detail ledger with balances and expenses](docs/assets/screenshots/seddleup-trip-detail.png)
+
+More screenshots are available in the [Screenshots wiki page](https://github.com/cryptnetworks/seddleup/wiki/Screenshots).
+
 ## How The App Works
 
 1. A user creates a trip and becomes the trip owner.

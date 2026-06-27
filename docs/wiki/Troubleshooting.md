@@ -77,6 +77,15 @@ curl http://localhost:3000/api/health
 
 The `/api/health` endpoint checks database connectivity.
 
+## Styling, Logo, Or Navigation Looks Broken
+
+Compare the running app with the [Screenshots](Screenshots) gallery. If the
+layout is unstyled or image assets are missing, check:
+
+- `PUBLIC_APP_URL`, `NEXTAUTH_URL`, and `AUTH_URL` match the public address.
+- The reverse proxy forwards normal app requests and static asset paths.
+- Browser dev tools do not show 404s for `/_next/static/*`, icons, or images.
+
 ---
 
 [Wiki Home](Home) | [Running with Docker](Running-with-Docker) | [Configuration](Configuration) | [Troubleshooting](Troubleshooting)
