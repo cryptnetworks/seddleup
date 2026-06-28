@@ -351,7 +351,8 @@ export async function setTwoFactorMethod(formData: FormData) {
     }
   });
 
-  if (method === "email" && dbUser.twoFactorMethod !== "email" && !emailDeliveryAvailable()) {
+  const enablingEmailMfa = method === "email" && dbUser.twoFactorMethod !== "email";
+  if (enablingEmailMfa && !emailDeliveryAvailable()) {
     logger.warn("account.two_factor.email_unavailable", { userId: user.id });
     redirect("/account?twoFactor=email-unavailable");
   }

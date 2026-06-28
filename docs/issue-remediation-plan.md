@@ -1,16 +1,15 @@
 # SeddleUp Issue Remediation Plan
 
-Generated: 2026-06-28
+Last audited: June 28, 2026
 
 Source: open GitHub issues in `cryptnetworks/seddleup`, issues #59 through #81.
 No GitHub issues or labels were modified during this audit.
 
-## Label Taxonomy Recommendation
+## Label Cleanup
 
 The repository currently uses labels such as `type:bug`, `priority:p0`,
-`area:auth`, `status:ready`, and `risk:high`. To match the requested taxonomy,
-future triage should add standardized labels while keeping existing labels until
-automation and saved views are migrated.
+`area:auth`, `status:ready`, and `risk:high`. New triage can add the requested
+labels alongside the current set, then migrate saved views and automation later.
 
 - Type: `bug`, `enhancement`, `feature`, `documentation`, `security`,
   `testing`, `technical-debt`, `infrastructure`, `performance`, `ui-ux`
@@ -29,9 +28,12 @@ Priority mapping for existing labels:
 - `priority:p2` -> `priority:medium`
 - `priority:p3` -> `priority:low`
 
-## Complete Issue Inventory
+## Issue Inventory
 
-### #59 - MFA: Prevent Email MFA Lockout When SMTP Is Unavailable
+Each entry lists the current labels and the labels still missing from the
+requested taxonomy.
+
+### #59 - MFA: prevent email MFA lockout when SMTP is unavailable
 
 - Category: Bug, Security
 - Priority: Critical
@@ -43,7 +45,7 @@ Priority mapping for existing labels:
 - Dependencies and notes: first implementation candidate. Related to #75 but
   not blocked by it. Main risk is auth lockout or authenticator MFA regression.
 
-### #60 - Testing: Add Enabled Receipt Upload And Review E2E Coverage
+### #60 - Testing: add enabled receipt upload and review E2E coverage
 
 - Category: Testing
 - Priority: High
@@ -55,7 +57,7 @@ Priority mapping for existing labels:
 - Dependencies and notes: should follow core release blockers. Depends on stable
   receipt upload fixtures and test environment setup.
 
-### #61 - CI: Add Docker Build And Runtime Migration Probes
+### #61 - CI: add Docker build and runtime migration probes
 
 - Category: Infrastructure, Testing
 - Priority: High
@@ -67,7 +69,7 @@ Priority mapping for existing labels:
 - Dependencies and notes: enables stronger validation for #62, #74, #80, and
   #81. Main risk is CI runtime and cost.
 
-### #62 - Docker: Add Profile Smoke Tests For Discord, Nginx, And Cloudflare
+### #62 - Docker: add profile smoke tests for Discord, nginx, and Cloudflare
 
 - Category: Infrastructure, Testing
 - Priority: Medium
@@ -79,7 +81,7 @@ Priority mapping for existing labels:
 - Dependencies and notes: can build on #61. External-service profiles must stay
   credential-free in CI.
 
-### #63 - Security: Add Shared-Store Rate Limiting For Multi-Replica Deployments
+### #63 - Security: add shared-store rate limiting for multi-replica deployments
 
 - Category: Security, Enhancement, Infrastructure
 - Priority: Medium
@@ -91,7 +93,7 @@ Priority mapping for existing labels:
 - Dependencies and notes: split if implementation selects a new store
   dependency. Preserve the in-memory default.
 
-### #64 - Mobile: Track WebKit Turbopack ChunkLoadError Warnings
+### #64 - Mobile: track WebKit Turbopack ChunkLoadError warnings
 
 - Category: Bug, Testing, UX/UI
 - Priority: Medium
@@ -103,7 +105,7 @@ Priority mapping for existing labels:
 - Dependencies and notes: needs reproduction before code. Complements #74. Not
   stale, but intentionally observational.
 
-### #65 - Database: Design Postgres Support Before Accepting Postgres URLs
+### #65 - Database: design Postgres support before accepting Postgres URLs
 
 - Category: Feature, Enhancement, Technical Debt
 - Priority: Low
@@ -115,7 +117,7 @@ Priority mapping for existing labels:
 - Dependencies and notes: should be design-only first. Split design from
   implementation and migration work.
 
-### #66 - Dependencies: Plan ESLint 10 And Node 26 Upgrade Windows
+### #66 - Dependencies: plan ESLint 10 and Node 26 upgrade windows
 
 - Category: Technical Debt, Infrastructure
 - Priority: Low
@@ -127,7 +129,7 @@ Priority mapping for existing labels:
 - Dependencies and notes: blocked on upstream compatibility and Node 26 LTS
   timing. Do not implement yet.
 
-### #67 - Docs: Add Production Deployment Checklist
+### #67 - Docs: add production deployment checklist
 
 - Category: Documentation, Infrastructure
 - Priority: Medium
@@ -139,7 +141,7 @@ Priority mapping for existing labels:
 - Dependencies and notes: related to #68 and #76. Low code risk; avoid
   duplicating existing docs.
 
-### #68 - Docs: Add Release Checklist
+### #68 - Docs: add release checklist
 
 - Category: Documentation, Infrastructure
 - Priority: Medium
@@ -151,7 +153,7 @@ Priority mapping for existing labels:
 - Dependencies and notes: pairs naturally with #67 but should remain a separate
   PR.
 
-### #69 - Branding: Plan Safe Migration For Deferred TripTally Compatibility Names
+### #69 - Branding: plan safe migration for deferred TripTally compatibility names
 
 - Category: Documentation, Technical Debt
 - Priority: Low
@@ -164,7 +166,7 @@ Priority mapping for existing labels:
 - Dependencies and notes: related to #80. Planning only unless a migration
   proposal is accepted.
 
-### #70 - MFA: Add Browser-Level Regression For Setup Secrets Not Appearing In URLs
+### #70 - MFA: add browser-level regression for setup secrets not appearing in URLs
 
 - Category: Security, Testing
 - Priority: Medium
@@ -176,7 +178,7 @@ Priority mapping for existing labels:
 - Dependencies and notes: defense-in-depth coverage for a landed fix. Related
   to #77.
 
-### #71 - SSO: Document Server-Side OAuth Session Callback Flow
+### #71 - SSO: document server-side OAuth session callback flow
 
 - Category: Documentation, Testing
 - Priority: Medium
@@ -188,7 +190,7 @@ Priority mapping for existing labels:
 - Dependencies and notes: documentation-only unless comments or tests reveal
   drift.
 
-### #72 - Email: Add Template Snapshot Coverage For SeddleUp Branding
+### #72 - Email: add template snapshot coverage for SeddleUp branding
 
 - Category: Testing, UX/UI
 - Priority: Medium
@@ -199,7 +201,7 @@ Priority mapping for existing labels:
   `size:s`, `ready`, `backend`
 - Dependencies and notes: focus on structural assertions, not brittle snapshots.
 
-### #73 - Refactor: Publish Maintainability Cleanup Summary And Remaining Debt
+### #73 - Refactor: publish maintainability cleanup summary and remaining debt
 
 - Category: Documentation, Technical Debt
 - Priority: Medium
@@ -210,7 +212,7 @@ Priority mapping for existing labels:
   `priority:medium`, `size:xs`, `ready`, `docs`
 - Dependencies and notes: low-risk docs gap. Could be a quick standalone PR.
 
-### #74 - Testing: Add Production-Server E2E Mode
+### #74 - Testing: add production-server E2E mode
 
 - Category: Testing, Infrastructure, Enhancement
 - Priority: Medium
@@ -222,7 +224,7 @@ Priority mapping for existing labels:
 - Dependencies and notes: complements #64 and #61. Split local script from CI
   rollout if scope grows.
 
-### #75 - MFA: Add Recovery Codes Or Admin Reset For Locked MFA Accounts
+### #75 - MFA: add recovery codes or admin reset for locked MFA accounts
 
 - Category: Security, Feature
 - Priority: High
@@ -234,7 +236,7 @@ Priority mapping for existing labels:
 - Dependencies and notes: related to #59. Should be split into recovery codes
   and admin reset unless a narrow design is chosen.
 
-### #76 - Backups: Add SQLite Backup And Restore Validation Runbook
+### #76 - Backups: add SQLite backup and restore validation runbook
 
 - Category: Documentation, Infrastructure, Testing
 - Priority: High
@@ -247,7 +249,7 @@ Priority mapping for existing labels:
 - Dependencies and notes: related to #80 and #69. Avoid destructive commands
   without explicit backup warnings.
 
-### #77 - Security: Add Log Redaction Regression Tests For Secrets And Tokens
+### #77 - Security: add log redaction regression tests for secrets and tokens
 
 - Category: Security, Testing
 - Priority: Medium
@@ -259,7 +261,7 @@ Priority mapping for existing labels:
 - Dependencies and notes: related to #70. Avoid overbroad denylists that make
   tests noisy.
 
-### #78 - Docs: Add Markdown And Link Checking To Documentation Validation
+### #78 - Docs: add markdown and link checking to documentation validation
 
 - Category: Documentation, Testing, Infrastructure
 - Priority: Medium
@@ -271,7 +273,7 @@ Priority mapping for existing labels:
 - Dependencies and notes: consider splitting markdown lint and external link
   checking if noisy. Avoid unnecessary dependencies.
 
-### #79 - Testing: Add Accessibility Smoke Tests For Auth And Expense Forms
+### #79 - Testing: add accessibility smoke tests for auth and expense forms
 
 - Category: Testing, UX/UI
 - Priority: Medium
@@ -283,7 +285,7 @@ Priority mapping for existing labels:
 - Dependencies and notes: new dependency should be justified. Start with
   Playwright role/focus assertions if possible.
 
-### #80 - Deployment: Test Restore From Legacy TripTally Database Path
+### #80 - Deployment: test restore from legacy TripTally database path
 
 - Category: Documentation, Testing, Infrastructure
 - Priority: Medium
@@ -296,7 +298,7 @@ Priority mapping for existing labels:
 - Dependencies and notes: related to #69 and #76. Needs only a temporary
   volume or fixture.
 
-### #81 - Observability: Add Readiness Diagnostics For Config And Database State
+### #81 - Observability: add readiness diagnostics for config and database state
 
 - Category: Enhancement, Infrastructure
 - Priority: Medium
