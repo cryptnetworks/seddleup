@@ -4,7 +4,8 @@ import {
   buildInvitationEmail,
   buildEmailVerificationEmail,
   buildPasswordResetEmail,
-  buildTwoFactorEmail
+  buildTwoFactorEmail,
+  emailDeliveryAvailable
 } from "@/lib/email";
 
 const staleBrandPattern = /TripTally|triptally|trip-tally|Trip Tally|TRIPTALLY/;
@@ -31,6 +32,9 @@ describe("SeddleUp emails", () => {
     delete process.env.APP_BASE_URL;
     delete process.env.PUBLIC_APP_URL;
     delete process.env.NEXTAUTH_URL;
+    delete process.env.SMTP_ENABLED;
+    delete process.env.SMTP_HOST;
+    delete process.env.SMTP_FROM;
   });
 
   it("builds a SeddleUp password reset email with plain text and branded HTML", () => {
@@ -135,5 +139,28 @@ describe("SeddleUp emails", () => {
     expect(message.subject).toBe("SeddleUp sign-in code");
     expect(message.text).toContain("Your SeddleUp sign-in code is 123456.");
     expectSeddleUpBranding(message);
+  });
+
+  it("reports email delivery unavailable when SMTP is disabled", () => {
+    process.env.SMTP_ENABLED = "false";
+    process.env.SMTP_HOST = "smtp.example.com";
+    process.env.SMTP_FROM = "no-reply@seddleup.test";
+
+    expect(emailDeliveryAvailable()).toBe(false);
+  });
+
+  it("reports email delivery unavailable when SMTP settings are incomplete", () => {
+    process.env.SMTP_ENABLED = "true";
+    process.env.SMTP_HOST = "smtp.example.com";
+
+    expect(emailDeliveryAvailable()).toBe(false);
+  });
+
+  it("reports email delivery available when SMTP host and sender are configured", () => {
+    process.env.SMTP_ENABLED = "true";
+    process.env.SMTP_HOST = "smtp.example.com";
+    process.env.SMTP_FROM = "no-reply@seddleup.test";
+
+    expect(emailDeliveryAvailable()).toBe(true);
   });
 });

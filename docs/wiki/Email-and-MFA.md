@@ -7,7 +7,8 @@ SeddleUp uses email for:
 - User and trip invitations
 - Email-based two-factor codes
 
-SMTP is optional for private testing but recommended for production.
+SMTP is optional for private testing but recommended for production. Email-code
+MFA cannot be newly enabled unless SMTP delivery is configured.
 
 ## SMTP Configuration
 
@@ -64,6 +65,11 @@ Users can configure MFA from account settings:
 - No MFA
 - Email code
 - Authenticator app TOTP
+
+Email-code MFA requires `SMTP_ENABLED` to be unset or `true`, plus both
+`SMTP_HOST` and `SMTP_FROM`. If SMTP is disabled or incomplete, SeddleUp blocks
+new email-code MFA enablement so users do not create an undeliverable second
+factor. Authenticator-app MFA remains available without SMTP.
 
 Authenticator secrets are encrypted at rest.
 
