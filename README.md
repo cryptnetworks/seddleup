@@ -7,6 +7,9 @@ the balance, and the simplest reimbursement suggestions for settling up.
 ## What It Does
 
 - Tracks trips, participants, expenses, balances, and settlement suggestions.
+- Lets trip managers create revocable, optionally expiring bearer links to a
+  deliberately limited, read-only cost summary with privacy-filtered participant
+  names.
 - Supports collaborative trip memberships with owner, admin, member, and viewer
   roles.
 - Lets members create expenses and move them through draft, submitted, disputed,
@@ -72,6 +75,11 @@ Authentication uses NextAuth sessions plus app-level checks against the current
 database user. One-time tokens for invitations, email verification, password
 reset, and MFA handoff are stored as keyed digests. Stored OAuth provider client
 secrets are encrypted with `AUTH_CONFIG_ENCRYPTION_KEY`.
+
+Read-only trip sharing uses the same secret-backed keyed-digest pattern. Sharing
+URLs are unlisted bearer credentials, not user accounts: anyone who receives a
+link can view and forward its limited summary until it expires, is rotated, or is
+revoked.
 
 ## Install And Operate
 

@@ -37,6 +37,7 @@ model User {
   twoFactorChallenges          TwoFactorChallenge[]
   authAccounts                 UserAuthAccount[]
   auditLogs                    AuditLog[]               @relation("AuditActor")
+  tripShareLinksCreated        TripShareLink[]          @relation("TripShareLinkCreator")
 
   @@index([role])
   @@index([disabledAt])
@@ -177,24 +178,44 @@ model Invitation {
 }
 
 model Trip {
-  id           String        @id @default(cuid())
+  id           String         @id @default(cuid())
   name         String
   destination  String?
   startDate    DateTime?
   endDate      DateTime?
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
   ownerId      String
-  owner        User          @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  owner        User           @relation(fields: [ownerId], references: [id], onDelete: Cascade)
   members      TripMember[]
   participants Participant[]
   expenses     Expense[]
   receipts     Receipt[]
   auditLogs    AuditLog[]
   invitations  Invitation[]
+  shareLink    TripShareLink?
 
   @@index([ownerId])
   @@map("trips")
+}
+
+model TripShareLink {
+  id                  String    @id @default(cuid())
+  tokenHash           String    @unique
+  participantNameMode String    @default("anonymized")
+  expiresAt           DateTime?
+  revokedAt           DateTime?
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+  tripId              String    @unique
+  createdByUserId     String?
+  trip                Trip      @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  createdBy           User?     @relation("TripShareLinkCreator", fields: [createdByUserId], references: [id], onDelete: SetNull)
+
+  @@index([expiresAt])
+  @@index([revokedAt])
+  @@index([createdByUserId])
+  @@map("trip_share_links")
 }
 
 model TripMember {

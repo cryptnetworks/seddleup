@@ -33,4 +33,9 @@ export {
 export { createExpense, deleteExpense, updateExpense } from "@/lib/actions/expenses";
 export { deletePaymentMethod, savePaymentMethod } from "@/lib/actions/payments";
 export { saveReceiptReview, uploadReceipt } from "@/lib/actions/receipts";
+export {
+  createOrRotateTripShareLink,
+  revokeTripShareLink,
+  updateTripShareSettings
+} from "@/lib/actions/trip-sharing";
 export { linkDiscordAccount, unlinkDiscordAccount } from "@/lib/actions/discord";

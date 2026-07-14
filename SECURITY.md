@@ -31,9 +31,14 @@ Maintainers will acknowledge valid reports, investigate, and coordinate a fix be
   state, PKCE, profile, account, and registration checks pass.
 - Password reset, email verification, and MFA session handoff tokens are stored
   only as HMAC-SHA-256 digests keyed by `TOKEN_DIGEST_SECRET`.
+- Anonymous trip-sharing tokens are 256-bit bearer credentials stored only as
+  HMAC-SHA-256 digests. Links are unlisted, rate-limited, revocable, optionally
+  expiring, and excluded from application logs and audit metadata.
 - Protected server access validates the current session user against the database.
 - Disabled or deleted users lose access on the next protected server request.
 - State-changing requests include same-origin CSRF checks.
+- Anonymous trip summaries are read-only and exclude emails, account data,
+  drafts, notes, receipts, payment details, invitations, and audit logs.
 - Production security headers include CSP, HSTS, frame denial, content-type protection, referrer policy, permissions policy, and cross-origin opener policy.
 
 ## Automated Security Checks

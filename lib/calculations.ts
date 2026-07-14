@@ -1,7 +1,9 @@
 import type { Expense, ExpenseShare, Participant } from "@prisma/client";
 
-export type ParticipantWithBalances = {
-  participant: Participant;
+export type ParticipantWithBalances<
+  TParticipant extends Pick<Participant, "id" | "name"> = Participant
+> = {
+  participant: TParticipant;
   paid: number;
   owed: number;
   net: number;
@@ -16,8 +18,8 @@ export type Settlement = {
   label: string;
 };
 
-export type ExpenseWithShares = Expense & {
-  shares: ExpenseShare[];
+export type BalanceExpenseInput = Pick<Expense, "amount" | "payerId"> & {
+  shares: Pick<ExpenseShare, "participantId" | "shareAmount">[];
 };
 
 export function roundCurrency(value: number) {
@@ -39,8 +41,11 @@ export function calculateEqualShares(amount: number, participantCount: number) {
   );
 }
 
-export function calculateBalances(participants: Participant[], expenses: ExpenseWithShares[]) {
-  const totals = new Map<string, ParticipantWithBalances>();
+export function calculateBalances<TParticipant extends Pick<Participant, "id" | "name">>(
+  participants: TParticipant[],
+  expenses: BalanceExpenseInput[]
+) {
+  const totals = new Map<string, ParticipantWithBalances<TParticipant>>();
 
   for (const participant of participants) {
     totals.set(participant.id, {
@@ -86,7 +91,9 @@ export function calculateBalances(participants: Participant[], expenses: Expense
   };
 }
 
-export function generateSettlementSuggestions(balances: ParticipantWithBalances[]): Settlement[] {
+export function generateSettlementSuggestions<
+  TParticipant extends Pick<Participant, "id" | "name">
+>(balances: ParticipantWithBalances<TParticipant>[]): Settlement[] {
   const creditors = balances
     .filter((item) => item.net > 0)
     .map((item) => ({ ...item }))
