@@ -11,7 +11,7 @@ export function DeleteButton({ action, label }: DeleteButtonProps) {
   return (
     <form action={action}>
       <button
-        className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-red-100 text-coral hover:bg-red-50"
+        className="inline-flex h-11 w-11 items-center justify-center rounded-lg border border-red-100 text-coral hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-coral"
         type="submit"
         aria-label={label}
         onClick={(event) => {

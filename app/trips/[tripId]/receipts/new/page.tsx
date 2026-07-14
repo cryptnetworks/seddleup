@@ -46,13 +46,13 @@ export default async function NewReceiptPage({
         title="Upload receipt"
         description="Attach a local receipt file, parse what we can, then review the details before saving."
       />
-      <section className="card mx-auto max-w-2xl p-5">
+      <section className="card mx-auto max-w-2xl p-4 sm:p-5">
         {query.error ? (
           <p className="mb-4 rounded-lg border border-line bg-surface p-3 text-sm text-coral">
             Receipt upload failed: {query.error}.
           </p>
         ) : null}
-        <form className="grid gap-4" action={action}>
+        <form className="grid min-w-0 gap-4" action={action}>
           <div>
             <label className="label" htmlFor="receiptFile">
               Receipt file

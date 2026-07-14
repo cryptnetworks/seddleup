@@ -1,9 +1,18 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
-import { ArrowRight, Calculator, CreditCard, Plane } from "lucide-react";
+import { ArrowRight, Calculator, CheckCircle2, CreditCard, Plane, UsersRound } from "lucide-react";
 import { BrandLogo } from "@/components/BrandLogo";
 import { authOptions } from "@/lib/auth";
+import {
+  buildHomepageMetadata,
+  buildHomepageStructuredData,
+  HOMEPAGE_FAQS,
+  serializeJsonLd
+} from "@/lib/seo";
+
+export const metadata: Metadata = buildHomepageMetadata();
 
 const features = [
   {
@@ -23,6 +32,21 @@ const features = [
   }
 ];
 
+const steps = [
+  {
+    title: "Create the trip",
+    description: "Add the travelers who should appear in the shared expense ledger."
+  },
+  {
+    title: "Record shared expenses",
+    description: "Log who paid and choose exactly which travelers shared each cost."
+  },
+  {
+    title: "Review balances and settle up",
+    description: "Use the calculated balances and reimbursement suggestions to close the trip."
+  }
+];
+
 export default async function HomePage() {
   const session = await getServerSession(authOptions);
 
@@ -30,8 +54,16 @@ export default async function HomePage() {
     redirect("/dashboard");
   }
 
+  const structuredData = buildHomepageStructuredData();
+
   return (
     <main className="min-h-screen bg-brand-page">
+      {structuredData ? (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: serializeJsonLd(structuredData) }}
+        />
+      ) : null}
       <header className="mx-auto flex w-full max-w-6xl items-center justify-between px-4 py-5 sm:px-6">
         <BrandLogo href="/" priority />
         <div className="flex items-center gap-2">
@@ -100,6 +132,89 @@ export default async function HomePage() {
           </div>
         </div>
       </section>
+
+      <section className="border-y border-line bg-white/70">
+        <div className="mx-auto w-full max-w-6xl px-4 py-14 sm:px-6 md:py-20">
+          <div className="max-w-2xl">
+            <p className="text-sm font-bold uppercase tracking-normal text-ocean">How it works</p>
+            <h2 className="mt-2 text-3xl font-bold text-ink sm:text-4xl">
+              One clear path from the first booking to the final payment
+            </h2>
+            <p className="mt-4 leading-7 text-muted">
+              SeddleUp keeps the group focused on the trip while the ledger keeps track of the
+              details.
+            </p>
+          </div>
+          <ol className="mt-8 grid gap-4 md:grid-cols-3">
+            {steps.map((step, index) => (
+              <li className="card p-5" key={step.title}>
+                <span className="flex h-9 w-9 items-center justify-center rounded-full bg-brand-soft text-sm font-bold text-ocean">
+                  {index + 1}
+                </span>
+                <h3 className="mt-4 text-lg font-semibold text-ink">{step.title}</h3>
+                <p className="mt-2 text-sm leading-6 text-muted">{step.description}</p>
+              </li>
+            ))}
+          </ol>
+        </div>
+      </section>
+
+      <section className="mx-auto grid w-full max-w-6xl gap-8 px-4 py-14 sm:px-6 md:grid-cols-2 md:py-20">
+        <div className="card p-6 sm:p-8">
+          <UsersRound className="h-8 w-8 text-ocean" aria-hidden />
+          <h2 className="mt-4 text-2xl font-bold text-ink">Built for groups traveling together</h2>
+          <p className="mt-3 leading-7 text-muted">
+            Use SeddleUp for friend getaways, family vacations, group events, and any trip where
+            different people cover different costs.
+          </p>
+        </div>
+        <div className="card p-6 sm:p-8">
+          <CheckCircle2 className="h-8 w-8 text-ocean" aria-hidden />
+          <h2 className="mt-4 text-2xl font-bold text-ink">
+            Flexible splits, understandable results
+          </h2>
+          <p className="mt-3 leading-7 text-muted">
+            Include only the travelers who shared an expense, then see net balances and suggested
+            reimbursements without rebuilding the math in a spreadsheet.
+          </p>
+        </div>
+      </section>
+
+      <section className="border-t border-line bg-white/70">
+        <div className="mx-auto w-full max-w-4xl px-4 py-14 sm:px-6 md:py-20">
+          <p className="text-sm font-bold uppercase tracking-normal text-ocean">Common questions</p>
+          <h2 className="mt-2 text-3xl font-bold text-ink">SeddleUp FAQ</h2>
+          <div className="mt-8 grid gap-4">
+            {HOMEPAGE_FAQS.map((item) => (
+              <article className="card p-5 sm:p-6" key={item.question}>
+                <h3 className="text-lg font-semibold text-ink">{item.question}</h3>
+                <p className="mt-2 leading-7 text-muted">{item.answer}</p>
+              </article>
+            ))}
+          </div>
+          <div className="mt-10 flex flex-col items-center rounded-lg bg-brand-soft p-6 text-center sm:p-8">
+            <h2 className="text-2xl font-bold text-ink">Ready for a clearer trip ledger?</h2>
+            <p className="mt-2 max-w-xl text-muted">
+              Start a trip, add your group, and let SeddleUp calculate the balances.
+            </p>
+            <Link className="btn-primary mt-5" href="/register">
+              Create an account <ArrowRight className="ml-2 h-4 w-4" aria-hidden />
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      <footer className="mx-auto flex w-full max-w-6xl flex-col gap-3 px-4 py-8 text-sm text-muted sm:flex-row sm:items-center sm:justify-between sm:px-6">
+        <p>© {new Date().getFullYear()} SeddleUp. Travel together. Settle up easily.</p>
+        <div className="flex gap-4">
+          <Link className="font-semibold text-ocean" href="/login">
+            Login
+          </Link>
+          <Link className="font-semibold text-ocean" href="/register">
+            Register
+          </Link>
+        </div>
+      </footer>
     </main>
   );
 }

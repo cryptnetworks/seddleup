@@ -118,10 +118,10 @@ export default async function TripDetailPage({
         description={`${trip.destination || "Destination pending"} - ${formatDate(trip.startDate)} to ${formatDate(trip.endDate)}`}
       />
 
-      <div className="mb-5 flex flex-col gap-2 sm:flex-row">
+      <div className="mb-5 flex min-w-0 flex-col gap-2 sm:flex-row sm:flex-wrap">
         {canAddExpense ? (
           <Link
-            className="btn-primary"
+            className="btn-primary w-full sm:w-auto"
             data-testid="add-expense"
             href={`/trips/${trip.id}/expenses/new`}
           >
@@ -129,17 +129,21 @@ export default async function TripDetailPage({
           </Link>
         ) : null}
         {canAddExpense && receiptsEnabled ? (
-          <Link className="btn-secondary" href={`/trips/${trip.id}/receipts/new`}>
+          <Link className="btn-secondary w-full sm:w-auto" href={`/trips/${trip.id}/receipts/new`}>
             Upload Receipt
           </Link>
         ) : null}
         {canManageTrip ? (
           <>
-            <Link className="btn-secondary" data-testid="edit-trip" href={`/trips/${trip.id}/edit`}>
+            <Link
+              className="btn-secondary w-full sm:w-auto"
+              data-testid="edit-trip"
+              href={`/trips/${trip.id}/edit`}
+            >
               Edit Trip
             </Link>
             <Link
-              className="btn-secondary"
+              className="btn-secondary w-full whitespace-normal sm:w-auto"
               data-testid="share-trip"
               href={`/trips/${trip.id}/share`}
             >
@@ -158,29 +162,31 @@ export default async function TripDetailPage({
         ) : null}
       </div>
 
-      <section className="mb-5 grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <div className="card p-4">
+      <section className="mb-5 grid grid-cols-1 gap-3 min-[360px]:grid-cols-2 lg:grid-cols-4">
+        <div className="card p-3 sm:p-4">
           <p className="text-sm text-muted">Total cost</p>
-          <p className="mt-1 text-2xl font-bold">{formatCurrency(totalCost)}</p>
+          <p className="mt-1 break-all text-2xl font-bold tabular-nums">
+            {formatCurrency(totalCost)}
+          </p>
         </div>
-        <div className="card p-4">
+        <div className="card p-3 sm:p-4">
           <p className="text-sm text-muted">Participants</p>
           <p className="mt-1 text-2xl font-bold">{trip.participants.length}</p>
         </div>
-        <div className="card p-4">
+        <div className="card p-3 sm:p-4">
           <p className="text-sm text-muted">Expenses</p>
           <p className="mt-1 text-2xl font-bold">{balanceExpenses.length}</p>
         </div>
-        <div className="card p-4">
+        <div className="card p-3 sm:p-4">
           <p className="text-sm text-muted">Balances</p>
           <p className="mt-1 text-2xl font-bold">{balances.length}</p>
         </div>
       </section>
 
-      <div className="grid gap-5 lg:grid-cols-[1.35fr_0.9fr]">
-        <div className="grid gap-5">
-          <section className="card p-4">
-            <div className="mb-4 flex items-center justify-between gap-3">
+      <div className="grid min-w-0 gap-5 lg:grid-cols-[minmax(0,1.35fr)_minmax(0,0.9fr)]">
+        <div className="grid min-w-0 gap-5">
+          <section className="card min-w-0 p-3 sm:p-4">
+            <div className="mb-4 flex min-w-0 flex-wrap items-center justify-between gap-3">
               <h2 className="text-lg font-semibold text-ink">Participants</h2>
               <span className="rounded-full bg-surface px-3 py-1 text-xs font-semibold text-muted">
                 {trip.participants.length} total
@@ -188,7 +194,7 @@ export default async function TripDetailPage({
             </div>
             {canManageTrip ? (
               <form
-                className="mb-4 grid gap-3 sm:grid-cols-[1fr_1fr_auto]"
+                className="mb-4 grid min-w-0 gap-3 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto]"
                 action={addParticipant}
                 data-testid="participant-form"
               >
@@ -222,20 +228,20 @@ export default async function TripDetailPage({
                   return (
                     <div
                       key={participant.id}
-                      className="flex items-center justify-between gap-3 rounded-lg border border-line p-3"
+                      className="flex min-w-0 flex-col items-stretch gap-3 rounded-lg border border-line p-3 sm:flex-row sm:items-center sm:justify-between"
                       data-testid="participant-card"
                     >
                       <div className="min-w-0">
-                        <p className="truncate font-semibold text-ink">{participant.name}</p>
-                        <p className="truncate text-sm text-muted">
+                        <p className="break-words font-semibold text-ink">{participant.name}</p>
+                        <p className="break-all text-sm text-muted">
                           {participant.email || "No email provided"}
                           {participant.userId ? " - linked app user" : ""}
                         </p>
                       </div>
                       {canManageTrip ? (
-                        <div className="flex shrink-0 items-center gap-2">
+                        <div className="grid shrink-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-2 sm:flex">
                           <Link
-                            className="btn-secondary min-h-9 px-3 py-1.5"
+                            className="btn-secondary min-h-11 px-3 py-1.5"
                             data-testid="participant-edit"
                             href={`/trips/${trip.id}/participants/${participant.id}/edit`}
                           >
@@ -254,8 +260,8 @@ export default async function TripDetailPage({
             )}
           </section>
 
-          <section className="card p-4">
-            <div className="mb-4 flex items-center justify-between gap-3">
+          <section className="card min-w-0 p-3 sm:p-4">
+            <div className="mb-4 flex min-w-0 flex-wrap items-center justify-between gap-3">
               <h2 className="text-lg font-semibold text-ink">Expense history</h2>
               {canAddExpense ? (
                 <Link
@@ -267,11 +273,15 @@ export default async function TripDetailPage({
                 </Link>
               ) : null}
             </div>
-            <div className="mb-4 flex flex-wrap gap-2">
+            <nav
+              aria-label="Expense filters"
+              className="mb-4 flex w-full min-w-0 max-w-full snap-x gap-2 overflow-x-auto overscroll-x-contain pb-2 focus-within:ring-2 focus-within:ring-ocean focus-within:ring-offset-2"
+              data-testid="expense-filters"
+            >
               {filters.map(([value, label]) => (
                 <Link
                   key={value}
-                  className={`rounded-full border px-3 py-1.5 text-sm font-semibold ${
+                  className={`min-h-11 shrink-0 snap-start rounded-full border px-3 py-2.5 text-sm font-semibold focus:outline-none ${
                     filter === value
                       ? "border-ocean bg-ocean text-white"
                       : "border-line bg-surface text-muted"
@@ -281,7 +291,7 @@ export default async function TripDetailPage({
                   {label}
                 </Link>
               ))}
-            </div>
+            </nav>
             {filteredExpenses.length === 0 ? (
               <EmptyState
                 title="No expenses yet"
@@ -304,8 +314,8 @@ export default async function TripDetailPage({
           </section>
         </div>
 
-        <aside className="grid content-start gap-5">
-          <section className="card p-4">
+        <aside className="grid min-w-0 content-start gap-5">
+          <section className="card p-3 sm:p-4">
             <h2 className="mb-4 text-lg font-semibold text-ink">Balances</h2>
             {balances.length === 0 ? (
               <p className="text-sm text-muted">
@@ -319,14 +329,14 @@ export default async function TripDetailPage({
               </div>
             )}
           </section>
-          <section className="card p-4">
+          <section className="card p-3 sm:p-4">
             <h2 className="mb-4 text-lg font-semibold text-ink">Settlement suggestions</h2>
             <SettlementList
               settlements={settlements}
               paymentMethodsByParticipantId={paymentMethodsByParticipantId}
             />
           </section>
-          <section className="card p-4">
+          <section className="card p-3 sm:p-4" data-testid="trip-activity">
             <h2 className="mb-4 text-lg font-semibold text-ink">Trip activity</h2>
             {trip.auditLogs.length === 0 ? (
               <p className="text-sm text-muted">

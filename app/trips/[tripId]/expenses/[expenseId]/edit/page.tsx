@@ -50,7 +50,7 @@ export default async function EditExpensePage({
         title="Edit expense"
         description="Update the cost details or remove this expense."
       />
-      <section className="card mx-auto max-w-2xl p-5">
+      <section className="card mx-auto max-w-2xl p-4 sm:p-5">
         <div className="mb-4 flex justify-end">
           <DeleteButton action={removeExpense} label={`Delete ${expense.title}`} />
         </div>

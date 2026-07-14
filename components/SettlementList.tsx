@@ -25,14 +25,14 @@ export function SettlementList({
           className="card p-4 text-sm font-medium text-ink"
           data-testid="settlement-card"
         >
-          <p>{settlement.label}</p>
+          <p className="break-words">{settlement.label}</p>
           {paymentMethodsByParticipantId[settlement.creditorId]?.length ? (
             <div className="mt-3 flex flex-wrap gap-2">
               {paymentMethodsByParticipantId[settlement.creditorId].map((method) =>
                 method.url && isSafeHttpUrl(method.url) ? (
                   <a
                     key={`${method.provider}-${method.url}`}
-                    className="btn-secondary min-h-9 px-3 py-1.5"
+                    className="btn-secondary min-h-11 whitespace-normal px-3 py-1.5"
                     href={method.url}
                     rel="noopener noreferrer"
                     target="_blank"
@@ -42,7 +42,7 @@ export function SettlementList({
                 ) : (
                   <span
                     key={`${method.provider}-${method.handle}`}
-                    className="rounded-lg border border-line bg-surface px-3 py-1.5 text-xs text-muted"
+                    className="max-w-full break-all rounded-lg border border-line bg-surface px-3 py-2 text-xs text-muted"
                   >
                     {paymentProviderLabel(method.provider)}: {method.handle}
                   </span>

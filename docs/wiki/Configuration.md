@@ -55,6 +55,22 @@ PUBLIC_APP_URL=https://app.example.com
 
 If OAuth redirects to `localhost`, HTTP, or `0.0.0.0`, these values are usually wrong or missing.
 
+`PUBLIC_APP_URL` is also the source of production canonical URLs, social-preview
+metadata, structured data, `/robots.txt`, and `/sitemap.xml`. SEO metadata rejects
+localhost and non-HTTPS production origins instead of advertising them to search
+engines.
+
+Optional site-verification values can be copied from the corresponding webmaster
+portal after the public site has been registered:
+
+```env
+GOOGLE_SITE_VERIFICATION=
+BING_SITE_VERIFICATION=
+```
+
+Leaving either value empty omits that verification tag and does not fail startup
+or builds.
+
 ## Compose Profiles
 
 ```env

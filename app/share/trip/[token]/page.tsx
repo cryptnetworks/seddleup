@@ -54,8 +54,8 @@ export default async function SharedTripPage({ params }: { params: Promise<{ tok
   return (
     <div className="min-h-screen bg-brand-page">
       <header className="border-b border-line bg-white px-4 py-4 sm:px-6">
-        <div className="mx-auto flex max-w-5xl items-center justify-between gap-4">
-          <div className="w-40 sm:w-48">
+        <div className="mx-auto flex min-w-0 max-w-5xl flex-wrap items-center justify-between gap-3">
+          <div className="min-w-0 w-40 sm:w-48">
             <BrandLogo />
           </div>
           <span className="rounded-full bg-surface px-3 py-1 text-xs font-semibold text-muted">
@@ -64,12 +64,14 @@ export default async function SharedTripPage({ params }: { params: Promise<{ tok
         </div>
       </header>
 
-      <main className="mx-auto w-full max-w-5xl px-4 py-6 sm:px-6 sm:py-10">
+      <main className="mx-auto min-w-0 w-full max-w-5xl px-4 py-6 sm:px-6 sm:py-10">
         <header className="mb-6">
           <p className="text-xs font-bold uppercase tracking-normal text-ocean">
             Shared trip costs
           </p>
-          <h1 className="mt-1 text-3xl font-bold text-ink sm:text-4xl">{summary.trip.name}</h1>
+          <h1 className="mt-1 break-words text-2xl font-bold leading-tight text-ink sm:text-4xl">
+            {summary.trip.name}
+          </h1>
           <p className="mt-2 text-sm text-muted">
             {formatDate(summary.trip.startDate)} to {formatDate(summary.trip.endDate)} · Currency:{" "}
             {summary.trip.currency}
@@ -80,22 +82,27 @@ export default async function SharedTripPage({ params }: { params: Promise<{ tok
           </p>
         </header>
 
-        <section className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-3" aria-label="Trip totals">
-          <div className="card p-4">
+        <section
+          className="mb-6 grid grid-cols-1 gap-3 min-[360px]:grid-cols-2 sm:grid-cols-3"
+          aria-label="Trip totals"
+        >
+          <div className="card p-3 sm:p-4">
             <p className="text-sm text-muted">Included total</p>
-            <p className="mt-1 text-2xl font-bold text-ink">{formatCurrency(summary.totalCost)}</p>
+            <p className="mt-1 break-all text-2xl font-bold tabular-nums text-ink">
+              {formatCurrency(summary.totalCost)}
+            </p>
           </div>
-          <div className="card p-4">
+          <div className="card p-3 sm:p-4">
             <p className="text-sm text-muted">Included expenses</p>
             <p className="mt-1 text-2xl font-bold text-ink">{summary.expenses.length}</p>
           </div>
-          <div className="card col-span-2 p-4 sm:col-span-1">
+          <div className="card p-3 min-[360px]:col-span-2 sm:col-span-1 sm:p-4">
             <p className="text-sm text-muted">Participants</p>
             <p className="mt-1 text-2xl font-bold text-ink">{summary.balances.length}</p>
           </div>
         </section>
 
-        <div className="grid gap-6 lg:grid-cols-[1.25fr_0.9fr]">
+        <div className="grid min-w-0 gap-6 lg:grid-cols-[minmax(0,1.25fr)_minmax(0,0.9fr)]">
           <section className="card p-4 sm:p-5">
             <h2 className="text-lg font-semibold text-ink">Included expenses</h2>
             <p className="mt-1 text-sm text-muted">
@@ -111,16 +118,20 @@ export default async function SharedTripPage({ params }: { params: Promise<{ tok
                     data-testid="shared-expense"
                     key={`${expense.title}-${expense.date.toISOString()}-${index}`}
                   >
-                    <div className="flex items-start justify-between gap-3">
-                      <div>
+                    <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                      <div className="min-w-0">
                         <h3 className="font-semibold text-ink">{expense.title}</h3>
                         <p className="mt-1 text-sm text-muted">
                           {expense.category} · {formatDate(expense.date)} · {expense.status}
                         </p>
                       </div>
-                      <div className="shrink-0 text-right">
-                        <p className="font-bold text-ink">{formatCurrency(expense.amount)}</p>
-                        <p className="text-xs text-muted">Paid by {expense.payerName}</p>
+                      <div className="min-w-0 text-left sm:max-w-[45%] sm:text-right">
+                        <p className="break-all font-bold tabular-nums text-ink">
+                          {formatCurrency(expense.amount)}
+                        </p>
+                        <p className="break-words text-xs text-muted">
+                          Paid by {expense.payerName}
+                        </p>
                       </div>
                     </div>
                   </article>
@@ -129,7 +140,7 @@ export default async function SharedTripPage({ params }: { params: Promise<{ tok
             )}
           </section>
 
-          <aside className="grid content-start gap-6">
+          <aside className="grid min-w-0 content-start gap-6">
             <section className="card p-4 sm:p-5">
               <h2 className="text-lg font-semibold text-ink">Participant totals</h2>
               <div className="mt-4 grid gap-3">
@@ -143,7 +154,9 @@ export default async function SharedTripPage({ params }: { params: Promise<{ tok
                     <p className="mt-1 text-sm text-muted">
                       Paid {formatCurrency(balance.paid)} · Share {formatCurrency(balance.owed)}
                     </p>
-                    <p className="mt-1 font-bold text-ink">Net {formatCurrency(balance.net)}</p>
+                    <p className="mt-1 break-all font-bold tabular-nums text-ink">
+                      Net {formatCurrency(balance.net)}
+                    </p>
                   </article>
                 ))}
               </div>
