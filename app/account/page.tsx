@@ -19,6 +19,7 @@ import { requireUser } from "@/lib/session";
 import { enabledLoginProviders } from "@/lib/oauth-providers";
 import { paymentProviderLabel, paymentProviders } from "@/lib/payments";
 import { pendingAuthenticatorSetup } from "@/lib/two-factor";
+import { emailDeliveryAvailable } from "@/lib/email";
 
 function profileMessage(status?: string) {
   if (status === "updated") return "Account details updated.";
@@ -39,6 +40,7 @@ function twoFactorMessage(status?: string) {
   if (status === "authenticator-enabled") return "Authenticator app verification is enabled.";
   if (status === "authenticator-setup") return "Authenticator setup key generated.";
   if (status === "setup-required") return "Set up and verify an authenticator app first.";
+  if (status === "email-unavailable") return "Email-code MFA requires configured SMTP delivery.";
   if (status === "invalid-code") return "That authenticator code was not valid.";
   if (status === "invalid") return "Choose a valid two-factor option.";
   return "";
@@ -94,6 +96,7 @@ export default async function AccountPage({
   const paymentStatus = paymentMessage(query.payment);
   const discordStatus = discordMessage(query.discord);
   const authenticatorSetup = pendingAuthenticatorSetup(user);
+  const emailMfaAvailable = emailDeliveryAvailable();
 
   return (
     <PageShell>
@@ -327,8 +330,14 @@ export default async function AccountPage({
                 type="radio"
                 value="email"
                 defaultChecked={user.twoFactorMethod === "email"}
+                disabled={!emailMfaAvailable && user.twoFactorMethod !== "email"}
               />
-              Email code
+              <span>
+                Email code
+                {!emailMfaAvailable ? (
+                  <span className="block text-xs text-muted">SMTP unavailable</span>
+                ) : null}
+              </span>
             </label>
             <label className="flex min-h-11 items-center gap-3 rounded-lg border border-line bg-surface px-3 py-3 text-sm">
               <input

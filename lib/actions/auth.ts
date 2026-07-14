@@ -3,6 +3,7 @@
 import * as bcrypt from "bcryptjs";
 import { redirect } from "next/navigation";
 import { assertSameOriginRequest } from "@/lib/csrf";
+import { emailDeliveryAvailable } from "@/lib/email";
 import { logger } from "@/lib/logger";
 import { createEmailVerificationForUser, verifyEmailToken } from "@/lib/email-verification";
 import { completePasswordReset, createPasswordResetForUser } from "@/lib/password-reset";
@@ -345,9 +346,16 @@ export async function setTwoFactorMethod(formData: FormData) {
   const dbUser = await prisma.user.findUniqueOrThrow({
     where: { id: user.id },
     select: {
-      authenticatorEnabled: true
+      authenticatorEnabled: true,
+      twoFactorMethod: true
     }
   });
+
+  const enablingEmailMfa = method === "email" && dbUser.twoFactorMethod !== "email";
+  if (enablingEmailMfa && !emailDeliveryAvailable()) {
+    logger.warn("account.two_factor.email_unavailable", { userId: user.id });
+    redirect("/account?twoFactor=email-unavailable");
+  }
 
   if (method === "authenticator" && !dbUser.authenticatorEnabled) {
     redirect("/account?twoFactor=setup-required");

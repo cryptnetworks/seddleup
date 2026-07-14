@@ -52,7 +52,7 @@ const BRAND = {
 
 const legacyAppNamePattern = /^(triptally|trip tally|trip-tally)$/i;
 
-function smtpConfigured() {
+export function emailDeliveryAvailable() {
   if (process.env.SMTP_ENABLED === "false") {
     return false;
   }
@@ -101,7 +101,7 @@ async function sendSmtpEmail(message: EmailMessage) {
 }
 
 export async function sendPasswordResetEmail({ to, resetUrl, expiresInMinutes }: ResetEmailInput) {
-  if (!smtpConfigured()) {
+  if (!emailDeliveryAvailable()) {
     logger.info("email.password_reset.disabled");
     if (process.env.NODE_ENV !== "production") {
       logger.info("email.password_reset.dev_link", { resetUrl });
@@ -133,7 +133,7 @@ export async function sendEmailVerificationEmail({
   verifyUrl,
   expiresInHours
 }: VerificationEmailInput) {
-  if (!smtpConfigured()) {
+  if (!emailDeliveryAvailable()) {
     logger.info("email.verification.disabled");
     if (process.env.NODE_ENV !== "production") {
       logger.info("email.verification.dev_link", { verifyUrl });
@@ -161,7 +161,7 @@ export async function sendEmailVerificationEmail({
 }
 
 export async function sendTwoFactorEmail({ to, code, expiresInMinutes }: TwoFactorEmailInput) {
-  if (!smtpConfigured()) {
+  if (!emailDeliveryAvailable()) {
     logger.warn("email.two_factor.disabled");
     if (process.env.NODE_ENV !== "production") {
       logger.info("email.two_factor.dev_code", { code });
@@ -189,7 +189,7 @@ export async function sendTwoFactorEmail({ to, code, expiresInMinutes }: TwoFact
 }
 
 export async function sendInvitationEmail(input: InvitationEmailInput) {
-  if (!smtpConfigured()) {
+  if (!emailDeliveryAvailable()) {
     logger.info("email.invitation.disabled");
     if (process.env.NODE_ENV !== "production") {
       logger.info("email.invitation.dev_link", { inviteUrl: input.inviteUrl });

@@ -87,6 +87,10 @@ PASSWORD_RESET_TOKEN_MINUTES=45
 
 Use `SMTP_SECURE=false` for port `587` with STARTTLS. Use `SMTP_SECURE=true` for implicit TLS ports such as `465`.
 
+Email-code MFA can only be newly enabled when SMTP delivery is available. Set
+`SMTP_HOST` and `SMTP_FROM`, and do not set `SMTP_ENABLED=false`, before asking
+users to rely on email-code MFA. Authenticator-app MFA does not require SMTP.
+
 ## Rate Limiting
 
 The built-in limiter uses process-local memory. There is no required Redis or
