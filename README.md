@@ -91,6 +91,11 @@ variables, persistent storage, health checks, and update steps:
 - [Backups and Updates](https://github.com/cryptnetworks/seddleup/wiki/Backups-and-Updates)
 - [Troubleshooting](https://github.com/cryptnetworks/seddleup/wiki/Troubleshooting)
 
+Before the first production deployment, create a SQLite backup and rehearse the
+restore validation steps. Before every update, record the deployed image digest
+and keep a verified backup outside the application volume so both the image and
+database can be rolled back.
+
 The full documentation index is available in the
 [SeddleUp wiki](https://github.com/cryptnetworks/seddleup/wiki).
 

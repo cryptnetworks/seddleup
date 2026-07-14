@@ -248,6 +248,10 @@ requested taxonomy.
   `priority:high`, `size:s`, `ready`, `database`, `docs`
 - Dependencies and notes: related to #80 and #69. Avoid destructive commands
   without explicit backup warnings.
+- Implementation status: in progress on `docs/sqlite-restore-runbook`. The
+  runbook adds pre-restore integrity validation, rollback preservation,
+  migration and health verification, local deployment guidance, and accurate
+  legacy `triptally.db` behavior.
 
 ### #77 - Security: add log redaction regression tests for secrets and tokens
 
