@@ -84,7 +84,10 @@ Compose mounts the `seddleup_data` volume at `/app/data`.
 Existing deployments that used the old `triptally_data` volume should back up
 the old volume before switching names. On startup, SeddleUp migrates
 `/app/data/triptally.db` to `/app/data/seddleup.db` when the old file exists in
-the mounted volume and the new file is absent.
+the mounted volume and the new file is absent. The legacy file must be a
+readable, writable, valid SQLite database. Validation runs before the file is
+moved, so a corrupt legacy file remains at its original path and startup fails
+with recovery guidance.
 
 To build locally instead of using GHCR, add a local override:
 
@@ -105,6 +108,28 @@ SQLite lives at:
 ```
 
 Always mount `/app/data` to a persistent Docker volume.
+
+On every startup, the entrypoint checks that the data directory is writable and
+validates any existing current or legacy SQLite file before Prisma migrations
+run. A missing database on an empty volume is expected and Prisma creates it.
+An existing invalid or inaccessible file is never replaced with a new empty
+database.
+
+## Run the Automated Runtime Probe
+
+Developers can rehearse the production entrypoint without touching an existing
+volume:
+
+```bash
+docker build -t seddleup:ci .
+npm run test:docker
+```
+
+The probe uses disposable labeled volumes for fresh startup, restart and data
+preservation, legacy-path migration, invalid and inaccessible files, and a
+recorded failed Prisma migration. Success ends with `All Docker runtime probes
+passed`. A failure prints the affected temporary container logs, exits nonzero,
+and still removes probe resources.
 
 ## Rate Limiting
 

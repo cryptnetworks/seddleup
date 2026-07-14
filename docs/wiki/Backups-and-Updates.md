@@ -171,6 +171,25 @@ current path before migrations run. Back up the volume before relying on this
 one-time compatibility behavior. If both files exist, startup leaves the legacy
 file untouched and uses `seddleup.db`; it never overwrites the current database
 with the legacy file.
+Startup validates an existing database before applying Prisma migrations. If
+validation or migration fails, leave the container stopped, preserve the failed
+file for investigation, and restore a verified backup. SeddleUp does not replace
+an invalid existing database with a new empty one.
+
+## Rehearse Current and Legacy Paths Safely
+
+The repository includes a disposable Docker rehearsal that never uses
+`seddleup_data` or any supplied operator volume:
+
+```bash
+docker build -t seddleup:ci .
+npm run test:docker
+```
+
+It proves data survives a normal restart and the one-time rename from
+`triptally.db` to `seddleup.db`. It also verifies that corrupt, inaccessible, and
+failed-migration databases stop startup explicitly. This is a regression probe,
+not a replacement for creating and testing backups of the real deployment.
 
 ## Update a Single Docker Container
 
@@ -197,7 +216,10 @@ follow the rollback procedure if the database must also be restored.
 
 Back up existing data before switching from the old `triptally_data` volume name
 to `seddleup_data`. Confirm which named volume Compose actually mounts before
-restoring into it:
+restoring into it. The startup entrypoint migrates `/app/data/triptally.db` to
+`/app/data/seddleup.db` only when that old file is present, valid, and writable
+in the mounted volume and the current file is absent. If both files exist, the
+current `seddleup.db` remains authoritative and the legacy file is not moved.
 
 ```bash
 docker compose config

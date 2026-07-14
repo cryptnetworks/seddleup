@@ -61,6 +61,30 @@ The Docker workflow builds the app image on Docker-relevant pull requests and
 publishes to GitHub Container Registry from `main` and tags. Images are tagged
 by branch, SHA, and `latest` where applicable.
 
+Docker-relevant changes also run an amd64 runtime-probe job. The job builds a
+local `seddleup:ci` image without publishing it, then runs:
+
+```bash
+npm run test:docker
+```
+
+The probe verifies:
+
+- an empty persistent volume is migrated and becomes healthy;
+- the container remains non-root and the built-in health check succeeds;
+- restarting against an already migrated volume is idempotent;
+- an existing sentinel record survives startup and migration;
+- a volume containing only `triptally.db` is adopted as `seddleup.db` without
+  losing the sentinel;
+- corrupt, unreadable, and Prisma-failed databases stop startup with actionable
+  errors instead of reaching `startup.ready` or silently creating a new
+  database.
+
+Every probe resource has a run-specific Docker label. Cleanup runs on success,
+failure, and interruption, so the workflow never uses or deletes a named
+deployment volume. Expected failure logs contain paths and error categories but
+not database rows, secrets, tokens, or cookies.
+
 ## Security Workflow
 
 The security workflow runs:

@@ -68,6 +68,10 @@ requested taxonomy.
   `size:m`, `ready`, `docker`, `ci`
 - Dependencies and notes: enables stronger validation for #62, #74, #80, and
   #81. Main risk is CI runtime and cost.
+- Implementation status: in progress on `agent/docker-runtime-probes` together
+  with tightly related #80. A local/CI probe covers fresh migrations, health,
+  non-root startup, restart idempotency, data preservation, and explicit corrupt,
+  inaccessible, and failed-migration behavior using disposable Docker volumes.
 
 ### #62 - Docker: add profile smoke tests for Discord, nginx, and Cloudflare
 
@@ -301,6 +305,10 @@ requested taxonomy.
   `priority:medium`, `size:m`, `ready`, `database`, `docs`
 - Dependencies and notes: related to #69 and #76. Needs only a temporary
   volume or fixture.
+- Implementation status: in progress on `agent/docker-runtime-probes` together
+  with #61. The probe creates an isolated migrated `triptally.db`, verifies its
+  sentinel data, starts the normal current-path container, and confirms the file
+  is validated, moved to `seddleup.db`, migrated, healthy, and data-preserving.
 
 ### #81 - Observability: add readiness diagnostics for config and database state
 

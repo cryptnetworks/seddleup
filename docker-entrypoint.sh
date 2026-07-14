@@ -51,6 +51,16 @@ retry() {
   done
 }
 
+validate_sqlite_file() {
+  path="$1"
+  label="$2"
+
+  [ -f "$path" ] || fatal "$label is not a regular file: $path"
+  [ -r "$path" ] || fatal "$label is not readable: $path"
+  [ -w "$path" ] || fatal "$label is not writable: $path"
+  node scripts/validate-sqlite-database.mjs "$path" || fatal "$label failed SQLite integrity validation: $path. Restore a verified backup before retrying."
+}
+
 log "info" "startup.begin" "Preparing SeddleUp container"
 log "info" "startup.env" "NODE_ENV=${NODE_ENV:-production}"
 
@@ -93,13 +103,17 @@ case "$DATABASE_URL" in
         ;;
     esac
     DB_DIR="$(dirname "$DB_PATH")"
-    mkdir -p "$DB_DIR"
-    if [ "$DB_PATH" = "/app/data/seddleup.db" ] && [ ! -e "$DB_PATH" ] && [ -e "/app/data/triptally.db" ]; then
-      mv /app/data/triptally.db "$DB_PATH"
-      log "info" "startup.sqlite" "Migrated legacy SQLite database path from /app/data/triptally.db to $DB_PATH"
-    fi
+    mkdir -p "$DB_DIR" 2>/dev/null || fatal "SQLite directory cannot be created: $DB_DIR"
     touch "$DB_DIR/.write-test" 2>/dev/null || fatal "SQLite directory is not writable: $DB_DIR"
     rm -f "$DB_DIR/.write-test"
+    if [ "$DB_PATH" = "/app/data/seddleup.db" ] && [ ! -e "$DB_PATH" ] && [ -e "/app/data/triptally.db" ]; then
+      validate_sqlite_file "/app/data/triptally.db" "Legacy SQLite database"
+      mv /app/data/triptally.db "$DB_PATH" || fatal "Legacy SQLite database could not be moved to $DB_PATH"
+      log "info" "startup.sqlite" "Migrated legacy SQLite database path from /app/data/triptally.db to $DB_PATH"
+    fi
+    if [ -e "$DB_PATH" ]; then
+      validate_sqlite_file "$DB_PATH" "SQLite database"
+    fi
     log "info" "startup.sqlite" "Using SQLite database at $DB_PATH"
     ;;
 esac

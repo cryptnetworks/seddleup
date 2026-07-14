@@ -15,10 +15,20 @@
 1. Container starts as the `nextjs` user.
 2. Entrypoint normalizes `DATABASE_URL`, `NEXTAUTH_URL`, `NEXTAUTH_SECRET`, and `TOKEN_DIGEST_SECRET`.
 3. SQLite path is forced into `/app/data` for Docker persistence when needed.
-4. Prisma Client is generated.
-5. Configuration is validated.
-6. Prisma migrations are applied.
-7. Next.js production server starts.
+4. The data directory must be writable. Existing current or legacy database
+   files must be regular, readable, writable SQLite files that pass
+   `PRAGMA quick_check`.
+5. A validated legacy `triptally.db` is moved only when `seddleup.db` is absent.
+6. Prisma Client is generated.
+7. Configuration is validated.
+8. Prisma migrations are applied with bounded retries. A failure prevents the
+   application server and health endpoint from starting.
+9. Next.js production server starts.
+
+The Docker workflow exercises this flow with disposable volumes, including
+fresh and already-migrated databases, preserved records, legacy adoption, and
+negative startup cases. The runtime remains single-container SQLite and the
+container remains non-root.
 
 ## Data Model
 
