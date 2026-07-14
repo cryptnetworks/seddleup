@@ -124,6 +124,20 @@ npm run build
 npm run security:audit
 ```
 
+Docker-impacting changes should also build the production image and run the
+isolated runtime probes:
+
+```bash
+docker build -t seddleup:ci .
+npm run test:docker
+```
+
+The probe creates temporary labeled Docker volumes and verifies fresh SQLite
+migrations, health, restart idempotency, data preservation, legacy
+`triptally.db` adoption, and explicit invalid, inaccessible, and failed-migration
+startup errors. It removes its containers and volumes when it exits and never
+uses an existing deployment volume.
+
 See the wiki for more detail:
 
 - [Architecture](https://github.com/cryptnetworks/seddleup/wiki/Architecture)

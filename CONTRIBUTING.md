@@ -56,7 +56,12 @@ For Docker-impacting changes:
 
 ```bash
 docker build -t seddleup:ci .
+npm run test:docker
 ```
+
+`test:docker` uses only temporary labeled volumes and containers. It must never
+be pointed at an operator or production volume. The probe image is local and is
+not published.
 
 ## Prisma Changes
 
