@@ -1,18 +1,33 @@
-import { ok, unavailable } from "@/lib/api-response";
+import { NextResponse } from "next/server";
+
 import { logger } from "@/lib/logger";
-import { prisma } from "@/lib/prisma";
+import { checkReadiness } from "@/lib/readiness";
 
 export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
 export async function GET() {
-  try {
-    await prisma.$queryRaw`SELECT 1`;
-    return ok({ service: "seddleup" }, { time: new Date().toISOString() });
-  } catch (error) {
-    logger.error("healthcheck.failed", {
-      error: error instanceof Error ? error.message : "Unknown error"
-    });
+  const readiness = await checkReadiness();
+  const ready = readiness.status === "ready";
 
-    return unavailable("Database connectivity check failed");
+  if (!ready) {
+    logger.warn("readiness.failed", { check: readiness.failedCheck });
   }
+
+  return NextResponse.json(
+    {
+      ok: ready,
+      data: {
+        service: "seddleup",
+        status: readiness.status,
+        checks: readiness.checks
+      },
+      ...(ready ? {} : { error: { message: "Service is not ready" } }),
+      time: new Date().toISOString()
+    },
+    {
+      status: ready ? 200 : 503,
+      headers: { "Cache-Control": "no-store" }
+    }
+  );
 }
