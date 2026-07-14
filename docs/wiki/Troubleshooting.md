@@ -87,16 +87,33 @@ and moves it to the current path. A validation failure leaves the legacy file in
 place and exits. If both names exist, SeddleUp uses `seddleup.db` and leaves
 `triptally.db` untouched.
 
-## Healthcheck Fails
+## Readiness Check Fails
 
-Check logs and database connectivity:
+Compare liveness and readiness, then inspect the structured startup/readiness
+logs:
 
 ```bash
 docker logs seddleup
+curl http://localhost:3000/api/health/live
 curl http://localhost:3000/api/health
 ```
 
-The `/api/health` endpoint checks database connectivity.
+If liveness succeeds but readiness returns HTTP 503, use the reported check:
+
+- `configuration: unavailable` means required runtime configuration is invalid.
+  Run `npm run validate:config` or inspect the preceding container startup log;
+  the public response intentionally omits the invalid value.
+- `database: unavailable` means SQLite did not accept a connectivity query.
+  Check volume ownership, permissions, available space, and the configured
+  database file without posting its contents.
+- `migrations: unavailable` means the bundled migration manifest could not be
+  read, an expected migration is not applied, or Prisma recorded an unfinished
+  migration. Preserve and back up the database before following the migration or
+  restore procedure in [Backups and Updates](Backups-and-Updates).
+
+Checks after the first unavailable dependency report `not_checked`. Readiness
+logs include only the failed check category, not exception messages, secrets,
+URLs, migration names, or filesystem paths.
 
 ## Styling, Logo, Or Navigation Looks Broken
 

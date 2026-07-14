@@ -321,6 +321,10 @@ requested taxonomy.
   `priority:medium`, `size:m`, `ready`, `backend`, `database`, `ci`
 - Dependencies and notes: complements #61. Split public liveness from
   authenticated/admin diagnostics if details grow.
+- Implementation status: addressed by the readiness diagnostics PR with a
+  dependency-free liveness endpoint, safe public readiness states for config,
+  SQLite, and bundled Prisma migrations, focused unit/E2E coverage, and stable
+  Docker healthcheck behavior. No authenticated detail endpoint was needed.
 
 ## Suggested Implementation Order
 

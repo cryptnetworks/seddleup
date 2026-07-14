@@ -30,6 +30,19 @@ fresh and already-migrated databases, preserved records, legacy adoption, and
 negative startup cases. The runtime remains single-container SQLite and the
 container remains non-root.
 
+## Runtime Health Signals
+
+- `GET /api/health/live` is dependency-free liveness. It proves only that the
+  Next.js process is responding.
+- `GET /api/health` is readiness. It validates configuration through the shared
+  Zod schema, queries SQLite, compares successful Prisma migration records with
+  the bundled migration directories, and rejects unfinished migrations.
+- The Docker and Compose health checks use readiness so dependent services do
+  not start against an invalid configuration or incomplete database.
+- Public responses contain only coarse check states. Detailed exception text,
+  configuration values, database paths, and migration names remain server-side
+  and are not logged by the readiness route.
+
 ## Data Model
 
 Main entities:

@@ -82,6 +82,16 @@ Configured globally:
 - `Strict-Transport-Security`
 - `Cross-Origin-Opener-Policy: same-origin`
 
+## Public Operational Endpoints
+
+- `/api/health/live` exposes only the service name and `live` state.
+- `/api/health` exposes only `ready`, `unavailable`, and `not_checked` states for
+  configuration, database connectivity, and migration readiness.
+- Neither endpoint returns secrets, tokens, configuration values, private URLs,
+  database contents, migration names, exception text, or filesystem paths.
+- Both endpoints disable caching. Detailed authenticated/admin diagnostics are
+  intentionally outside the public readiness surface.
+
 ## Residual Notes
 
 The CSP permits inline scripts/styles for Next.js compatibility and the theme bootstrap script. Development mode may also require browser eval support for React diagnostics, but production should not rely on `unsafe-eval`. If strict nonce/hash CSP support is added later, this can be tightened.
