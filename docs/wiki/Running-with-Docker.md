@@ -62,13 +62,27 @@ If the page loads without styling, logos, or navigation, check the public URL
 values in [Configuration](Configuration) and confirm the reverse proxy is
 forwarding static asset requests.
 
-## Healthcheck
+## Liveness And Readiness
 
 ```bash
+curl http://localhost:3000/api/health/live
 curl http://localhost:3000/api/health
 ```
 
-The Docker image also defines a healthcheck that calls `/api/health` every 30 seconds.
+`/api/health/live` is a dependency-free liveness check. A successful response
+only proves that the Next.js process can answer HTTP requests.
+
+`/api/health` is the readiness check. It returns HTTP 200 only when runtime
+configuration is valid, SQLite accepts a query, the bundled Prisma migration
+manifest is available, every bundled migration is applied, and no unfinished
+Prisma migration is recorded. The response identifies checks only as `ready`,
+`unavailable`, or `not_checked`; it never returns configuration values, secrets,
+private URLs, database contents, migration names, or filesystem paths.
+
+The Docker image and Compose configuration continue to call `/api/health` every
+30 seconds, so a container is healthy only when it is ready to serve application
+traffic. Reverse proxies and orchestrators may use `/api/health/live` solely to
+decide whether the HTTP process needs restarting.
 
 ## Run with Docker Compose
 

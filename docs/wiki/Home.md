@@ -36,7 +36,7 @@ docker pull ghcr.io/cryptnetworks/seddleup:latest
 - Email-code or authenticator-app MFA
 - Admin portal for users, auth providers, settings, and audit logs
 - OAuth login and account linking for Google, GitHub, Discord, and Facebook
-- Docker healthcheck at `/api/health`
+- Docker readiness check at `/api/health` and process liveness at `/api/health/live`
 - SQLite persistence in the Docker volume at `/app/data`
 - CI, Docker image publishing, dependency review, Dependabot, and security scan automation
 

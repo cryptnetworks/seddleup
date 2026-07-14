@@ -68,6 +68,12 @@ The app is designed for single-container Docker deployments with SQLite stored
 in a persistent volume at `/app/data`. PostgreSQL is not currently supported by
 the schema or migrations.
 
+Operational endpoints distinguish process liveness from application readiness:
+`/api/health/live` confirms that the HTTP process is responding, while
+`/api/health` verifies runtime configuration, database connectivity, and that
+all bundled Prisma migrations are applied. Both responses expose only coarse
+status values and are never cached.
+
 Authentication uses NextAuth sessions plus app-level checks against the current
 database user. One-time tokens for invitations, email verification, password
 reset, and MFA handoff are stored as keyed digests. Stored OAuth provider client
