@@ -43,6 +43,7 @@ Main entities:
 - `UserAuthAccount`
 - `AuthProviderConfig`
 - `AuditLog`
+- `TripShareLink`
 
 ## Core Application Areas
 
@@ -62,6 +63,21 @@ Main entities:
 - `lib/discord` - Discord request verification and account linking helpers
 - `lib/validation.ts` - Zod schemas and form helpers
 - `lib/calculations.ts` - expense/balance calculations
+- `lib/trip-sharing.ts` - bearer-token validation, privacy labels, and safe
+  anonymous summary projection
+
+## Read-Only Trip Sharing
+
+Each trip may have one current `TripShareLink`. The database stores a keyed token
+digest, privacy mode, optional expiration, revocation state, and creating manager;
+it never stores the raw bearer token. Rotation replaces the digest and immediately
+invalidates the old URL.
+
+The `/share/trip/[token]` route resolves the digest server-side and queries a
+minimal trip projection. It reuses `calculateBalances`, excludes drafts, strips
+internal identifiers before rendering, and does not use authenticated membership
+as an anonymous-access shortcut. All management remains in authenticated server
+actions under `lib/actions/trip-sharing.ts`.
 
 ## Collaborative Expense Model
 

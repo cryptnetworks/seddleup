@@ -18,5 +18,10 @@ describe("security headers", () => {
     expect(config).toContain("strict-origin-when-cross-origin");
     expect(config).toContain("Cross-Origin-Opener-Policy");
     expect(config).toContain("same-origin");
+    expect(config).toContain("/share/trip/:path*");
+    expect(config).toContain("X-Robots-Tag");
+    expect(config).toContain("noindex, nofollow, noarchive");
+    expect(config).toContain("private, no-store, max-age=0");
+    expect(config).toContain('value: "no-referrer"');
   });
 });

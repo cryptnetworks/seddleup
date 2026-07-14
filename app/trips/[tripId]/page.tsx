@@ -138,6 +138,13 @@ export default async function TripDetailPage({
             <Link className="btn-secondary" data-testid="edit-trip" href={`/trips/${trip.id}/edit`}>
               Edit Trip
             </Link>
+            <Link
+              className="btn-secondary"
+              data-testid="share-trip"
+              href={`/trips/${trip.id}/share`}
+            >
+              Share read-only summary
+            </Link>
             <form action={removeTrip}>
               <button
                 className="btn-danger w-full sm:w-auto"

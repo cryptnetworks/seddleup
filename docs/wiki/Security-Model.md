@@ -13,6 +13,29 @@
 - Retail lookup runs server-side so provider keys are not exposed to clients.
 - Discord interactions verify request signatures before processing commands.
 
+## Read-Only Sharing Links
+
+- Trip owners and trip administrators can create one unlisted, read-only sharing
+  link per trip. Recipients do not become members and cannot mutate data.
+- The URL is a bearer credential. Anyone who receives it can view and forward the
+  configured summary until it expires, is rotated, or is revoked.
+- Tokens contain 256 bits of randomness. Only an HMAC-SHA-256 digest keyed by
+  `TOKEN_DIGEST_SECRET` is stored; the raw URL is shown only after creation or
+  rotation.
+- Invalid, expired, revoked, rotated, and rate-limited links use the same
+  unavailable response and reveal no trip identity.
+- Anonymous lookups are throttled by a protected requester bucket. The route is
+  dynamic, non-cacheable, marked `noindex`/`nofollow`, and sends `no-referrer`.
+- The shared page contains only local assets and no payment links or third-party
+  resources.
+- The default participant privacy mode uses `Traveler N` labels. Managers may
+  deliberately choose initials, first names, or full names.
+- Shared data excludes email addresses, account and invitation data, audit logs,
+  draft expenses, notes, receipts and parser output, payment methods, and internal
+  database identifiers.
+- Creation, rotation, settings changes, and revocation are audited without the raw
+  token or full sharing URL.
+
 ## OAuth
 
 - Provider access tokens and refresh tokens are not stored.
@@ -70,6 +93,8 @@ Automated coverage includes:
 - Unit tests that verify security headers remain configured.
 - Unit tests that verify user-controlled text is escaped by React rendering.
 - API/session tests for stale sessions, disabled users, MFA, CSRF, and role checks.
+- Unit, integration, and browser tests for sharing-token lifecycle, authorization,
+  disclosure boundaries, response protections, and read-only behavior.
 - GitHub Actions security workflow for high-severity npm audit, Trivy filesystem scan, and Trivy Docker image scan.
 - CodeQL is expected to run through GitHub default setup in repository settings.
 
