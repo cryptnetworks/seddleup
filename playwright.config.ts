@@ -9,6 +9,7 @@ const authConfigEncryptionKey =
   process.env.AUTH_CONFIG_ENCRYPTION_KEY ?? "playwright-auth-config-key-for-tests";
 const smtpEnabled = process.env.SMTP_ENABLED ?? "false";
 const testOauthProviderEnabled = process.env.TEST_OAUTH_PROVIDER_ENABLED ?? "true";
+const receiptUploadEnabled = process.env.PLAYWRIGHT_RECEIPT_UPLOAD_ENABLED ?? "false";
 
 process.env.DATABASE_URL ??= databaseUrl;
 process.env.NEXTAUTH_URL ??= baseURL;
@@ -18,10 +19,12 @@ process.env.TOKEN_DIGEST_SECRET = tokenDigestSecret;
 process.env.AUTH_CONFIG_ENCRYPTION_KEY = authConfigEncryptionKey;
 process.env.SMTP_ENABLED = smtpEnabled;
 process.env.TEST_OAUTH_PROVIDER_ENABLED = testOauthProviderEnabled;
+process.env.RECEIPT_UPLOAD_ENABLED = receiptUploadEnabled;
 
 export default defineConfig({
   testDir: "tests/e2e",
   timeout: 30_000,
+  retries: 1,
   workers: 1,
   expect: {
     timeout: 10_000
@@ -47,7 +50,8 @@ export default defineConfig({
           TOKEN_DIGEST_SECRET: tokenDigestSecret,
           AUTH_CONFIG_ENCRYPTION_KEY: authConfigEncryptionKey,
           SMTP_ENABLED: smtpEnabled,
-          TEST_OAUTH_PROVIDER_ENABLED: testOauthProviderEnabled
+          TEST_OAUTH_PROVIDER_ENABLED: testOauthProviderEnabled,
+          RECEIPT_UPLOAD_ENABLED: receiptUploadEnabled
         },
         url: `${baseURL}/login`,
         reuseExistingServer: !process.env.CI,

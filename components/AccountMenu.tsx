@@ -28,7 +28,7 @@ export function AccountMenu({ name, email }: AccountMenuProps) {
   }, []);
 
   return (
-    <div className="relative" ref={menuRef}>
+    <div className="relative min-w-0" ref={menuRef}>
       <button
         className="btn-secondary gap-2"
         data-testid="account-menu-trigger"
@@ -43,7 +43,7 @@ export function AccountMenu({ name, email }: AccountMenuProps) {
 
       {isOpen ? (
         <div
-          className="absolute right-0 mt-2 w-72 rounded-lg border border-line p-2 shadow-soft"
+          className="absolute right-0 mt-2 w-72 max-w-[calc(100vw-2rem)] rounded-lg border border-line p-2 shadow-soft"
           style={{ backgroundColor: "var(--app-card-solid)" }}
           role="menu"
           data-testid="account-menu"

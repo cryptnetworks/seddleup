@@ -107,6 +107,32 @@ database can be rolled back.
 The full documentation index is available in the
 [SeddleUp wiki](https://github.com/cryptnetworks/seddleup/wiki).
 
+## Search Discoverability
+
+Set `PUBLIC_APP_URL` to the final HTTPS production origin before deployment, for
+example `https://app.example.com`. SeddleUp uses that single origin for homepage
+canonical metadata, social previews, structured data, `/robots.txt`, and
+`/sitemap.xml`. Unsafe production values such as localhost or plain HTTP are not
+published as canonical URLs.
+
+Google and Bing ownership verification values are optional:
+
+```env
+GOOGLE_SITE_VERIFICATION=
+BING_SITE_VERIFICATION=
+```
+
+After deployment:
+
+1. Open `/robots.txt` and `/sitemap.xml` on the public origin and confirm that
+   only the homepage is indexable.
+2. Submit `/sitemap.xml` in Google Search Console and Bing Webmaster Tools.
+3. Inspect the deployed homepage in each search console and a social-preview
+   debugger to confirm its canonical URL, title, description, and image.
+
+These SEO controls improve eligibility for organic discovery. Paid placement is
+separate and requires a Google Ads or Microsoft Advertising account and campaign.
+
 ## Local Development
 
 Use Node.js 24.18.0 LTS with npm 11.16.0.

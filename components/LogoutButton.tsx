@@ -11,7 +11,8 @@ type LogoutButtonProps = {
 const styles = {
   nav: "btn-secondary gap-2",
   menu: "flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm font-semibold text-ink transition hover:bg-surface focus:outline-none focus:ring-2 focus:ring-ocean",
-  mobile: "flex flex-col items-center gap-1 rounded-lg px-2 py-2 text-xs font-medium text-muted",
+  mobile:
+    "flex min-h-11 min-w-0 w-full flex-col items-center gap-1 rounded-lg px-1 py-2 text-xs font-medium text-muted focus:outline-none focus:ring-2 focus:ring-ocean",
   button: "btn-danger gap-2"
 };
 
@@ -32,7 +33,7 @@ export function LogoutButton({ variant = "button" }: LogoutButtonProps) {
   }
 
   return (
-    <span className={variant === "mobile" ? "flex flex-col items-center" : "block"}>
+    <span className={variant === "mobile" ? "flex min-w-0 flex-col items-center" : "block"}>
       <button
         className={styles[variant]}
         data-testid={variant === "mobile" ? "mobile-nav-logout" : "logout-button"}
@@ -41,9 +42,11 @@ export function LogoutButton({ variant = "button" }: LogoutButtonProps) {
         onClick={logout}
       >
         <LogOut className="h-5 w-5" aria-hidden />
-        {isPending ? "Logging out..." : "Logout"}
+        <span className={variant === "mobile" ? "max-w-full truncate" : undefined}>
+          {isPending ? "Logging out..." : "Logout"}
+        </span>
       </button>
-      {error ? <span className="mt-1 block text-xs text-coral">{error}</span> : null}
+      {error ? <span className="mt-1 block break-words text-xs text-coral">{error}</span> : null}
     </span>
   );
 }

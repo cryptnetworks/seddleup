@@ -25,11 +25,11 @@ export function ItemLookupBox() {
   }
 
   return (
-    <div className="rounded-lg border border-line bg-surface p-3">
+    <div className="min-w-0 rounded-lg border border-line bg-surface p-3">
       <label className="label" htmlFor="itemLookup">
         Item lookup
       </label>
-      <div className="grid gap-2 sm:grid-cols-[1fr_auto]">
+      <div className="grid min-w-0 gap-2 sm:grid-cols-[minmax(0,1fr)_auto]">
         <input
           className="field"
           id="itemLookup"
@@ -37,7 +37,12 @@ export function ItemLookupBox() {
           onChange={(event) => setQuery(event.target.value)}
           placeholder="Search product catalog"
         />
-        <button className="btn-secondary" type="button" onClick={search} disabled={isPending}>
+        <button
+          className="btn-secondary min-h-11"
+          type="button"
+          onClick={search}
+          disabled={isPending}
+        >
           <Search className="h-4 w-4" aria-hidden />
           <span className="sr-only">Search</span>
         </button>
@@ -47,12 +52,12 @@ export function ItemLookupBox() {
           {results.map((result) => (
             <button
               key={result.externalId}
-              className="rounded-lg border border-line bg-white p-3 text-left text-sm hover:border-ocean"
+              className="min-h-11 min-w-0 rounded-lg border border-line bg-white p-3 text-left text-sm hover:border-ocean focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ocean focus-visible:ring-offset-2"
               type="button"
               onClick={() => applyResult(result)}
             >
-              <span className="block font-semibold text-ink">{result.title}</span>
-              <span className="text-muted">
+              <span className="block break-words font-semibold text-ink">{result.title}</span>
+              <span className="block break-words text-muted">
                 {result.retailer}
                 {result.price === undefined
                   ? ""

@@ -37,11 +37,11 @@ export default async function EditParticipantPage({
         title="Edit participant"
         description="Update traveler details or remove them from this trip."
       />
-      <section className="card mx-auto max-w-2xl p-5">
+      <section className="card mx-auto max-w-2xl p-4 sm:p-5">
         <div className="mb-4 flex justify-end">
           <DeleteButton action={removeParticipant} label={`Delete ${participant.name}`} />
         </div>
-        <form className="grid gap-4" action={action} data-testid="participant-form">
+        <form className="grid min-w-0 gap-4" action={action} data-testid="participant-form">
           <div>
             <label className="label" htmlFor="name">
               Name

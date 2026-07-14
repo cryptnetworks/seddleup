@@ -41,7 +41,7 @@ export default async function NewExpensePage({ params }: { params: Promise<{ tri
         title="Add expense"
         description="Choose the payer and everyone who shares this cost."
       />
-      <section className="card mx-auto max-w-2xl p-5">
+      <section className="card mx-auto max-w-2xl p-4 sm:p-5">
         <ExpenseForm
           action={action}
           participants={trip.participants}

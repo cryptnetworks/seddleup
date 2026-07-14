@@ -30,7 +30,9 @@ export function BrandLogo({
     <span
       className={[
         "inline-flex items-center rounded-lg text-ink",
-        compact ? "h-11 w-11 justify-center shadow-soft" : "w-44 px-2 py-1.5 shadow-soft md:w-56",
+        compact
+          ? "h-11 w-11 max-w-full justify-center shadow-soft"
+          : "w-44 max-w-full px-2 py-1.5 shadow-soft md:w-56",
         className
       ].join(" ")}
       style={{ backgroundColor: "#ffffff" }}
@@ -44,7 +46,7 @@ export function BrandLogo({
   }
 
   return (
-    <Link href={href} aria-label="SeddleUp home" className="inline-flex">
+    <Link href={href} aria-label="SeddleUp home" className="inline-flex min-w-0 max-w-full">
       {content}
     </Link>
   );

@@ -55,6 +55,28 @@ const securityHeaders = [
     : [])
 ];
 
+const privateNoIndexSources = [
+  "/api/:path*",
+  "/admin/:path*",
+  "/account/:path*",
+  "/dashboard/:path*",
+  "/trips/:path*",
+  "/invite/:path*",
+  "/login",
+  "/register",
+  "/forgot-password",
+  "/reset-password",
+  "/verify-email",
+  "/offline"
+];
+
+const noIndexHeaders = [
+  {
+    key: "X-Robots-Tag",
+    value: "noindex, nofollow, noarchive"
+  }
+];
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   poweredByHeader: false,
@@ -65,7 +87,7 @@ const nextConfig = {
         headers: securityHeaders
       },
       {
-        source: "/share/trip/:path*",
+        source: "/share/:path*",
         headers: [
           {
             key: "Cache-Control",
@@ -80,7 +102,11 @@ const nextConfig = {
             value: "no-referrer"
           }
         ]
-      }
+      },
+      ...privateNoIndexSources.map((source) => ({
+        source,
+        headers: noIndexHeaders
+      }))
     ];
   }
 };

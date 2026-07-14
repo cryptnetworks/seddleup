@@ -6,8 +6,10 @@ export function BalanceCard({ balance }: { balance: ParticipantWithBalances }) {
 
   return (
     <article className="card p-4" data-testid="balance-card">
-      <div className="flex items-center justify-between gap-3">
-        <h3 className="font-semibold text-ink">{balance.participant.name}</h3>
+      <div className="flex min-w-0 flex-wrap items-start justify-between gap-3">
+        <h3 className="min-w-0 flex-1 break-words font-semibold text-ink">
+          {balance.participant.name}
+        </h3>
         <span
           className={
             isPositive
@@ -22,9 +24,7 @@ export function BalanceCard({ balance }: { balance: ParticipantWithBalances }) {
         Paid {formatCurrency(balance.paid)}, owes {formatCurrency(balance.owed)}
       </p>
       <p
-        className={
-          isPositive ? "mt-2 text-2xl font-bold text-ocean" : "mt-2 text-2xl font-bold text-coral"
-        }
+        className={`${isPositive ? "text-ocean" : "text-coral"} mt-2 break-all text-2xl font-bold tabular-nums`}
       >
         {formatCurrency(balance.net)}
       </p>

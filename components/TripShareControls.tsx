@@ -90,8 +90,8 @@ export function TripShareControls({
   }
 
   return (
-    <div className="grid gap-5">
-      <section className="card p-5">
+    <div className="grid min-w-0 gap-5">
+      <section className="card p-4 sm:p-5">
         <h2 className="text-lg font-semibold text-ink">
           {hasCurrentLink ? "Rotate sharing link" : "Create sharing link"}
         </h2>
@@ -103,7 +103,7 @@ export function TripShareControls({
         <form className="mt-4 grid gap-4" action={createAction}>
           <SettingsFields participantNameMode={participantNameMode} />
           <button
-            className={hasCurrentLink ? "btn-danger" : "btn-primary"}
+            className={`${hasCurrentLink ? "btn-danger" : "btn-primary"} w-full whitespace-normal`}
             data-testid="trip-share-create-or-rotate"
             disabled={createPending}
             onClick={(event) => {
@@ -135,12 +135,16 @@ export function TripShareControls({
               New sharing URL
             </label>
             <input
-              className="field font-mono text-xs"
+              className="field font-mono text-base sm:text-xs"
               id="generatedShareUrl"
               readOnly
               value={createState.shareUrl}
             />
-            <button className="btn-secondary mt-3" onClick={copyShareUrl} type="button">
+            <button
+              className="btn-secondary mt-3 w-full sm:w-auto"
+              onClick={copyShareUrl}
+              type="button"
+            >
               {copyLabel}
             </button>
           </div>
@@ -148,7 +152,7 @@ export function TripShareControls({
       </section>
 
       {hasCurrentLink ? (
-        <section className="card p-5">
+        <section className="card p-4 sm:p-5">
           <h2 className="text-lg font-semibold text-ink">Update sharing settings</h2>
           <p className="mt-2 text-sm leading-6 text-muted">
             Saving an expiration replaces the current expiration with the selected period from now.
@@ -156,7 +160,7 @@ export function TripShareControls({
           </p>
           <form className="mt-4 grid gap-4" action={settingsAction}>
             <SettingsFields participantNameMode={participantNameMode} />
-            <button className="btn-secondary" disabled={settingsPending} type="submit">
+            <button className="btn-secondary w-full" disabled={settingsPending} type="submit">
               {settingsPending ? "Saving..." : "Save sharing settings"}
             </button>
             <ActionMessage state={settingsState} />
@@ -165,7 +169,7 @@ export function TripShareControls({
       ) : null}
 
       {hasCurrentLink ? (
-        <section className="card border-red-100 p-5">
+        <section className="card border-red-100 p-4 sm:p-5">
           <h2 className="text-lg font-semibold text-ink">Revoke sharing</h2>
           <p className="mt-2 text-sm leading-6 text-muted">
             Revocation takes effect immediately. Recipients will see the same unavailable page used
@@ -173,7 +177,7 @@ export function TripShareControls({
           </p>
           <form className="mt-4 grid gap-3" action={revokeAction}>
             <button
-              className="btn-danger"
+              className="btn-danger w-full"
               data-testid="trip-share-revoke"
               disabled={revokePending}
               onClick={(event) => {

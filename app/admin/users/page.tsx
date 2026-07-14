@@ -124,8 +124,8 @@ export default async function AdminUsersPage({
       </section>
 
       <section className="card mb-4 p-4">
-        <div className="mb-4 flex items-center justify-between gap-3">
-          <div>
+        <div className="mb-4 flex min-w-0 flex-wrap items-center justify-between gap-3">
+          <div className="min-w-0">
             <h2 className="text-lg font-semibold text-ink">Pending invitations</h2>
             <p className="text-sm text-muted">Open SeddleUp invites that have not been accepted.</p>
           </div>
@@ -143,7 +143,7 @@ export default async function AdminUsersPage({
                 className="flex flex-col gap-3 rounded-lg border border-line p-3 lg:flex-row lg:items-center lg:justify-between"
               >
                 <div className="min-w-0">
-                  <h3 className="truncate font-semibold text-ink">{invite.email}</h3>
+                  <h3 className="break-all font-semibold text-ink">{invite.email}</h3>
                   <p className="text-sm text-muted">
                     {invite.role || "user"} · Expires {invite.expiresAt.toLocaleDateString()}
                     {invite.trip ? ` · Trip: ${invite.trip.name}` : ""}
@@ -194,8 +194,8 @@ export default async function AdminUsersPage({
         {users.map((user) => (
           <article key={user.id} className="card p-4">
             <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
-              <div>
-                <h2 className="font-semibold text-ink">{user.email}</h2>
+              <div className="min-w-0">
+                <h2 className="break-all font-semibold text-ink">{user.email}</h2>
                 <p className="text-sm text-muted">
                   {user.username} · {user.role} · {user.disabledAt ? "Disabled" : "Active"}
                 </p>
@@ -206,7 +206,10 @@ export default async function AdminUsersPage({
                 </p>
               </div>
               <div className="grid gap-2 sm:grid-cols-2 lg:min-w-[520px]">
-                <form className="flex gap-2" action={updateUserRole}>
+                <form
+                  className="grid min-w-0 grid-cols-[minmax(0,1fr)_auto] gap-2"
+                  action={updateUserRole}
+                >
                   <input name="userId" type="hidden" value={user.id} />
                   <select
                     className="field min-h-11 py-2 text-sm"
@@ -228,7 +231,10 @@ export default async function AdminUsersPage({
                     {user.disabledAt ? "Enable" : "Disable"}
                   </button>
                 </form>
-                <form className="flex gap-2" action={resetUserPassword}>
+                <form
+                  className="grid min-w-0 grid-cols-[minmax(0,1fr)_auto] gap-2"
+                  action={resetUserPassword}
+                >
                   <input name="userId" type="hidden" value={user.id} />
                   <input
                     className="field min-h-11 py-2 text-sm"
