@@ -51,7 +51,13 @@ export async function POST(request: Request) {
   const options = interaction.data?.options as DiscordOption[] | undefined;
   if (!discordUserId || !command) return reply("Unsupported Discord interaction.");
 
+  const account = await linkedUser(discordUserId);
+  if (account?.user.disabledAt) {
+    return reply("This SeddleUp account is unavailable.");
+  }
+
   if (command === "link") {
+    if (account) return reply("This Discord account is already linked.");
     const url = await createDiscordLinkToken({
       discordUserId,
       discordUsername: discordUser?.username,
@@ -60,7 +66,6 @@ export async function POST(request: Request) {
     return reply(`Open this private link while signed in to SeddleUp: ${url}`);
   }
 
-  const account = await linkedUser(discordUserId);
   if (!account) return reply("Link your account first with `/link`.");
 
   if (command === "trip") {

@@ -113,13 +113,31 @@ users to rely on email-code MFA. Authenticator-app MFA does not require SMTP.
 
 ## Rate Limiting
 
-The built-in limiter uses process-local memory. There is no required Redis or
-shared-store dependency today, and no `RATE_LIMIT_STORE` setting is supported
-yet.
+Login throttling uses persistent SQLite buckets shared by processes that use the
+same supported database file. It combines account, source, and account/source
+limits and fails closed when the bucket store cannot be updated. Other action
+limiters remain process-local.
 
-This is acceptable for a single app container. For multi-replica production
-deployments, add shared rate limiting at the reverse proxy, load balancer, edge,
-or hosting platform layer until app-level shared store support is added.
+Set `SEDDLEUP_TRUST_PROXY_HEADERS=true` only when a trusted reverse proxy
+overwrites or safely appends `X-Forwarded-For`/`X-Real-IP`. The supplied nginx
+and Cloudflare Compose paths meet that deployment assumption. Keep it `false`
+when exposing the app directly; spoofable forwarding headers are then ignored.
+
+SeddleUp's SQLite runtime remains a single-deployment database architecture.
+Do not invent a multi-replica topology without a supported database and shared
+rate-limit migration plan.
+
+## Security Migration Impact
+
+The security migration adds OAuth-state purpose/target fields, persistent login
+rate-limit buckets, and `users.sessionVersion`. Deploy the migration before
+enabling the updated application. Existing JWTs lack the version and are
+intentionally rejected, so all users must sign in again after this upgrade.
+
+Keep OAuth providers disabled until the migration is applied and existing
+`user_auth_accounts` rows have been reviewed. Historical rows do not record
+whether they came from explicit linking or the former email-matching behavior,
+so the repository cannot safely delete or bless them automatically.
 
 ## Receipts
 

@@ -33,7 +33,9 @@ export async function GET(
       "content-type": receipt.mimeType,
       "content-length": String(fileStat.size),
       "content-disposition": `inline; filename="${receipt.storedFilename}"`,
-      "x-content-type-options": "nosniff"
+      "x-content-type-options": "nosniff",
+      "cache-control": "private, no-store, max-age=0",
+      pragma: "no-cache"
     }
   });
 }

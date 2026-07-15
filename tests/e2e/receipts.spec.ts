@@ -68,6 +68,7 @@ test("enabled receipt upload, review, file authorization, and cleanup path work"
   const ownerFileResponse = await page.request.get(filePath ?? "");
   expect(ownerFileResponse.ok()).toBe(true);
   expect(ownerFileResponse.headers()["content-type"]).toBe("application/pdf");
+  expect(ownerFileResponse.headers()["cache-control"]).toBe("private, no-store, max-age=0");
   expect((await ownerFileResponse.body()).toString("utf8")).toContain("SeddleUp Test Market");
 
   const publicResponse = await request.get(filePath ?? "");

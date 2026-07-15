@@ -3,6 +3,69 @@
 SeddleUp includes GitHub automation for application and documentation validation,
 Docker images, dependency updates, and security scanning.
 
+## Self-hosted Linux x64 runner
+
+Expensive trusted jobs prefer a repository runner with all three labels:
+
+```text
+self-hosted
+linux
+x64
+```
+
+The runner must be a Linux x64 host with Git, Bash, standard GNU command-line
+tools, Docker Engine, the Docker Compose v2 plugin, and a GitHub Actions runner
+service account. It needs outbound HTTPS access to GitHub, GHCR, npm, Playwright,
+and the scanner download endpoints, plus enough disk for browser and container
+builds. Node 24.18.0 and Buildx are installed or configured by the workflow
+actions. The account must be able to run Docker without interactive sudo. The CI
+browser step uses Playwright's supported dependency installer, so the account
+must either have passwordless sudo for package installation or the documented
+Playwright Linux dependencies must already be installed.
+
+Keep the runner and Docker daemon patched, restrict access to trusted
+maintainers, and do not store application secrets, production databases,
+backups, or uploads on it. Register it at repository scope, or place it in an
+organization runner group restricted to this repository. Because a fork can
+propose changes to workflow YAML, configure GitHub to require approval for all
+outside-collaborator workflow runs and inspect workflow changes before approval.
+Where organization runner groups are available, restrict this runner group to
+the selected SeddleUp workflows as an additional control. Only trusted
+maintainers should have permission to push branches because trusted push, tag,
+and scheduled workflows may use the persistent self-hosted runner.
+
+SeddleUp is public and can receive pull requests from forks. Every pull request,
+including same-repository pull requests, is routed to `ubuntu-latest`; proposed
+code never executes on the self-hosted runner. Pushes, tags, and scheduled runs
+use the self-hosted runner only when the repository variable
+`USE_SELF_HOSTED_X64` is exactly `true`. An absent variable or any other value
+selects GitHub-hosted runners. The workflows do not use
+`pull_request_target` to execute pull-request code.
+
+GitHub Actions cannot automatically fall back from an offline self-hosted
+runner. If the runner is unavailable, remove the repository variable or set
+`USE_SELF_HOSTED_X64=false`, cancel the queued run, and rerun it. Set the
+variable back to `true` after the runner is healthy. This is also the
+supported temporary return to GitHub-hosted x64 runners; no workflow edit is
+required.
+
+The checkout action resets and cleans only the repository workspace before each
+run. Eligible jobs also clean generated files afterward. Docker probes already
+label and remove their temporary containers, networks, and volumes; workflow
+cleanup removes only the run-scoped probe or security image created by that
+job. Buildx manages its job-specific builder. Do not add broad Docker prunes or
+cleanup commands that could remove unrelated runner workloads. Review runner
+disk usage, the Actions work directory, Docker build cache, and tool caches
+regularly, and stop the runner before manual maintenance.
+
+The following jobs remain GitHub-hosted intentionally:
+
+- native `linux/arm64/v8` image builds use `ubuntu-24.04-arm`;
+- Docker manifest publication, GitHub release creation, and wiki synchronization
+  handle publishing credentials in a short-lived environment;
+- dependency review and documentation validation are inexpensive and can run
+  safely for public fork pull requests.
+
 ## Documentation validation
 
 The Documentation workflow runs for Markdown, docs tooling, and documentation
@@ -23,7 +86,7 @@ network failures cannot make docs changes flaky.
 
 The CI workflow runs on pushes and pull requests. It installs dependencies,
 validates configuration, validates Prisma, applies migrations, runs formatting
-checks, lint, TypeScript, unit/integration tests, Chromium and Mobile Safari E2E
+checks, enforces the workflow runner policy, runs lint, TypeScript, unit/integration tests, Chromium and Mobile Safari E2E
 smoke/accessibility tests, an isolated enabled-receipt flow, and a focused
 Chromium `next start` smoke/SEO suite. The production suite performs its own
 build, migration, readiness wait, and cleanup.
@@ -32,6 +95,7 @@ Local equivalent:
 
 ```bash
 npm run validate:config
+npm run workflows:check
 npx prisma validate
 npx prisma migrate deploy
 npm run docs:check
@@ -91,6 +155,13 @@ EOF
 The Docker workflow builds the app image on Docker-relevant pull requests and
 publishes to GitHub Container Registry from `main` and tags. Images are tagged
 by branch, SHA, and `latest` where applicable.
+
+Manifest publication waits for both runtime/migration probes and a dedicated
+high/critical dependency and image scan. Package-write permission is limited to
+the build and manifest jobs. Pull-request workflows are checked by
+`npm run workflows:check`, which requires every self-hosted runner selection to
+exclude `pull_request` events and rejects `pull_request_target`; proposed
+pull-request code must remain GitHub-hosted.
 
 Docker-relevant changes also run an amd64 runtime-probe job. The job builds a
 local `seddleup:ci` image without publishing it, then runs:

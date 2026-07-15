@@ -66,6 +66,13 @@ See [Testing and Production Readiness](docs/wiki/Testing-and-Production-Readines
 for the browser matrix, temporary-storage rules, WebKit investigation commands,
 and SEO QA procedure.
 
+CI, amd64 Docker builds and probes, and compatible security scans use the
+repository's trusted Linux x64 self-hosted runner for non-PR events when
+`USE_SELF_HOSTED_X64=true`. All pull requests and repositories without that
+explicit opt-in are routed to GitHub-hosted runners. Runner prerequisites,
+cleanup rules, and the outage fallback are documented in
+[Repository Automation](docs/wiki/Repository-Automation.md).
+
 For Docker-impacting changes:
 
 ```bash

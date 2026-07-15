@@ -32,7 +32,8 @@ concurrency:
 
 jobs:
   validate:
-    runs-on: ubuntu-latest
+    # All pull requests and the operator fallback stay on GitHub-hosted runners.
+    runs-on: ${{ fromJSON(vars.USE_SELF_HOSTED_X64 == 'true' && github.event_name != 'pull_request' && '["self-hosted","linux","x64"]' || '"ubuntu-latest"') }}
     env:
       DATABASE_URL: file:./dev.db
       NEXTAUTH_URL: http://localhost:3000
@@ -42,8 +43,21 @@ jobs:
       SMTP_ENABLED: "false"
       PASSWORD_RESET_TOKEN_MINUTES: "45"
     steps:
+      - name: Verify trusted self-hosted source
+        if: runner.environment == 'self-hosted'
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if [[ "${GITHUB_EVENT_NAME}" == "pull_request" ]]; then
+            echo "Refusing to run pull-request code on a self-hosted runner."
+            exit 1
+          fi
+
       - name: Checkout
         uses: actions/checkout@v7
+        with:
+          clean: true
 
       - name: Setup Node
         uses: actions/setup-node@v6
@@ -56,6 +70,9 @@ jobs:
 
       - name: Validate environment
         run: npm run validate:config
+
+      - name: Validate workflow runner policy
+        run: npm run workflows:check
 
       - name: Generate Prisma Client
         run: npm run prisma:generate
@@ -98,3 +115,14 @@ jobs:
 
       - name: Production server smoke and SEO tests
         run: npm run test:e2e:production
+
+      - name: Clean generated workspace files
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+            git reset --hard HEAD
+            git clean -ffdx
+          fi

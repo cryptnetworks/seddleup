@@ -30,6 +30,7 @@ import {
   verificationTokenSchema
 } from "@/lib/validation";
 import { requireUser } from "@/lib/session";
+import { revokeUserSessionsInTransaction } from "@/lib/session-revocation";
 
 export async function registerUser(formData: FormData) {
   await assertSameOriginRequest("auth.register");
@@ -276,13 +277,17 @@ export async function updateAccountProfile(formData: FormData) {
   });
   const emailChanged = currentUser.email !== parsed.data.email;
 
-  const updatedUser = await prisma.user.update({
-    where: { id: user.id },
-    data: {
-      username: parsed.data.username,
-      email: parsed.data.email,
-      emailVerifiedAt: emailChanged ? null : undefined
-    }
+  const updatedUser = await prisma.$transaction(async (tx) => {
+    const updated = await tx.user.update({
+      where: { id: user.id },
+      data: {
+        username: parsed.data.username,
+        email: parsed.data.email,
+        emailVerifiedAt: emailChanged ? null : undefined
+      }
+    });
+    if (emailChanged) await revokeUserSessionsInTransaction(tx, user.id);
+    return updated;
   });
 
   if (emailChanged) {
@@ -323,11 +328,10 @@ export async function updateAccountPassword(formData: FormData) {
     redirect("/account?password=current");
   }
 
-  await prisma.user.update({
-    where: { id: user.id },
-    data: {
-      passwordHash: await bcrypt.hash(parsed.data.password, 12)
-    }
+  const passwordHash = await bcrypt.hash(parsed.data.password, 12);
+  await prisma.$transaction(async (tx) => {
+    await tx.user.update({ where: { id: user.id }, data: { passwordHash } });
+    await revokeUserSessionsInTransaction(tx, user.id);
   });
 
   logger.info("account.password.updated", { userId: user.id });
@@ -361,9 +365,9 @@ export async function setTwoFactorMethod(formData: FormData) {
     redirect("/account?twoFactor=setup-required");
   }
 
-  await prisma.user.update({
-    where: { id: user.id },
-    data: { twoFactorMethod: method }
+  await prisma.$transaction(async (tx) => {
+    await tx.user.update({ where: { id: user.id }, data: { twoFactorMethod: method } });
+    await revokeUserSessionsInTransaction(tx, user.id);
   });
 
   logger.info("account.two_factor.method_updated", { userId: user.id, method });
@@ -413,8 +417,11 @@ export async function unlinkAuthProvider(formData: FormData) {
     redirect("/account?link=final-method");
   }
 
-  await prisma.userAuthAccount.delete({
-    where: { userId_providerId: { userId: user.id, providerId } }
+  await prisma.$transaction(async (tx) => {
+    await tx.userAuthAccount.delete({
+      where: { userId_providerId: { userId: user.id, providerId } }
+    });
+    await revokeUserSessionsInTransaction(tx, user.id);
   });
 
   logger.info("auth.account_unlinked", { userId: user.id, providerId });

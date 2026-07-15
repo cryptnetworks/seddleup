@@ -15,6 +15,7 @@ import { publicUrl } from "@/lib/url";
 
 export async function GET(request: Request, { params }: { params: Promise<{ provider: string }> }) {
   const { provider } = await params;
+  const purpose = new URL(request.url).searchParams.get("purpose") === "link" ? "link" : "login";
   const config = await getProviderRuntimeConfig(provider);
   if (!config) {
     return NextResponse.redirect(publicUrl("/login?oauth=disabled", request));
@@ -23,7 +24,32 @@ export async function GET(request: Request, { params }: { params: Promise<{ prov
   const session = await getServerSession(authOptions);
   const state = generateOAuthState();
   const verifier = generatePkceVerifier();
-  await createOAuthStateCredential({ state, verifier, providerId: provider });
+  let linkUserId: string | undefined;
+  if (purpose === "link") {
+    if (!session?.user?.id || !isSameOriginRequest(request.headers)) {
+      return NextResponse.redirect(publicUrl("/login?oauth=invalid", request));
+    }
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { id: true, disabledAt: true, emailVerifiedAt: true, sessionVersion: true }
+    });
+    if (
+      !user ||
+      user.disabledAt ||
+      !user.emailVerifiedAt ||
+      user.sessionVersion !== session.user.sessionVersion
+    ) {
+      return NextResponse.redirect(publicUrl("/login?oauth=invalid", request));
+    }
+    linkUserId = user.id;
+  }
+  await createOAuthStateCredential({
+    state,
+    verifier,
+    providerId: provider,
+    purpose,
+    userId: linkUserId
+  });
   const url = new URL(config.definition.authorizationUrl);
   url.searchParams.set("client_id", config.clientId);
   url.searchParams.set("redirect_uri", oauthCallbackUrl(provider, request));
@@ -48,21 +74,5 @@ export async function GET(request: Request, { params }: { params: Promise<{ prov
     maxAge: 600,
     path: "/"
   });
-  if (session?.user?.id && isSameOriginRequest(request.headers)) {
-    const user = await prisma.user.findUnique({
-      where: { id: session.user.id },
-      select: { id: true, disabledAt: true }
-    });
-    if (user && !user.disabledAt) {
-      response.cookies.set(`oauth_link_${provider}`, user.id, {
-        httpOnly: true,
-        sameSite: "lax",
-        secure: process.env.NODE_ENV === "production",
-        maxAge: 600,
-        path: "/"
-      });
-    }
-  }
-
   return response;
 }

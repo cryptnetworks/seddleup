@@ -54,7 +54,6 @@ on:
 
 permissions:
   contents: read
-  packages: write
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -73,20 +72,42 @@ jobs:
           - platform: linux/amd64
             artifact: linux-amd64
             manifest: true
-            runner: ubuntu-latest
+            trusted_runner: '["self-hosted","linux","x64"]'
+            hosted_runner: '"ubuntu-latest"'
             qemu: false
           - platform: linux/arm64/v8
             artifact: linux-arm64-v8
             manifest: true
-            runner: ubuntu-24.04-arm
+            trusted_runner: '"ubuntu-24.04-arm"'
+            hosted_runner: '"ubuntu-24.04-arm"'
             qemu: false
 
-    runs-on: ${{ matrix.runner }}
+    # Only the amd64 entry can select the self-hosted runner. ARM64 remains native.
+    runs-on: ${{ fromJSON(vars.USE_SELF_HOSTED_X64 == 'true' && github.event_name != 'pull_request' && matrix.trusted_runner || matrix.hosted_runner) }}
     timeout-minutes: 60
+    permissions:
+      contents: read
+      packages: write
 
     steps:
+      - name: Verify trusted self-hosted source
+        if: runner.environment == 'self-hosted'
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if [[ "${GITHUB_EVENT_NAME}" == "pull_request" ]]; then
+            echo "Refusing to run pull-request code on a self-hosted runner."
+            exit 1
+          fi
+
       - name: Checkout
         uses: actions/checkout@v7
+        with:
+          clean: true
+
+      - name: Verify Docker
+        run: docker version
 
       - name: Set up QEMU
         if: matrix.qemu
@@ -94,6 +115,9 @@ jobs:
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v4
+
+      - name: Verify Docker Buildx
+        run: docker buildx version
 
       - name: Log in to GHCR
         if: github.event_name != 'pull_request'
@@ -138,15 +162,15 @@ jobs:
       - name: Export image digest
         if: github.event_name != 'pull_request'
         run: |
-          mkdir -p /tmp/digests
-          echo "${{ steps.build.outputs.digest }}" > "/tmp/digests/${{ matrix.artifact }}"
+          mkdir -p "${RUNNER_TEMP}/digests"
+          echo "${{ steps.build.outputs.digest }}" > "${RUNNER_TEMP}/digests/${{ matrix.artifact }}"
 
       - name: Upload image digest
         if: github.event_name != 'pull_request'
         uses: actions/upload-artifact@v7
         with:
           name: digest-${{ matrix.artifact }}
-          path: /tmp/digests/${{ matrix.artifact }}
+          path: ${{ runner.temp }}/digests/${{ matrix.artifact }}
           if-no-files-found: error
           retention-days: 1
 
@@ -155,39 +179,119 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: digest-manifest-${{ matrix.artifact }}
-          path: /tmp/digests/${{ matrix.artifact }}
+          path: ${{ runner.temp }}/digests/${{ matrix.artifact }}
           if-no-files-found: error
           retention-days: 1
 
+      - name: Clean generated workspace files
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf -- "${RUNNER_TEMP}/digests"
+
+          if git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+            git reset --hard HEAD
+            git clean -ffdx
+          fi
+
   runtime-probes:
     name: Docker runtime and migration probes
-    runs-on: ubuntu-latest
+    # All pull requests and the operator fallback stay on GitHub-hosted runners.
+    runs-on: ${{ fromJSON(vars.USE_SELF_HOSTED_X64 == 'true' && github.event_name != 'pull_request' && '["self-hosted","linux","x64"]' || '"ubuntu-latest"') }}
     timeout-minutes: 20
+    env:
+      PROBE_IMAGE: seddleup:ci-${{ github.run_id }}-${{ github.run_attempt }}
+
+    steps:
+      - name: Verify trusted self-hosted source
+        if: runner.environment == 'self-hosted'
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if [[ "${GITHUB_EVENT_NAME}" == "pull_request" ]]; then
+            echo "Refusing to run pull-request code on a self-hosted runner."
+            exit 1
+          fi
+
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          clean: true
+
+      - name: Verify Docker
+        run: docker version
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+
+      - name: Verify Docker Buildx
+        run: docker buildx version
+
+      - name: Build probe image
+        run: docker build -t "${PROBE_IMAGE}" .
+
+      - name: Run runtime probes
+        run: bash scripts/probe-docker-runtime.sh "${PROBE_IMAGE}"
+
+      - name: Run optional profile probes
+        run: bash scripts/probe-docker-profiles.sh "${PROBE_IMAGE}"
+
+      - name: Clean probe image and workspace
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker image rm -f "${PROBE_IMAGE}" >/dev/null 2>&1 || true
+
+          if git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+            git reset --hard HEAD
+            git clean -ffdx
+          fi
+
+  publish-security:
+    if: github.event_name != 'pull_request'
+    name: Publish security validation
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout
         uses: actions/checkout@v7
 
-      - name: Build probe image
-        run: docker build -t seddleup:ci .
+      - name: Audit locked dependencies
+        run: npm run security:audit
 
-      - name: Run runtime probes
-        run: npm run test:docker
+      - name: Build image for scanning
+        run: docker build -t seddleup:publish-security .
 
-      - name: Run optional profile probes
-        run: npm run test:docker:profiles
+      - name: Scan publish image
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          image-ref: seddleup:publish-security
+          severity: HIGH,CRITICAL
+          exit-code: "1"
+          ignore-unfixed: true
 
   docker-manifest:
     if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     needs:
       - docker
+      - runtime-probes
+      - publish-security
+    permissions:
+      contents: read
+      packages: write
 
     steps:
       - name: Download image digests
         uses: actions/download-artifact@v8
         with:
-          path: /tmp/digests
+          path: ${{ runner.temp }}/digests
           pattern: digest-manifest-*
           merge-multiple: true
 
@@ -219,7 +323,7 @@ jobs:
           set -euo pipefail
 
           refs=()
-          for digest_file in /tmp/digests/*; do
+          for digest_file in "${RUNNER_TEMP}"/digests/*; do
             digest="$(cat "$digest_file")"
             refs+=("${IMAGE_NAME}@${digest}")
           done

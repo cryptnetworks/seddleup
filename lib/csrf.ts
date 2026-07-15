@@ -33,7 +33,7 @@ export function isSameOriginRequest(input: Headers) {
   const referer = originFromHeader(input.get("referer"));
   if (referer) return allowedOrigins.has(referer);
 
-  return true;
+  return false;
 }
 
 export async function assertSameOriginRequest(action: string) {

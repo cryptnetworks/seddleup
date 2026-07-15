@@ -83,9 +83,15 @@ all bundled Prisma migrations are applied. Both responses expose only coarse
 status values and are never cached.
 
 Authentication uses NextAuth sessions plus app-level checks against the current
-database user. One-time tokens for invitations, email verification, password
+database user and a per-user session version. Password resets and sensitive
+credential changes revoke older sessions. One-time tokens for invitations, email verification, password
 reset, and MFA handoff are stored as keyed digests. Stored OAuth provider client
 secrets are encrypted with `AUTH_CONFIG_ENCRYPTION_KEY`.
+
+OAuth identities are never attached to an existing account merely because email
+addresses match. New OAuth registrations require a provider-specific, positively
+verified email assertion; existing users link providers only from an authenticated
+account session.
 
 Read-only trip sharing uses the same secret-backed keyed-digest pattern. Sharing
 URLs are unlisted bearer credentials, not user accounts: anyone who receives a

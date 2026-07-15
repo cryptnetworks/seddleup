@@ -48,6 +48,19 @@ Replace `app.example.com` with your public domain.
 
 Signed-in users can link OAuth providers from the account page. SeddleUp prevents removing the final login method for an account.
 
+Linking state is single-use and stored server-side with its provider, purpose,
+PKCE verifier digest, and intended user. The callback also requires the same
+live, non-disabled app session. A login-purpose state cannot authorize linking,
+and a client cookie cannot select the target account.
+
+SeddleUp never attaches a provider identity to an existing account solely by
+matching email. Sign in to that existing account and link the provider explicitly.
+New OAuth registration requires provider-specific positive email verification:
+Google uses `email_verified`, Discord uses `verified`, and GitHub uses the primary
+verified address from the email API. Facebook's profile response does not provide
+an equivalent assertion in the current integration, so it may be linked by an
+authenticated user but cannot bootstrap a new account.
+
 ## Token Handling
 
 SeddleUp does not store provider access or refresh tokens. OAuth login callbacks

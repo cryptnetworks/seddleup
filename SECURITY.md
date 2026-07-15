@@ -28,7 +28,8 @@ Maintainers will acknowledge valid reports, investigate, and coordinate a fix be
 
 - Provider OAuth access and refresh tokens are not stored.
 - OAuth login callbacks create the NextAuth session server-side after provider
-  state, PKCE, profile, account, and registration checks pass.
+  state, PKCE, verified-email, account, and registration checks pass. Existing
+  accounts are never linked by email matching.
 - Password reset, email verification, and MFA session handoff tokens are stored
   only as HMAC-SHA-256 digests keyed by `TOKEN_DIGEST_SECRET`.
 - Stored one-time credentials use conditional, expiry-aware consumption so
@@ -38,9 +39,11 @@ Maintainers will acknowledge valid reports, investigate, and coordinate a fix be
 - Anonymous trip-sharing tokens are 256-bit bearer credentials stored only as
   HMAC-SHA-256 digests. Links are unlisted, rate-limited, revocable, optionally
   expiring, and excluded from application logs and audit metadata.
-- Protected server access validates the current session user against the database.
+- Protected server access validates the current session user and session version
+  against the database. Password and sensitive credential changes revoke older JWTs.
 - Disabled or deleted users lose access on the next protected server request.
-- State-changing requests include same-origin CSRF checks.
+- State-changing browser requests fail closed unless Origin or Referer proves the
+  configured same origin.
 - Anonymous trip summaries are read-only and exclude emails, account data,
   drafts, notes, receipts, payment details, invitations, and audit logs.
 - Structured application logging applies a final recursive redaction boundary

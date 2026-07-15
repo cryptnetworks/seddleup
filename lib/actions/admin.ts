@@ -14,6 +14,7 @@ import { setAuthSettings } from "@/lib/settings";
 import { OwnershipTransferError, transferTripOwnershipInTransaction } from "@/lib/user-integrity";
 import { adminInvitationSchema, formString, idSchema } from "@/lib/validation";
 import { createAndSendInvitation, resendInvitation, revokeInvitation } from "@/lib/invitations";
+import { revokeUserSessionsInTransaction } from "@/lib/session-revocation";
 
 function checked(formData: FormData, key: string) {
   return formData.get(key) === "on";
@@ -181,9 +182,10 @@ export async function resetUserPassword(formData: FormData) {
     redirect("/admin/users?error=password");
   }
 
-  await prisma.user.update({
-    where: { id: userId },
-    data: { passwordHash: await bcrypt.hash(password, 12) }
+  const passwordHash = await bcrypt.hash(password, 12);
+  await prisma.$transaction(async (tx) => {
+    await tx.user.update({ where: { id: userId }, data: { passwordHash } });
+    await revokeUserSessionsInTransaction(tx, userId);
   });
   await writeAuditLog({
     actorUserId: actor.id,

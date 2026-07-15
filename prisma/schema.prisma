@@ -18,6 +18,7 @@ model User {
   twoFactorMethod              String                   @default("none")
   authenticatorEnabled         Boolean                  @default(false)
   authenticatorSecretEncrypted String?
+  sessionVersion               Int                      @default(0)
   createdAt                    DateTime                 @default(now())
   updatedAt                    DateTime                 @updatedAt
   trips                        Trip[]
@@ -79,13 +80,26 @@ model OAuthStateCredential {
   stateHash    String    @unique
   verifierHash String
   providerId   String
+  purpose      String    @default("login")
+  userId       String?
   expiresAt    DateTime
   usedAt       DateTime?
   createdAt    DateTime  @default(now())
 
   @@index([providerId, expiresAt])
+  @@index([userId, purpose])
   @@index([usedAt])
   @@map("oauth_state_credentials")
+}
+
+model RateLimitBucket {
+  key       String   @id
+  count     Int
+  resetAt   DateTime
+  updatedAt DateTime @updatedAt
+
+  @@index([resetAt])
+  @@map("rate_limit_buckets")
 }
 
 model AuditLog {

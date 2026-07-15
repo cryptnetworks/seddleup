@@ -30,10 +30,24 @@ permissions:
 
 jobs:
   audit:
-    runs-on: ubuntu-latest
+    # All pull requests and the operator fallback stay on GitHub-hosted runners.
+    runs-on: ${{ fromJSON(vars.USE_SELF_HOSTED_X64 == 'true' && github.event_name != 'pull_request' && '["self-hosted","linux","x64"]' || '"ubuntu-latest"') }}
     steps:
+      - name: Verify trusted self-hosted source
+        if: runner.environment == 'self-hosted'
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if [[ "${GITHUB_EVENT_NAME}" == "pull_request" ]]; then
+            echo "Refusing to run pull-request code on a self-hosted runner."
+            exit 1
+          fi
+
       - name: Checkout
         uses: actions/checkout@v7
+        with:
+          clean: true
 
       - name: Setup Node
         uses: actions/setup-node@v6
@@ -47,11 +61,36 @@ jobs:
       - name: NPM audit
         run: npm run security:audit
 
+      - name: Clean generated workspace files
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+            git reset --hard HEAD
+            git clean -ffdx
+          fi
+
   trivy-filesystem:
-    runs-on: ubuntu-latest
+    # All pull requests and the operator fallback stay on GitHub-hosted runners.
+    runs-on: ${{ fromJSON(vars.USE_SELF_HOSTED_X64 == 'true' && github.event_name != 'pull_request' && '["self-hosted","linux","x64"]' || '"ubuntu-latest"') }}
     steps:
+      - name: Verify trusted self-hosted source
+        if: runner.environment == 'self-hosted'
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if [[ "${GITHUB_EVENT_NAME}" == "pull_request" ]]; then
+            echo "Refusing to run pull-request code on a self-hosted runner."
+            exit 1
+          fi
+
       - name: Checkout
         uses: actions/checkout@v7
+        with:
+          clean: true
 
       - name: Trivy filesystem scan
         uses: aquasecurity/trivy-action@v0.36.0
@@ -62,19 +101,67 @@ jobs:
           exit-code: "1"
           ignore-unfixed: true
 
+      - name: Clean generated workspace files
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+            git reset --hard HEAD
+            git clean -ffdx
+          fi
+
   trivy-image:
-    runs-on: ubuntu-latest
+    # All pull requests and the operator fallback stay on GitHub-hosted runners.
+    runs-on: ${{ fromJSON(vars.USE_SELF_HOSTED_X64 == 'true' && github.event_name != 'pull_request' && '["self-hosted","linux","x64"]' || '"ubuntu-latest"') }}
+    env:
+      SCAN_IMAGE: seddleup:security-${{ github.run_id }}-${{ github.run_attempt }}
     steps:
+      - name: Verify trusted self-hosted source
+        if: runner.environment == 'self-hosted'
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if [[ "${GITHUB_EVENT_NAME}" == "pull_request" ]]; then
+            echo "Refusing to run pull-request code on a self-hosted runner."
+            exit 1
+          fi
+
       - name: Checkout
         uses: actions/checkout@v7
+        with:
+          clean: true
+
+      - name: Verify Docker
+        run: docker version
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+
+      - name: Verify Docker Buildx
+        run: docker buildx version
 
       - name: Build image
-        run: docker build -t seddleup:security .
+        run: docker build -t "${SCAN_IMAGE}" .
 
       - name: Trivy image scan
         uses: aquasecurity/trivy-action@v0.36.0
         with:
-          image-ref: seddleup:security
+          image-ref: ${{ env.SCAN_IMAGE }}
           severity: HIGH,CRITICAL
           exit-code: "1"
           ignore-unfixed: true
+
+      - name: Clean scan image and workspace
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker image rm -f "${SCAN_IMAGE}" >/dev/null 2>&1 || true
+
+          if git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+            git reset --hard HEAD
+            git clean -ffdx
+          fi

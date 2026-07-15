@@ -31,4 +31,13 @@ describe("CSRF origin checks", () => {
 
     expect(isSameOriginRequest(headers)).toBe(false);
   });
+
+  it("fails closed when both origin and referer are absent", () => {
+    const headers = new Headers({
+      host: "triptally.test",
+      "x-forwarded-proto": "https"
+    });
+
+    expect(isSameOriginRequest(headers)).toBe(false);
+  });
 });

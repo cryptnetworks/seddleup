@@ -4,7 +4,7 @@ import * as bcrypt from "bcryptjs";
 import { logger } from "@/lib/logger";
 import { consumeSessionLoginToken } from "@/lib/login-token";
 import { prisma } from "@/lib/prisma";
-import { checkRateLimit } from "@/lib/rate-limit";
+import { checkLoginRateLimit } from "@/lib/login-rate-limit";
 import { getAuthSettings } from "@/lib/settings";
 import {
   startEmailTwoFactorChallenge,
@@ -12,6 +12,7 @@ import {
   verifyEmailTwoFactorCode
 } from "@/lib/two-factor";
 import { loginSchema } from "@/lib/validation";
+import { resolveActiveSessionUser } from "@/lib/session-token";
 
 const useSecureCookies =
   process.env.NODE_ENV === "production" && process.env.NEXTAUTH_URL?.startsWith("https://");
@@ -80,7 +81,7 @@ export const authOptions: NextAuthOptions = {
         twoFactorCode: { label: "Verification code", type: "text" },
         loginToken: { label: "Login token", type: "text" }
       },
-      async authorize(credentials) {
+      async authorize(credentials, request) {
         const parsed = loginSchema.safeParse({
           email: credentials?.email,
           password: credentials?.password,
@@ -106,7 +107,8 @@ export const authOptions: NextAuthOptions = {
           return {
             id: loginUser.id,
             name: loginUser.username,
-            email: loginUser.email
+            email: loginUser.email,
+            sessionVersion: loginUser.sessionVersion
           };
         }
 
@@ -121,12 +123,12 @@ export const authOptions: NextAuthOptions = {
           logLoginDebug({ email, stepFailed: "local_auth_disabled" });
           return null;
         }
-        const rateLimit = checkRateLimit(`login:${email}`, {
-          limit: 8,
-          windowMs: 15 * 60 * 1000
+        const rateLimit = await checkLoginRateLimit({
+          email,
+          headers: new Headers(request.headers)
         });
         if (!rateLimit.allowed) {
-          logger.warn("auth.login.rate_limited", { email });
+          logger.warn("auth.login.rate_limited", { reason: rateLimit.reason });
           logLoginDebug({ email, stepFailed: "rate_limited" });
           return null;
         }
@@ -213,7 +215,8 @@ export const authOptions: NextAuthOptions = {
         return {
           id: user.id,
           name: user.username,
-          email: user.email
+          email: user.email,
+          sessionVersion: user.sessionVersion
         };
       }
     })
@@ -222,13 +225,31 @@ export const authOptions: NextAuthOptions = {
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
+        token.sessionVersion = user.sessionVersion;
       }
       return token;
     },
     async session({ session, token }) {
-      if (session.user && token.id) {
-        session.user.id = token.id as string;
+      if (!session.user || !token.id || typeof token.sessionVersion !== "number") {
+        if (session.user) {
+          session.user.id = "";
+          session.user.sessionVersion = -1;
+        }
+        return session;
       }
+
+      const user = await resolveActiveSessionUser({
+        id: token.id,
+        sessionVersion: token.sessionVersion
+      });
+      if (!user) {
+        session.user.id = "";
+        session.user.sessionVersion = -1;
+        return session;
+      }
+
+      session.user.id = user.id;
+      session.user.sessionVersion = user.sessionVersion;
       return session;
     }
   },

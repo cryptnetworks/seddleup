@@ -81,7 +81,9 @@ export class LocalHeuristicReceiptParser implements ReceiptParser {
     const tip = findAmount(rawText, ["tip", "gratuity"]);
     const total = findAmount(rawText, ["grand total", "total", "amount due"]);
     const receiptDate = findDate(rawText);
-    const firstLine = rawText.split(/\r?\n/).find((line) => line.trim().length > 2);
+    const firstLine = rawText
+      .split(/\r?\n/)
+      .find((line) => line.trim().length > 2 && !/^%PDF-|^%%EOF/.test(line.trim()));
     const lineItems = parseLineItems(rawText);
     const matchedFields = [
       subtotal,
