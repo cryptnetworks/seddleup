@@ -93,5 +93,8 @@ jobs:
           TEST_OAUTH_PROVIDER_ENABLED: "true"
         run: npm run test:e2e -- --project=Chromium --project='Mobile Safari'
 
+      - name: Enabled receipt browser tests
+        run: npm run test:e2e:receipts
+
       - name: Production server smoke and SEO tests
         run: npm run test:e2e:production
