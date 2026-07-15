@@ -7,7 +7,9 @@ SeddleUp includes GitHub automation for validation, Docker images, dependency up
 The CI workflow runs on pushes and pull requests. It installs dependencies,
 validates configuration, validates Prisma, applies migrations, runs formatting
 checks, lint, TypeScript, unit/integration tests, Chromium and Mobile Safari E2E
-smoke tests, and a production build.
+smoke/accessibility tests, an isolated enabled-receipt flow, and a focused
+Chromium `next start` smoke/SEO suite. The production suite performs its own
+build, migration, readiness wait, and cleanup.
 
 Local equivalent:
 
@@ -20,8 +22,15 @@ npm run lint
 npm run typecheck
 npm test
 npm run test:e2e
+npm run test:e2e:receipts
+npm run test:e2e:production
 npm run build
 ```
+
+The browser launchers allocate free ports and unique ignored `tmp/` directories
+for SQLite and uploads. They never reuse a running development server or an
+operator/Docker database. See [Testing and Production Readiness](Testing-and-Production-Readiness)
+for command variants, CI coverage, and known WebKit evidence.
 
 If host Node/npm is unavailable but Docker works, use a throwaway Node container
 for the core validation path:
@@ -132,4 +141,4 @@ Version tags matching `v*.*.*` create a GitHub release with generated notes. Doc
 
 ---
 
-[Wiki Home](Home) | [Running with Docker](Running-with-Docker) | [Configuration](Configuration) | [Troubleshooting](Troubleshooting)
+[Wiki Home](Home) | [Testing and Production Readiness](Testing-and-Production-Readiness) | [Running with Docker](Running-with-Docker) | [Configuration](Configuration) | [Troubleshooting](Troubleshooting)

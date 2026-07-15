@@ -165,6 +165,8 @@ npm run lint
 npm run typecheck
 npm test
 npm run test:e2e
+npm run test:e2e:production
+npm run test:e2e:receipts
 npm run build
 npm run security:audit
 ```
@@ -188,6 +190,7 @@ See the wiki for more detail:
 - [Architecture](https://github.com/cryptnetworks/seddleup/wiki/Architecture)
 - [Security Model](https://github.com/cryptnetworks/seddleup/wiki/Security-Model)
 - [Repository Automation](https://github.com/cryptnetworks/seddleup/wiki/Repository-Automation)
+- [Testing and Production Readiness](https://github.com/cryptnetworks/seddleup/wiki/Testing-and-Production-Readiness)
 - [Contributing](https://github.com/cryptnetworks/seddleup/wiki/Contributing)
 
 Report vulnerabilities privately. See [SECURITY.md](SECURITY.md).

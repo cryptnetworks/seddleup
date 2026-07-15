@@ -32,6 +32,17 @@ Database startup failures are explicit:
 The entrypoint never logs database rows or credentials. Redact secrets if other
 application logs are included in a support request.
 
+## Local E2E Reports `/app/data` or Uses the Wrong Server
+
+Use `npm run test:e2e`, not a bare Playwright command. The supported launcher
+selects a free port, forces a disposable local SQLite file and uploads
+directory, and refuses to reuse a server already running on port 3000. Docker
+continues to use `file:/app/data/seddleup.db`; local browser tests never should.
+
+If direct external-server testing is intentional, configure the
+`PLAYWRIGHT_*` inputs described in [Testing and Production Readiness](Testing-and-Production-Readiness).
+Never point them at an operator database or receipt directory.
+
 ## OAuth Redirects to localhost or 0.0.0.0
 
 Set all public URL values to the public HTTPS URL:
@@ -126,4 +137,4 @@ layout is unstyled or image assets are missing, check:
 
 ---
 
-[Wiki Home](Home) | [Running with Docker](Running-with-Docker) | [Configuration](Configuration) | [Troubleshooting](Troubleshooting)
+[Wiki Home](Home) | [Testing and Production Readiness](Testing-and-Production-Readiness) | [Running with Docker](Running-with-Docker) | [Configuration](Configuration) | [Troubleshooting](Troubleshooting)

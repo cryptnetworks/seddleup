@@ -18,8 +18,9 @@ validation for environments without host Node/npm.
 
 The highest-priority remaining product/security risk is email MFA enablement
 when SMTP delivery is unavailable or unverified. Receipt-upload enabled-path E2E
-coverage and recurring non-failing Turbopack/WebKit dev-server chunk warnings
-also remain worth addressing.
+is now automated. Turbopack/WebKit chunk warnings reproduced only in the
+development HMR client; repeated production route checks remained clean and the
+production-runner mitigation is documented.
 
 Intentional TripTally compatibility names are preserved for now, including the
 package name, package lock name, and test fixtures.
@@ -65,8 +66,8 @@ package name, package lock name, and test fixtures.
 | Release-facing docs          | Fixed          | README/wiki setup docs are aligned with current behavior.            |
 | CI/dependency cleanup        | Fixed          | CI includes format check; safe patch updates applied.                |
 | Email MFA without SMTP       | Open           | Needs product guardrails to avoid account lockout.                   |
-| Receipt upload enabled E2E   | Open           | Disabled UI is covered; enabled upload/review E2E remains missing.   |
-| WebKit dev-server warnings   | Open/watch     | Full E2E passes, but Turbopack `ChunkLoadError` warnings recur.      |
+| Receipt upload enabled E2E   | Fixed          | Isolated upload/review and access-control E2E now runs in CI.        |
+| WebKit dev-server warnings   | Classified     | Reproduced in Turbopack HMR; production checks stayed clean.         |
 
 ### Recommended Next Phase
 
@@ -154,8 +155,10 @@ test coverage so users are not locked out by an undeliverable second factor.
     becomes flaky.
   - Risk level: Low
   - Estimated effort: Small
-  - Status: Open/watch; the warning recurred during closeout WebKit/Mobile
-    Safari dev-server E2E, but the full suite passed.
+  - Status: Classified; a later full development matrix reproduced the warning
+    twice in Turbopack's HMR client, while three repeated production route runs
+    stayed clean. Real page/server chunk errors are observed and fail; a
+    distinct local-HTTP production WebKit server-action timeout remains visible.
 
 ### Docker And Deployment Issues
 
@@ -286,7 +289,9 @@ test coverage so users are not locked out by an undeliverable second factor.
   - Suggested fix: add an enabled receipt upload E2E with a small fixture.
   - Risk level: Medium
   - Estimated effort: Medium
-  - Status: Open.
+  - Status: Fixed in the production-readiness batch with an isolated enabled
+    runner, synthetic fixture, upload/parse/review assertions, owner download,
+    unauthenticated and cross-user denial, disabled-state coverage, and cleanup.
 
 ### Documentation Gaps
 
