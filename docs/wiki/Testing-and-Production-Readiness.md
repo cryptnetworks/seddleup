@@ -169,6 +169,22 @@ absent. Browser tests never access Docker volumes or operator databases. Use
 preservation, legacy adoption, corrupt/inaccessible file, and failed-migration
 probes.
 
+## Data-integrity regression suite
+
+The ordinary unit/integration command includes server-side money boundaries,
+participant and owner foreign-key restrictions, receipt cleanup compensation,
+and concurrent one-time credential consumption. The development E2E suite adds
+direct expense-input manipulation, participant deletion, multi-trip ownership
+transfer, and authentication callback coverage. The enabled receipt runner adds
+individual receipt and parent-trip directory cleanup under an isolated upload
+root.
+
+All of these launchers use disposable SQLite files. The receipt runner also
+uses a disposable upload directory. They must never be pointed at a developer
+or operator database or receipt directory. The detailed acceptance and rollback
+ledger is maintained in
+[`../data-integrity-hardening.md`](../data-integrity-hardening.md).
+
 ---
 
 [Wiki Home](Home) | [Repository Automation](Repository-Automation) | [Running with Docker](Running-with-Docker) | [Troubleshooting](Troubleshooting)

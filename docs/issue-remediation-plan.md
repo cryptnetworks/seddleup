@@ -1,6 +1,6 @@
 # SeddleUp Issue Remediation Plan
 
-Last audited: July 14, 2026
+Last audited: July 15, 2026
 
 Source: open GitHub issues in `cryptnetworks/seddleup`, issues #59 through #81.
 No GitHub issues or labels were modified during this audit.
@@ -11,6 +11,16 @@ development run and was classified as Turbopack development HMR invalidation;
 repeated production route checks stayed clean. A separate local-HTTP production
 WebKit action timeout remains documented. The acceptance mapping and commands
 are in `docs/wiki/Testing-and-Production-Readiness.md`.
+
+Data-integrity batch: #98, #99, #100, and #102 are implemented on
+`agent/data-integrity-hardening`; the acceptance mapping, migrations, rollback
+boundary, and focused verification are recorded in
+[`docs/data-integrity-hardening.md`](data-integrity-hardening.md). The current
+financial relations for #97 are protected, but #97 remains related rather than
+closed until the settlement-payment relations from draft PR #105 land on
+`main` and receive sender/recipient deletion coverage. Issue #101 remains
+deliberately deferred until this receipt-lifecycle and money-validation base is
+merged.
 
 ## Label Cleanup
 

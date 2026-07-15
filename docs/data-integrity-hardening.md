@@ -1,7 +1,7 @@
 # Data Integrity Hardening
 
-This document is the implementation and verification ledger for issues #97,
-#98, #99, #100, and #102. The batch starts from `origin/main` commit
+This document is the authoritative implementation and verification ledger for
+issues #97, #98, #99, #100, and #102. The batch starts from `origin/main` commit
 `1ae3411a989ccf0b17f3972924907750e1c9b3cf`.
 
 Issue #101 is intentionally excluded. Settlement payments are also not present
@@ -46,6 +46,55 @@ branch while #105 remains unmerged and based on `develop`. The current financial
 relations will still be protected now, and the issue will not be claimed as
 fully closed unless settlement payment coverage becomes available on `main`
 before publication.
+
+## Implemented behavior
+
+- USD input is parsed to integer cents and canonical decimal strings at the
+  server boundary. Expense shares distribute any remainder cents explicitly.
+- Participant deletion is rejected when an expense payer, expense share, or
+  receipt line-item assignment references the participant. Settlement payment
+  relations remain outside this branch because draft PR #105 is not on `main`.
+- Receipt cleanup proves containment beneath the configured upload root,
+  compensates failed uploads, and emits a redacted operator event if cleanup
+  after a committed database deletion fails.
+- Account deletion is blocked while any trip is owned. Ownership transfer uses
+  an expected-owner compare-and-swap so stale concurrent forms cannot corrupt
+  owner memberships.
+- Stored one-time credentials use purpose- and expiry-aware conditional writes.
+  Password changes, email verification, session handoff, Discord linking, and
+  invitation acceptance keep consumption with the protected database change.
+  OAuth state and PKCE verifier values are stored only as keyed digests.
+
+## Migration and rollback
+
+Three forward migrations change existing deployments: participant financial
+relations and trip ownership become restrictive foreign keys, and a new table
+stores OAuth-state digests. They do not rewrite financial rows, receipt data, or
+user records. Fresh and representative upgraded SQLite databases must pass
+foreign-key validation before release.
+
+Back up the SQLite database and private receipt directory from the same stopped
+application state before deploying. Rollback means restoring that coordinated
+backup and the prior application image; do not attempt to reverse these schema
+changes by deleting migration rows or editing an existing migration. See
+[Backups and Updates](wiki/Backups-and-Updates.md) for the operator procedure.
+
+## Focused regression coverage
+
+- `tests/unit/money.test.ts` and the expense/receipt action tests cover currency
+  boundaries, comma decimals, blank receipt fields, excessive precision, and
+  direct form manipulation.
+- `tests/integration/participant-integrity.test.ts`,
+  `tests/integration/user-integrity.test.ts`, and the matching Playwright specs
+  cover restrictive deletion and explicit ownership transfer.
+- `tests/unit/receipt-storage.test.ts` and the enabled receipt browser suite use
+  temporary upload roots for compensation and scoped deletion.
+- `tests/integration/one-time-credentials.test.ts` and invitation integration
+  tests issue bounded concurrent attempts and require exactly one success.
+
+The standard `npm test`, `npm run test:e2e`, `npm run test:e2e:receipts`, and
+Docker runtime commands remain the supported entry points; no operator or user
+database is used by these tests.
 
 ## Safety boundaries
 

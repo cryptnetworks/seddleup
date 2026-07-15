@@ -191,6 +191,7 @@ See the wiki for more detail:
 - [Security Model](https://github.com/cryptnetworks/seddleup/wiki/Security-Model)
 - [Repository Automation](https://github.com/cryptnetworks/seddleup/wiki/Repository-Automation)
 - [Testing and Production Readiness](https://github.com/cryptnetworks/seddleup/wiki/Testing-and-Production-Readiness)
+- [Data Integrity Hardening](docs/data-integrity-hardening.md)
 - [Contributing](https://github.com/cryptnetworks/seddleup/wiki/Contributing)
 
 Report vulnerabilities privately. See [SECURITY.md](SECURITY.md).
