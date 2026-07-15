@@ -264,7 +264,13 @@ async function completeInvitationAcceptance(
   now: Date
 ) {
   const accepted = await client.invitation.updateMany({
-    where: { id: invitation.id, status: "pending" },
+    where: {
+      id: invitation.id,
+      status: "pending",
+      acceptedAt: null,
+      revokedAt: null,
+      expiresAt: { gt: now }
+    },
     data: {
       status: "accepted",
       acceptedAt: now,

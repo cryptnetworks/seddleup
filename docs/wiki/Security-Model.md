@@ -44,6 +44,32 @@
 - Password reset, email verification, and MFA session handoff tokens are stored
   only as HMAC-SHA-256 digests keyed by `TOKEN_DIGEST_SECRET`.
 - OAuth account linking requires a current app session.
+- OAuth authorization state is stored only as a keyed digest, bound to the
+  provider and a keyed digest of the PKCE verifier, expires after ten minutes,
+  and is conditionally consumed before an authorization code is exchanged.
+
+## One-Time Credential Concurrency
+
+Password-reset tokens, email-verification tokens, email MFA challenges, session
+login tokens, invitations, Discord link tokens, and OAuth state all use a final
+conditional database mutation that matches the credential's ID, purpose,
+digest, unused state, and expiry. Exactly one request may change that state.
+Password changes, email-verification changes, Discord linking, invitation
+acceptance, and OAuth-state consumption keep their protected database work in
+the same bounded Prisma transaction where applicable.
+
+SQLite serializes the conditional write. Concurrent requests may both perform a
+keyed digest lookup or an expensive password/code comparison, but only the
+request whose conditional mutation changes one row succeeds. Replays, expiry,
+revocation, purpose mismatch, and contention use the same generic invalid result.
+The application does not log raw credentials or include a consumed credential
+in its final redirect.
+
+Authenticator-app TOTP is not a stored one-time credential: it follows the
+standard short time-window verification model. It remains encrypted at rest and
+is never logged, but a valid TOTP value can be accepted more than once during
+its standards-defined window. Recovery credentials remain deferred to issue
+#75.
 
 ## CSRF
 

@@ -31,6 +31,10 @@ Maintainers will acknowledge valid reports, investigate, and coordinate a fix be
   state, PKCE, profile, account, and registration checks pass.
 - Password reset, email verification, and MFA session handoff tokens are stored
   only as HMAC-SHA-256 digests keyed by `TOKEN_DIGEST_SECRET`.
+- Stored one-time credentials use conditional, expiry-aware consumption so
+  concurrent replays yield at most one successful protected operation. OAuth
+  state is also stored only as a keyed digest bound to its provider and PKCE
+  verifier.
 - Anonymous trip-sharing tokens are 256-bit bearer credentials stored only as
   HMAC-SHA-256 digests. Links are unlisted, rate-limited, revocable, optionally
   expiring, and excluded from application logs and audit metadata.

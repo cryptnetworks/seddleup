@@ -1,8 +1,20 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { digestLookupToken, timingSafeEqualTokenDigest } from "@/lib/token-digest";
+import {
+  digestLookupToken,
+  timingSafeEqualOpaqueValues,
+  timingSafeEqualTokenDigest
+} from "@/lib/token-digest";
 
 afterEach(() => {
   vi.unstubAllEnvs();
+});
+
+describe("opaque value comparison", () => {
+  it("compares equal-length browser credentials without ordinary string equality", () => {
+    expect(timingSafeEqualOpaqueValues("same-value", "same-value")).toBe(true);
+    expect(timingSafeEqualOpaqueValues("same-value", "other-valx")).toBe(false);
+    expect(timingSafeEqualOpaqueValues("short", "longer")).toBe(false);
+  });
 });
 
 describe("lookup token digests", () => {

@@ -73,6 +73,20 @@ model AuthProviderConfig {
   @@map("auth_provider_configs")
 }
 
+model OAuthStateCredential {
+  id           String    @id @default(cuid())
+  stateHash    String    @unique
+  verifierHash String
+  providerId   String
+  expiresAt    DateTime
+  usedAt       DateTime?
+  createdAt    DateTime  @default(now())
+
+  @@index([providerId, expiresAt])
+  @@index([usedAt])
+  @@map("oauth_state_credentials")
+}
+
 model AuditLog {
   id           String   @id @default(cuid())
   actorUserId  String?
