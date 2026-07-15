@@ -5,8 +5,6 @@ import type {
 } from "@/lib/item-lookup/types";
 
 class DisabledProvider implements RetailerLookupProvider {
-  constructor(private readonly provider: string) {}
-
   async searchItems() {
     return [];
   }
@@ -65,5 +63,5 @@ class MockLookupProvider implements RetailerLookupProvider {
 
 export function createLookupProvider(provider: string): RetailerLookupProvider {
   if (provider === "mock") return new MockLookupProvider();
-  return new DisabledProvider(provider);
+  return new DisabledProvider();
 }
