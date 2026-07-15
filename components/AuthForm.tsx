@@ -166,7 +166,16 @@ export function LoginForm() {
   return (
     <>
       <form className="grid gap-4" data-testid="login-form" onSubmit={onSubmit}>
-        {error ? <p className="rounded-lg bg-red-50 p-3 text-sm text-coral">{error}</p> : null}
+        {error ? (
+          <p
+            aria-live="assertive"
+            className="rounded-lg bg-red-50 p-3 text-sm text-coral"
+            id="login-error"
+            role="alert"
+          >
+            {error}
+          </p>
+        ) : null}
         {requiresCode ? (
           <>
             <div>
@@ -198,6 +207,8 @@ export function LoginForm() {
                 pattern="[0-9]{6}"
                 maxLength={6}
                 autoComplete="one-time-code"
+                aria-describedby={error ? "login-error" : undefined}
+                aria-invalid={error === "Invalid MFA code." ? true : undefined}
                 required
               />
               <p className="mt-1 text-xs text-muted">
@@ -231,6 +242,8 @@ export function LoginForm() {
                 name="email"
                 type="email"
                 autoComplete="email"
+                aria-describedby={error ? "login-error" : undefined}
+                aria-invalid={error ? true : undefined}
                 defaultValue={email}
                 required
               />
@@ -247,6 +260,8 @@ export function LoginForm() {
                 name="password"
                 type="password"
                 autoComplete="current-password"
+                aria-describedby={error ? "login-error" : undefined}
+                aria-invalid={error ? true : undefined}
                 required
               />
             </div>
