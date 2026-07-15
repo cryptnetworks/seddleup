@@ -3,6 +3,7 @@ __pycache__/
 *.pyc
 *.db
 .env
+.env.docker
 instance/
 .DS_Store
 node_modules
