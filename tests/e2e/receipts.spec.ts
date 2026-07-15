@@ -1,3 +1,5 @@
+import { access } from "node:fs/promises";
+import path from "node:path";
 import { expect, test } from "@playwright/test";
 import {
   configureTestAuthSettings,
@@ -40,6 +42,10 @@ test("enabled receipt upload, review, file authorization, and cleanup path work"
   await page.getByRole("button", { name: "Upload and parse" }).click();
   await expect(page.getByRole("heading", { name: "Review receipt" })).toBeVisible();
   const receiptPath = new URL(page.url()).pathname;
+  const receiptId = receiptPath.split("/").at(-1) ?? "";
+  const uploadRoot = process.env.PLAYWRIGHT_RECEIPT_UPLOAD_DIR ?? "";
+  const storedReceiptDirectory = path.join(uploadRoot, receiptId);
+  await expect(access(storedReceiptDirectory)).resolves.toBeUndefined();
 
   await expect(page.getByLabel("Merchant")).toHaveValue("SeddleUp Test Market");
   await expect(page.locator("#total")).toHaveValue("13.50");
@@ -82,4 +88,22 @@ test("enabled receipt upload, review, file authorization, and cleanup path work"
     outsiderPage.getByRole("heading", { name: "This page is not available." })
   ).toBeVisible();
   await outsiderContext.close();
+
+  await page.goto(receiptPath);
+  await page.getByRole("button", { name: "Delete receipt" }).click();
+  await expect(page.getByRole("heading", { name: "Expense history" })).toBeVisible();
+  await expect(access(storedReceiptDirectory)).rejects.toMatchObject({ code: "ENOENT" });
+  expect((await page.request.get(filePath ?? "")).status()).toBe(404);
+
+  await page.getByRole("link", { name: "Upload Receipt" }).click();
+  await page.getByLabel("Receipt file").setInputFiles("tests/fixtures/receipt-sample.pdf");
+  await page.getByRole("button", { name: "Upload and parse" }).click();
+  await expect(page.getByRole("heading", { name: "Review receipt" })).toBeVisible();
+  const parentDeleteReceiptId = new URL(page.url()).pathname.split("/").at(-1) ?? "";
+  const parentDeleteDirectory = path.join(uploadRoot, parentDeleteReceiptId);
+  await expect(access(parentDeleteDirectory)).resolves.toBeUndefined();
+  await page.goto(tripPath);
+  await page.getByTestId("delete-trip").click();
+  await expect(page).toHaveURL(/\/dashboard$/);
+  await expect(access(parentDeleteDirectory)).rejects.toMatchObject({ code: "ENOENT" });
 });

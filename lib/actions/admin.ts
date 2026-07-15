@@ -8,6 +8,7 @@ import { countActiveAdmins, requireAdminAction } from "@/lib/authorization";
 import { encryptProviderSecret, oauthProviderDefinitions } from "@/lib/oauth-providers";
 import { prisma } from "@/lib/prisma";
 import { checkRateLimit } from "@/lib/rate-limit";
+import { cleanupStoredReceipts } from "@/lib/receipts/cleanup";
 import { setAuthSettings } from "@/lib/settings";
 import { adminInvitationSchema, formString } from "@/lib/validation";
 import { createAndSendInvitation, resendInvitation, revokeInvitation } from "@/lib/invitations";
@@ -82,7 +83,12 @@ export async function deleteUser(formData: FormData) {
     redirect("/admin/users?error=final-admin");
   }
 
+  const receipts = await prisma.receipt.findMany({
+    where: { uploaderUserId: userId },
+    select: { id: true, storedPath: true }
+  });
   await prisma.user.delete({ where: { id: userId } });
+  await cleanupStoredReceipts(receipts, "user.delete");
   await writeAuditLog({
     actorUserId: actor.id,
     action: "user.deleted",

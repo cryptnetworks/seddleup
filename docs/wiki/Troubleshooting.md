@@ -98,6 +98,19 @@ and moves it to the current path. A validation failure leaves the legacy file in
 place and exits. If both names exist, SeddleUp uses `seddleup.db` and leaves
 `triptally.db` untouched.
 
+## Receipt Cleanup Reports an Operator Error
+
+`receipt.storage.cleanup_failed` means the database deletion committed but the
+matching private receipt directory could not be removed. The event includes a
+receipt ID and operation only; it intentionally omits the filename and storage
+path.
+
+Check that `RECEIPT_UPLOAD_DIR` is mounted, writable by the non-root container
+user, and has available space. Use a verified database/receipt backup to confirm
+the exact receipt ID before removing an orphan. Never run a recursive deletion
+against the upload root or an unverified path. A missing directory is already a
+successful, idempotent cleanup and does not need repair.
+
 ## Readiness Check Fails
 
 Compare liveness and readiness, then inspect the structured startup/readiness

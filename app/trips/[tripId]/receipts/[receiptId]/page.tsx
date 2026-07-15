@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { PageHeader } from "@/components/PageHeader";
 import { PageShell } from "@/components/PageShell";
-import { saveReceiptReview } from "@/lib/actions";
+import { deleteReceipt, saveReceiptReview } from "@/lib/actions";
 import { getAppConfig } from "@/lib/config";
 import { dateInputValue, formatCurrency } from "@/lib/format";
 import { prisma } from "@/lib/prisma";
@@ -39,6 +39,7 @@ export default async function ReceiptReviewPage({
 
   const canEditReceipt = receipt.uploaderUserId === user.id || isTripManager(resolved.access.role);
   const action = saveReceiptReview.bind(null, tripId, receipt.id);
+  const removeReceipt = deleteReceipt.bind(null, tripId, receipt.id);
 
   return (
     <PageShell>
@@ -166,6 +167,13 @@ export default async function ReceiptReviewPage({
             >
               Open receipt file
             </Link>
+            {canEditReceipt ? (
+              <form action={removeReceipt} className="mt-3">
+                <button className="btn-danger w-full sm:w-auto" type="submit">
+                  Delete receipt
+                </button>
+              </form>
+            ) : null}
           </section>
           <section className="card p-4 sm:p-5">
             <h2 className="text-lg font-semibold text-ink">Parser</h2>
