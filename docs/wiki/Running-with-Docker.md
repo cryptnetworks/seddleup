@@ -10,6 +10,11 @@ docker pull ghcr.io/cryptnetworks/seddleup:latest
 
 The `latest` image is published for `linux/amd64` and `linux/arm64/v8` (aarch64).
 
+The Compose deployment uses that image by default. Set `SEDDLEUP_IMAGE` in the
+shell or Compose interpolation environment to deploy an exact tag, digest, or
+alternate registry without editing `docker-compose.yml`. The application and
+one-shot Discord command service always use the same configured image.
+
 ## Prepare Environment
 
 ```bash
@@ -41,6 +46,21 @@ adds Postgres support.
 Local browser tests intentionally do not use this container path. Their
 disposable paths and production-server test mode are documented in
 [Testing and Production Readiness](Testing-and-Production-Readiness).
+
+For a separate deployment environment file, export both Compose variables
+before starting the profiles that need them:
+
+```bash
+export SEDDLEUP_IMAGE=ghcr.io/cryptnetworks/seddleup:2.0.0
+export SEDDLEUP_ENV_FILE=.env.docker
+docker compose up -d
+```
+
+Alternatively, place both variables in `.env.docker` and run
+`docker compose --env-file .env.docker up -d`. A service-level `env_file` does
+not provide values for Compose interpolation, so merely setting
+`SEDDLEUP_ENV_FILE` inside that file is not sufficient unless the file is also
+passed with `--env-file`.
 
 ## Run a Single Container
 
