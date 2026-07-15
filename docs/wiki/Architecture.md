@@ -120,6 +120,21 @@ included in balances. Settled expenses are locked from normal edits and deletes.
 Trip, participant, and expense changes write trip-scoped audit log rows with
 before/after JSON where practical.
 
+### Currency boundary
+
+SeddleUp is USD-only until per-trip currency support is designed. Every
+user-supplied expense and receipt amount crosses the same server-side boundary:
+ordinary decimal notation, at most two fractional digits, and a maximum of
+`$1,000,000.00`. A comma may be used as the sole decimal separator. Exponent
+notation, thousands separators, negative values, non-finite values, and excess
+precision are rejected rather than rounded.
+
+The parser converts accepted input directly to integer cents and a canonical
+decimal string without passing through binary floating point. Expense shares are
+allocated from those integer cents, including any one-cent remainder, so stored
+shares reconcile exactly to the stored expense. Optional receipt totals preserve
+blank values as `null` and allow an explicit zero.
+
 ## Expansion Services
 
 Payment methods store only provider labels, handles, links, visibility, and

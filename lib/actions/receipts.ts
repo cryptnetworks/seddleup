@@ -18,12 +18,17 @@ import {
 } from "@/lib/receipts/storage";
 import { requireTripAccess } from "@/lib/trip-access";
 import { canCreateTripExpense, canEditExpense, isTripManager } from "@/lib/trip-permissions";
-import { formString, idSchema, parseDateInput } from "@/lib/validation";
+import {
+  formString,
+  idSchema,
+  optionalUsdMoneySchema,
+  parseDateInput,
+  receiptReviewSchema
+} from "@/lib/validation";
 
-function nullableDecimal(value: string) {
-  if (!value.trim()) return null;
-  const number = Number(value);
-  return Number.isFinite(number) ? new Prisma.Decimal(number) : null;
+function parsedReceiptDecimal(value: number | undefined) {
+  if (value === undefined) return null;
+  return new Prisma.Decimal(optionalUsdMoneySchema.parse(String(value))?.decimal ?? "0.00");
 }
 
 export async function uploadReceipt(tripId: string, formData: FormData) {
@@ -80,10 +85,10 @@ export async function uploadReceipt(tripId: string, formData: FormData) {
       fileSize: file.size,
       merchant: parsed.merchant || null,
       receiptDate: parsed.receiptDate || null,
-      subtotal: parsed.subtotal === undefined ? null : new Prisma.Decimal(parsed.subtotal),
-      tax: parsed.tax === undefined ? null : new Prisma.Decimal(parsed.tax),
-      tip: parsed.tip === undefined ? null : new Prisma.Decimal(parsed.tip),
-      total: parsed.total === undefined ? null : new Prisma.Decimal(parsed.total),
+      subtotal: parsedReceiptDecimal(parsed.subtotal),
+      tax: parsedReceiptDecimal(parsed.tax),
+      tip: parsedReceiptDecimal(parsed.tip),
+      total: parsedReceiptDecimal(parsed.total),
       parserProvider: parsed.provider,
       parserConfidence: parsed.confidence,
       rawText: parsed.rawText || null,
@@ -138,20 +143,34 @@ export async function saveReceiptReview(tripId: string, receiptId: string, formD
     redirect(`/trips/${tripId}?error=forbidden`);
   }
 
-  const merchant = formString(formData, "merchant") || null;
-  const receiptDate = parseDateInput(formString(formData, "receiptDate"));
-  const status = formString(formData, "status") === "ready" ? "ready" : "needs_review";
-  const splitMode = formString(formData, "splitMode") === "itemized" ? "itemized" : "simple";
+  const parsed = receiptReviewSchema.safeParse({
+    merchant: formString(formData, "merchant"),
+    receiptDate: formString(formData, "receiptDate"),
+    subtotal: formString(formData, "subtotal"),
+    tax: formString(formData, "tax"),
+    tip: formString(formData, "tip"),
+    total: formString(formData, "total"),
+    status: formString(formData, "status"),
+    splitMode: formString(formData, "splitMode")
+  });
+  if (!parsed.success) {
+    const field = String(parsed.error.issues[0]?.path[0] || "amount");
+    logger.warn("receipt.review.validation_failed", { userId, tripId, receiptId, field });
+    redirect(`/trips/${tripId}/receipts/${receiptId}?error=invalid&field=${field}`);
+  }
+
+  const { merchant, status, splitMode } = parsed.data;
+  const receiptDate = parseDateInput(parsed.data.receiptDate);
 
   await prisma.receipt.update({
     where: { id: receiptId },
     data: {
       merchant,
       receiptDate,
-      subtotal: nullableDecimal(formString(formData, "subtotal")),
-      tax: nullableDecimal(formString(formData, "tax")),
-      tip: nullableDecimal(formString(formData, "tip")),
-      total: nullableDecimal(formString(formData, "total")),
+      subtotal: parsed.data.subtotal ? new Prisma.Decimal(parsed.data.subtotal.decimal) : null,
+      tax: parsed.data.tax ? new Prisma.Decimal(parsed.data.tax.decimal) : null,
+      tip: parsed.data.tip ? new Prisma.Decimal(parsed.data.tip.decimal) : null,
+      total: parsed.data.total ? new Prisma.Decimal(parsed.data.total.decimal) : null,
       status,
       splitMode
     }

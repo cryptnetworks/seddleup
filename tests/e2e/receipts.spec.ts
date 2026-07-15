@@ -49,6 +49,14 @@ test("enabled receipt upload, review, file authorization, and cleanup path work"
   await page.getByRole("button", { name: "Save review" }).click();
   await expect(page.getByText("Receipt review saved.")).toBeVisible();
 
+  await page.locator("#total").fill("-1.00");
+  await page.locator("#total").evaluate((element) => element.removeAttribute("pattern"));
+  await page.getByRole("button", { name: "Save review" }).click();
+  await expect(page.locator("#total")).toHaveAttribute("aria-invalid", "true");
+  await expect(
+    page.getByText("Enter a valid non-negative USD amount with at most two decimal places.")
+  ).toBeVisible();
+
   const filePath = await page.getByRole("link", { name: "Open receipt file" }).getAttribute("href");
   expect(filePath).toMatch(/^\/api\/receipts\/[^/]+\/file$/);
   const ownerFileResponse = await page.request.get(filePath ?? "");

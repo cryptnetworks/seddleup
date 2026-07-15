@@ -1,4 +1,5 @@
 import type { Expense, ExpenseShare, Participant } from "@prisma/client";
+import { equalShareCents } from "@/lib/money";
 
 export type ParticipantWithBalances<
   TParticipant extends Pick<Participant, "id" | "name"> = Participant
@@ -32,13 +33,7 @@ export function calculateEqualShares(amount: number, participantCount: number) {
   }
 
   const cents = Math.round(amount * 100);
-  const base = Math.floor(cents / participantCount);
-  const remainder = cents % participantCount;
-
-  return Array.from(
-    { length: participantCount },
-    (_, index) => (base + (index < remainder ? 1 : 0)) / 100
-  );
+  return equalShareCents(cents, participantCount).map((shareCents) => shareCents / 100);
 }
 
 export function calculateBalances<TParticipant extends Pick<Participant, "id" | "name">>(

@@ -15,7 +15,7 @@ export default async function ReceiptReviewPage({
   searchParams
 }: {
   params: Promise<{ tripId: string; receiptId: string }>;
-  searchParams: Promise<{ saved?: string }>;
+  searchParams: Promise<{ saved?: string; error?: string; field?: string }>;
 }) {
   const { tripId, receiptId } = await params;
   const query = await searchParams;
@@ -100,7 +100,16 @@ export default async function ReceiptReviewPage({
                     min="0"
                     step="0.01"
                     defaultValue={receipt[field] ? Number(receipt[field]).toFixed(2) : ""}
+                    aria-describedby={
+                      query.error && query.field === field ? `${field}-error` : undefined
+                    }
+                    aria-invalid={query.error && query.field === field ? true : undefined}
                   />
+                  {query.error && query.field === field ? (
+                    <p className="mt-1 text-sm text-coral" id={`${field}-error`}>
+                      Enter a valid non-negative USD amount with at most two decimal places.
+                    </p>
+                  ) : null}
                 </div>
               ))}
             </div>
