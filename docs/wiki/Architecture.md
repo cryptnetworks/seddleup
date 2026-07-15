@@ -120,6 +120,14 @@ included in balances. Settled expenses are locked from normal edits and deletes.
 Trip, participant, and expense changes write trip-scoped audit log rows with
 before/after JSON where practical.
 
+Participant records are removable only while no financial history references
+them. Paid expenses, allocated expense shares, and receipt line-item assignments
+all block deletion in both the server action and SQLite foreign-key policy. The
+application does not silently cascade, reassign, or archive those records. A
+future settlement-payment ledger must enforce the same restriction for payment
+senders and recipients before participant deletion can be considered complete
+for that feature.
+
 ### Currency boundary
 
 SeddleUp is USD-only until per-trip currency support is designed. Every
