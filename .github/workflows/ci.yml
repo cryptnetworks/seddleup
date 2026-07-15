@@ -93,5 +93,5 @@ jobs:
           TEST_OAUTH_PROVIDER_ENABLED: "true"
         run: npm run test:e2e -- --project=Chromium --project='Mobile Safari'
 
-      - name: Production build
-        run: npm run build
+      - name: Production server smoke and SEO tests
+        run: npm run test:e2e:production
