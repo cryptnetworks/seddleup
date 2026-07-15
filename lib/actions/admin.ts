@@ -134,7 +134,8 @@ export async function transferTripOwnership(formData: FormData) {
   const actor = await requireAdminAction();
   const parsedTripId = idSchema.safeParse(formString(formData, "tripId"));
   const parsedReplacementId = idSchema.safeParse(formString(formData, "replacementOwnerId"));
-  if (!parsedTripId.success || !parsedReplacementId.success) {
+  const parsedExpectedOwnerId = idSchema.safeParse(formString(formData, "expectedOwnerId"));
+  if (!parsedTripId.success || !parsedReplacementId.success || !parsedExpectedOwnerId.success) {
     redirect("/admin/users?transfer=invalid");
   }
 
@@ -142,7 +143,8 @@ export async function transferTripOwnership(formData: FormData) {
     await prisma.$transaction(async (tx) => {
       const transfer = await transferTripOwnershipInTransaction(tx, {
         tripId: parsedTripId.data,
-        replacementOwnerId: parsedReplacementId.data
+        replacementOwnerId: parsedReplacementId.data,
+        expectedOwnerId: parsedExpectedOwnerId.data
       });
       await writeAuditLog(
         {

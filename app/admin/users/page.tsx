@@ -34,6 +34,9 @@ function transferStatusMessage(status?: string) {
   if (status === "replacement-disabled") return "Choose an active replacement owner.";
   if (status === "replacement-readonly") return "A readonly account cannot own a trip.";
   if (status === "same-owner") return "Choose a different replacement owner.";
+  if (status === "ownership-changed") {
+    return "Trip ownership changed while this form was open. Refresh and try again.";
+  }
   return `Ownership transfer blocked: ${status}.`;
 }
 
@@ -304,6 +307,7 @@ export default async function AdminUsersPage({
                     key={trip.id}
                   >
                     <input name="tripId" type="hidden" value={trip.id} />
+                    <input name="expectedOwnerId" type="hidden" value={user.id} />
                     <p className="self-center break-words text-sm font-semibold text-ink">
                       {trip.name}
                     </p>

@@ -127,6 +127,45 @@ describe("owned-trip account integrity", () => {
     ).resolves.toBeNull();
   });
 
+  it("rejects a stale concurrent transfer without changing the current owner or memberships", async () => {
+    const owner = await createUser("concurrent-owner");
+    const firstReplacement = await createUser("concurrent-first");
+    const staleReplacement = await createUser("concurrent-stale");
+    const trip = await prisma.trip.create({
+      data: {
+        name: "Concurrent transfer",
+        ownerId: owner.id,
+        members: { create: { userId: owner.id, role: "owner" } }
+      }
+    });
+
+    await prisma.$transaction((tx) =>
+      transferTripOwnershipInTransaction(tx, {
+        tripId: trip.id,
+        replacementOwnerId: firstReplacement.id,
+        expectedOwnerId: owner.id
+      })
+    );
+    await expect(
+      prisma.$transaction((tx) =>
+        transferTripOwnershipInTransaction(tx, {
+          tripId: trip.id,
+          replacementOwnerId: staleReplacement.id,
+          expectedOwnerId: owner.id
+        })
+      )
+    ).rejects.toMatchObject({ reason: "ownership-changed" });
+
+    await expect(prisma.trip.findUnique({ where: { id: trip.id } })).resolves.toMatchObject({
+      ownerId: firstReplacement.id
+    });
+    await expect(
+      prisma.tripMember.findUnique({
+        where: { tripId_userId: { tripId: trip.id, userId: staleReplacement.id } }
+      })
+    ).resolves.toBeNull();
+  });
+
   it("preserves nullable audit attribution when deleting an unblocked user", async () => {
     const user = await createUser("audit-attribution");
     const audit = await prisma.auditLog.create({

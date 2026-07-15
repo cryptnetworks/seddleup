@@ -33,14 +33,21 @@ test("admin transfers an owned trip before deleting its former owner", async ({
   browser,
   page
 }, testInfo) => {
+  test.setTimeout(60_000);
   const admin = await registerAndLogin(page, testInfo, "integrity-admin");
   setAdmin(admin.email);
 
   const ownerContext = await browser.newContext();
   const ownerPage = await ownerContext.newPage();
   const owner = await registerAndLogin(ownerPage, testInfo, "integrity-owner");
-  const tripName = uniqueLabel(testInfo, "Transferred trip");
-  await createTripWithParticipants(ownerPage, tripName);
+  const tripNames = [
+    uniqueLabel(testInfo, "Transferred trip one"),
+    uniqueLabel(testInfo, "Transferred trip two")
+  ];
+  for (const [index, tripName] of tripNames.entries()) {
+    if (index > 0) await ownerPage.goto("/trips");
+    await createTripWithParticipants(ownerPage, tripName);
+  }
   await ownerContext.close();
 
   const replacementContext = await browser.newContext();
@@ -50,18 +57,25 @@ test("admin transfers an owned trip before deleting its former owner", async ({
 
   await page.goto("/admin/users");
   let ownerCard = userCard(page, owner.email);
-  await expect(ownerCard.getByText(/Transfer 1 owned trip/).first()).toBeVisible();
+  await expect(ownerCard.getByText(/Transfer 2 owned trip/).first()).toBeVisible();
   await expect(ownerCard.getByRole("button", { name: "Delete" })).toBeDisabled();
-  const replacementValue = await ownerCard
-    .locator("option")
-    .filter({ hasText: replacement.email })
-    .getAttribute("value");
-  await ownerCard.locator('select[name="replacementOwnerId"]').selectOption(replacementValue ?? "");
-  await ownerCard.getByRole("button", { name: "Transfer ownership" }).click();
-  await expect(page.getByText("Trip ownership transferred.")).toBeVisible();
+  for (const [index, tripName] of tripNames.entries()) {
+    const transferForm = ownerCard.locator("form").filter({ hasText: tripName });
+    const replacementValue = await transferForm
+      .locator("option")
+      .filter({ hasText: replacement.email })
+      .getAttribute("value");
+    await transferForm
+      .locator('select[name="replacementOwnerId"]')
+      .selectOption(replacementValue ?? "");
+    await transferForm.getByRole("button", { name: "Transfer ownership" }).click();
+    await expect(page.getByText("Trip ownership transferred.")).toBeVisible();
+    ownerCard = userCard(page, owner.email);
+    await expect(ownerCard.getByText(new RegExp(`Transfer ${1 - index} owned trip`))).toHaveCount(
+      index === 0 ? 1 : 0
+    );
+  }
 
-  ownerCard = userCard(page, owner.email);
-  await expect(ownerCard.getByText(/Transfer 1 owned trip/)).toHaveCount(0);
   await ownerCard.getByRole("button", { name: "Delete" }).click();
   await expect(userCard(page, owner.email)).toHaveCount(0);
 
@@ -71,7 +85,9 @@ test("admin transfers an owned trip before deleting its former owner", async ({
   await replacementPageAfter.getByLabel("Email").fill(replacement.email);
   await replacementPageAfter.getByLabel("Password").fill(replacement.password);
   await replacementPageAfter.getByRole("button", { name: "Login" }).click();
-  await expect(replacementPageAfter.getByText(tripName)).toBeVisible();
+  for (const tripName of tripNames) {
+    await expect(replacementPageAfter.getByText(tripName)).toBeVisible();
+  }
   await replacementContextAfter.close();
 
   const adminCard = userCard(page, admin.email);
