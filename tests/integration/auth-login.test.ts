@@ -28,7 +28,11 @@ async function postLogin(body: Record<string, unknown>) {
   const response = await loginPost(
     new Request("http://localhost/api/auth/login", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        Origin: "http://localhost",
+        Host: "localhost"
+      },
       body: JSON.stringify(body)
     })
   );

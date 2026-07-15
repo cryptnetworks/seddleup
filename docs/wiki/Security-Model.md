@@ -31,8 +31,9 @@
   unavailable response and reveal no trip identity.
 - Anonymous lookups are throttled by a protected requester bucket. The route is
   dynamic, non-cacheable, marked `noindex`/`nofollow`, and sends `no-referrer`.
-- The shared page contains only local assets and no payment links or third-party
-  resources.
+- The shared page contains only local assets and no analytics, payment links, or
+  third-party resources. Cloudflare Web Analytics is confined to the public
+  marketing layout.
 - The default participant privacy mode uses `Traveler N` labels. Managers may
   deliberately choose initials, first names, or full names.
 - Shared data excludes email addresses, account and invitation data, audit logs,
@@ -52,8 +53,13 @@
   only as HMAC-SHA-256 digests keyed by `TOKEN_DIGEST_SECRET`.
 - OAuth account linking requires a current app session.
 - OAuth authorization state is stored only as a keyed digest, bound to the
-  provider and a keyed digest of the PKCE verifier, expires after ten minutes,
-  and is conditionally consumed before an authorization code is exchanged.
+  provider, purpose, intended linking user where applicable, and a keyed digest
+  of the PKCE verifier. It expires after ten minutes and is conditionally consumed
+  before an authorization code is exchanged.
+- Existing accounts are not linked by email matching. New OAuth registrations
+  require a provider-specific positive email-verification assertion.
+- Password and sensitive authentication changes increment a per-user session
+  version. JWTs with a missing or older version are rejected.
 
 ## One-Time Credential Concurrency
 
@@ -80,7 +86,8 @@ issue #75.
 
 ## CSRF
 
-- State-changing Server Actions enforce same-origin checks using `Origin` or `Referer` when present.
+- State-changing Server Actions require `Origin` or `Referer` to prove the same
+  origin. Missing, malformed, and cross-origin values fail closed.
 - The custom login API rejects cross-origin posts.
 - NextAuth handles CSRF for its built-in endpoints.
 
@@ -88,13 +95,21 @@ issue #75.
 
 - Login, registration, password reset, email verification resend, invitation
   acceptance, and admin invitation actions use rate limits.
-- The current limiter stores buckets in process memory. It resets on process
-  restart and is not shared across app replicas.
-- Single-container deployments get basic abuse throttling from the built-in
-  limiter.
-- Multi-replica production deployments should add shared rate limiting at the
-  reverse proxy, load balancer, edge, or platform layer until a shared store such
-  as Redis is implemented in the app.
+- Login throttling stores bounded account, source, and account/source buckets in
+  SQLite and fails closed if that store is unavailable. Attempts from one source
+  do not immediately lock the same account out from another source.
+- Forwarded source addresses are used only when `SEDDLEUP_TRUST_PROXY_HEADERS=true`.
+  Enable it only behind a proxy that overwrites or safely appends those headers.
+- Other lower-risk action limiters remain process-local. Multi-replica deployment
+  is not supported with the current SQLite runtime model.
+
+## Receipt Files
+
+- New PDF, JPEG, PNG, HEIC, and HEIF uploads must match recognized file signatures;
+  client MIME declarations alone are not trusted.
+- Image bytes are not decoded by the local heuristic parser, and PDF bytes are
+  treated only as bounded text input. Receipt responses are authorized, `nosniff`,
+  and `private, no-store`.
 
 ## XSS
 

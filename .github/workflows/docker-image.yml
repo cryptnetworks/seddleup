@@ -54,7 +54,6 @@ on:
 
 permissions:
   contents: read
-  packages: write
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -83,6 +82,9 @@ jobs:
 
     runs-on: ${{ matrix.runner }}
     timeout-minutes: 60
+    permissions:
+      contents: read
+      packages: write
 
     steps:
       - name: Checkout
@@ -177,11 +179,42 @@ jobs:
       - name: Run optional profile probes
         run: npm run test:docker:profiles
 
+  publish-security:
+    if: github.event_name != 'pull_request'
+    name: Publish security validation
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Audit locked dependencies
+        run: npm run security:audit
+
+      - name: Build image for scanning
+        run: docker build -t seddleup:publish-security .
+
+      - name: Scan publish image
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          image-ref: seddleup:publish-security
+          severity: HIGH,CRITICAL
+          exit-code: "1"
+          ignore-unfixed: true
+
   docker-manifest:
     if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     needs:
       - docker
+      - runtime-probes
+      - publish-security
+    permissions:
+      contents: read
+      packages: write
 
     steps:
       - name: Download image digests

@@ -44,7 +44,7 @@ export async function uploadReceipt(tripId: string, formData: FormData) {
 
   const file = formData.get("receiptFile");
   if (!(file instanceof File)) redirect(`/trips/${tripId}/receipts/new?error=file`);
-  const validation = validateReceiptFile(file);
+  const validation = await validateReceiptFile(file);
   if (!validation.ok) redirect(`/trips/${tripId}/receipts/new?error=${validation.error}`);
 
   const expenseId = formString(formData, "expenseId") || null;
@@ -68,7 +68,7 @@ export async function uploadReceipt(tripId: string, formData: FormData) {
       const buffer = await readFile(stored.storedPath);
       const parsed = await defaultReceiptParser.parse({
         buffer,
-        mimeType: file.type,
+        mimeType: validation.mimeType,
         filename: file.name
       });
 
@@ -85,7 +85,7 @@ export async function uploadReceipt(tripId: string, formData: FormData) {
           originalFilename: safeOriginalFilename(file.name),
           storedFilename: stored.storedFilename,
           storedPath: stored.storedPath,
-          mimeType: file.type,
+          mimeType: validation.mimeType,
           fileSize: file.size,
           merchant: parsed.merchant || null,
           receiptDate: parsed.receiptDate || null,

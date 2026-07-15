@@ -6,7 +6,8 @@ import { cleanupStoredReceipts, withStoredReceiptCompensation } from "@/lib/rece
 import {
   deleteReceiptDirectory,
   receiptDirectoryInsideUploadDir,
-  resolveReceiptPathInsideUploadDir
+  resolveReceiptPathInsideUploadDir,
+  validateReceiptFile
 } from "@/lib/receipts/storage";
 
 const originalEnv = { ...process.env };
@@ -48,6 +49,35 @@ describe("receipt storage paths", () => {
     expect(
       resolveReceiptPathInsideUploadDir(path.join(uploadDir, "trip", "receipt", "original.pdf"))
     ).toBe(path.join(uploadDir, "trip", "receipt", "original.pdf"));
+  });
+
+  it("accepts receipt content only when its signature matches the declared type", async () => {
+    await temporaryUploadDirectory();
+    const pdf = new File([Buffer.from("%PDF-1.4\nfixture")], "receipt.pdf", {
+      type: "application/pdf"
+    });
+    const disguised = new File([Buffer.from("<html>not a receipt</html>")], "receipt.pdf", {
+      type: "application/pdf"
+    });
+    const mismatched = new File(
+      [Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a])],
+      "receipt.jpg",
+      { type: "image/jpeg" }
+    );
+
+    await expect(validateReceiptFile(pdf)).resolves.toMatchObject({
+      ok: true,
+      extension: "pdf",
+      mimeType: "application/pdf"
+    });
+    await expect(validateReceiptFile(disguised)).resolves.toEqual({
+      ok: false,
+      error: "signature"
+    });
+    await expect(validateReceiptFile(mismatched)).resolves.toEqual({
+      ok: false,
+      error: "signature"
+    });
   });
 
   it("rejects paths outside the configured upload directory", () => {

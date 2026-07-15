@@ -488,7 +488,7 @@ export default async function AccountPage({
                 <a
                   key={provider.id}
                   className="btn-secondary"
-                  href={`/api/auth/oauth/${provider.id}/start`}
+                  href={`/api/auth/oauth/${provider.id}/start?purpose=link`}
                 >
                   Link {provider.name}
                 </a>

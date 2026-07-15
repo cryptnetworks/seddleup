@@ -99,6 +99,12 @@ Startup applies pending Prisma migrations automatically. Verify the migration
 step, wait for readiness, and then exercise a read-only application path before
 allowing writes:
 
+The session/OAuth security migration intentionally invalidates existing JWTs;
+plan for every user to sign in again. Keep OAuth providers disabled until the
+migration succeeds and historical provider-account links have been reviewed.
+After the upgrade, rotate any read-only trip sharing links that may previously
+have been visited while global analytics was enabled.
+
 ```bash
 docker logs seddleup --since 5m
 for attempt in $(seq 1 30); do

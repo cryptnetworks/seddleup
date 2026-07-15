@@ -200,11 +200,12 @@ before the first public rollout.
 
 ## Rate Limiting
 
-The built-in limiter uses process-local memory. It provides basic throttling for
-a single SeddleUp container, but it resets on restart and is not shared across
-replicas. Multi-replica production deployments should add shared rate limiting
-at the reverse proxy, load balancer, edge, or platform layer until app-level
-shared store support is added.
+Login throttling persists multidimensional buckets in the app SQLite database.
+The Compose deployment sets `SEDDLEUP_TRUST_PROXY_HEADERS=true` because its
+supported public profiles sanitize or append client forwarding headers. Set it
+to `false` if you publish the app container directly or use a proxy that does not
+establish that trust boundary. Other action limiters remain process-local, and
+multi-replica SQLite deployment remains unsupported.
 
 ---
 

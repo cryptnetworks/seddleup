@@ -4,7 +4,7 @@ import { createSessionLoginToken } from "@/lib/login-token";
 import { isSameOriginRequest } from "@/lib/csrf";
 import { logger } from "@/lib/logger";
 import { prisma } from "@/lib/prisma";
-import { checkRateLimit } from "@/lib/rate-limit";
+import { checkLoginRateLimit } from "@/lib/login-rate-limit";
 import { getAuthSettings } from "@/lib/settings";
 import {
   startEmailTwoFactorChallenge,
@@ -59,12 +59,9 @@ async function handleLogin(request: Request) {
     return authResult({ ok: false, error: "INVALID_CREDENTIALS" });
   }
 
-  const rateLimit = checkRateLimit(`login:${email}`, {
-    limit: 8,
-    windowMs: 15 * 60 * 1000
-  });
+  const rateLimit = await checkLoginRateLimit({ email, headers: request.headers });
   if (!rateLimit.allowed) {
-    logger.warn("auth.login.rate_limited", { email });
+    logger.warn("auth.login.rate_limited", { reason: rateLimit.reason });
     logLoginDebug({ email, stepFailed: "rate_limited" });
     return authResult({ ok: false, error: "INVALID_CREDENTIALS" });
   }

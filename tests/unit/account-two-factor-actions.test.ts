@@ -8,7 +8,10 @@ const mocks = vi.hoisted(() => ({
     throw new Error(`redirect:${url}`);
   }),
   requireUser: vi.fn(),
-  update: vi.fn()
+  update: vi.fn(),
+  deleteChallenges: vi.fn(),
+  deleteOAuthStates: vi.fn(),
+  transaction: vi.fn()
 }));
 
 vi.mock("next/navigation", () => ({
@@ -36,7 +39,8 @@ vi.mock("@/lib/prisma", () => ({
     user: {
       findUniqueOrThrow: mocks.findUniqueOrThrow,
       update: mocks.update
-    }
+    },
+    $transaction: mocks.transaction
   }
 }));
 
@@ -63,6 +67,15 @@ describe("account two-factor method actions", () => {
       twoFactorMethod: "none"
     });
     mocks.update.mockResolvedValue({});
+    mocks.deleteChallenges.mockResolvedValue({ count: 0 });
+    mocks.deleteOAuthStates.mockResolvedValue({ count: 0 });
+    mocks.transaction.mockImplementation(async (callback) =>
+      callback({
+        user: { update: mocks.update },
+        twoFactorChallenge: { deleteMany: mocks.deleteChallenges },
+        oAuthStateCredential: { deleteMany: mocks.deleteOAuthStates }
+      })
+    );
   });
 
   it("blocks newly enabling email MFA when SMTP delivery is unavailable", async () => {

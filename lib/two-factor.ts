@@ -2,6 +2,7 @@ import crypto from "crypto";
 import * as bcrypt from "bcryptjs";
 import { logger } from "@/lib/logger";
 import { prisma } from "@/lib/prisma";
+import { revokeUserSessionsInTransaction } from "@/lib/session-revocation";
 import { sendTwoFactorEmail } from "@/lib/email";
 import { decryptSecret, encryptSecret } from "@/lib/secret-encryption";
 import { buildAuthenticatorUri, generateAuthenticatorSecret, verifyTotpCode } from "@/lib/totp";
@@ -137,12 +138,15 @@ export async function enableAuthenticator(userId: string, code: string) {
     return false;
   }
 
-  await prisma.user.update({
-    where: { id: userId },
-    data: {
-      authenticatorEnabled: true,
-      twoFactorMethod: "authenticator"
-    }
+  await prisma.$transaction(async (tx) => {
+    await tx.user.update({
+      where: { id: userId },
+      data: {
+        authenticatorEnabled: true,
+        twoFactorMethod: "authenticator"
+      }
+    });
+    await revokeUserSessionsInTransaction(tx, userId);
   });
 
   logger.info("auth.two_factor.authenticator.enabled", { userId });

@@ -52,6 +52,7 @@ describe("atomic one-time credential consumption", () => {
         userId: user.id
       }
     });
+    await createSessionLoginToken(user.id);
 
     const attempts = await Promise.all([
       completePasswordReset(token, "FirstPass123"),
@@ -64,6 +65,8 @@ describe("atomic one-time credential consumption", () => {
     const secondMatches = await bcrypt.compare("SecondPass123", updated.passwordHash);
     expect([firstMatches, secondMatches].filter(Boolean)).toHaveLength(1);
     expect(attempts[0] ? firstMatches : secondMatches).toBe(true);
+    expect(updated.sessionVersion).toBe(1);
+    await expect(prisma.twoFactorChallenge.count({ where: { userId: user.id } })).resolves.toBe(0);
   });
 
   it("allows exactly one concurrent email-verification use", async () => {
@@ -134,16 +137,50 @@ describe("atomic one-time credential consumption", () => {
   it("binds OAuth state to provider and PKCE before one atomic success", async () => {
     const state = opaqueCredential();
     const verifier = opaqueCredential();
-    await createOAuthStateCredential({ state, verifier, providerId: "test" });
+    await createOAuthStateCredential({
+      state,
+      verifier,
+      providerId: "test",
+      purpose: "login"
+    });
 
     await expect(
       consumeOAuthStateCredential({ state, verifier, providerId: "different" })
-    ).resolves.toBe(false);
+    ).resolves.toBeNull();
     const attempts = await Promise.all([
       consumeOAuthStateCredential({ state, verifier, providerId: "test" }),
       consumeOAuthStateCredential({ state, verifier, providerId: "test" })
     ]);
     expect(attempts.filter(Boolean)).toHaveLength(1);
+    expect(attempts.find(Boolean)).toEqual({ purpose: "login", userId: null });
+  });
+
+  it("binds OAuth link state to its purpose and intended user", async () => {
+    const user = await createUser("oauth-link-purpose");
+    const state = opaqueCredential();
+    const verifier = opaqueCredential();
+    await createOAuthStateCredential({
+      state,
+      verifier,
+      providerId: "test",
+      purpose: "link",
+      userId: user.id
+    });
+
+    await expect(
+      consumeOAuthStateCredential({ state, verifier, providerId: "test" })
+    ).resolves.toEqual({ purpose: "link", userId: user.id });
+    await expect(
+      consumeOAuthStateCredential({ state, verifier, providerId: "test" })
+    ).resolves.toBeNull();
+    await expect(
+      createOAuthStateCredential({
+        state: opaqueCredential(),
+        verifier: opaqueCredential(),
+        providerId: "test",
+        purpose: "link"
+      })
+    ).rejects.toThrow("requires exactly one intended user");
   });
 
   it("does not substitute credentials across purposes or accept expired records", async () => {

@@ -2,6 +2,7 @@ import crypto from "crypto";
 import * as bcrypt from "bcryptjs";
 import { logger } from "@/lib/logger";
 import { prisma } from "@/lib/prisma";
+import { revokeUserSessionsInTransaction } from "@/lib/session-revocation";
 import { sendPasswordResetEmail } from "@/lib/email";
 import { digestLookupToken } from "@/lib/token-digest";
 
@@ -117,6 +118,7 @@ export async function completePasswordReset(token: string, password: string) {
         });
         if (consumed.count !== 1) return false;
         await tx.user.update({ where: { id: userId }, data: { passwordHash } });
+        await revokeUserSessionsInTransaction(tx, userId);
         return true;
       });
     }

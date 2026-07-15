@@ -18,13 +18,41 @@ export function receiptUploadConfig() {
   };
 }
 
-export function validateReceiptFile(file: File) {
+function detectedReceiptMimeType(buffer: Uint8Array) {
+  if (buffer.length >= 5 && Buffer.from(buffer.subarray(0, 5)).toString("ascii") === "%PDF-") {
+    return "application/pdf";
+  }
+  if (buffer.length >= 3 && buffer[0] === 0xff && buffer[1] === 0xd8 && buffer[2] === 0xff) {
+    return "image/jpeg";
+  }
+  const pngSignature = [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a];
+  if (buffer.length >= 8 && pngSignature.every((byte, index) => buffer[index] === byte)) {
+    return "image/png";
+  }
+  if (buffer.length >= 12 && Buffer.from(buffer.subarray(4, 8)).toString("ascii") === "ftyp") {
+    const brand = Buffer.from(buffer.subarray(8, 12)).toString("ascii");
+    if (["heic", "heix", "hevc", "hevx", "mif1", "msf1"].includes(brand)) {
+      return "image/heic";
+    }
+  }
+  return null;
+}
+
+export async function validateReceiptFile(file: File) {
   const config = receiptUploadConfig();
   if (file.size <= 0) return { ok: false as const, error: "empty" };
   if (file.size > config.maxBytes) return { ok: false as const, error: "too_large" };
   const extension = allowedReceiptMimeTypes.get(file.type);
   if (!extension) return { ok: false as const, error: "type" };
-  return { ok: true as const, extension };
+  const detectedMimeType = detectedReceiptMimeType(
+    new Uint8Array(await file.slice(0, 16).arrayBuffer())
+  );
+  if (!detectedMimeType) return { ok: false as const, error: "signature" };
+  const detectedExtension = allowedReceiptMimeTypes.get(detectedMimeType);
+  if (!detectedExtension || detectedExtension !== extension) {
+    return { ok: false as const, error: "signature" };
+  }
+  return { ok: true as const, extension, mimeType: detectedMimeType };
 }
 
 export function safeOriginalFilename(name: string) {

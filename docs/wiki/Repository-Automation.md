@@ -23,7 +23,7 @@ network failures cannot make docs changes flaky.
 
 The CI workflow runs on pushes and pull requests. It installs dependencies,
 validates configuration, validates Prisma, applies migrations, runs formatting
-checks, lint, TypeScript, unit/integration tests, Chromium and Mobile Safari E2E
+checks, enforces the workflow runner policy, runs lint, TypeScript, unit/integration tests, Chromium and Mobile Safari E2E
 smoke/accessibility tests, an isolated enabled-receipt flow, and a focused
 Chromium `next start` smoke/SEO suite. The production suite performs its own
 build, migration, readiness wait, and cleanup.
@@ -32,6 +32,7 @@ Local equivalent:
 
 ```bash
 npm run validate:config
+npm run workflows:check
 npx prisma validate
 npx prisma migrate deploy
 npm run docs:check
@@ -91,6 +92,12 @@ EOF
 The Docker workflow builds the app image on Docker-relevant pull requests and
 publishes to GitHub Container Registry from `main` and tags. Images are tagged
 by branch, SHA, and `latest` where applicable.
+
+Manifest publication waits for both runtime/migration probes and a dedicated
+high/critical dependency and image scan. Package-write permission is limited to
+the build and manifest jobs. Pull-request workflows are checked by
+`npm run workflows:check`, which rejects self-hosted runner references and
+`pull_request_target`; untrusted pull-request code must remain GitHub-hosted.
 
 Docker-relevant changes also run an amd64 runtime-probe job. The job builds a
 local `seddleup:ci` image without publishing it, then runs:

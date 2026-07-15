@@ -12,6 +12,7 @@ services:
       # Keep SQLite inside the mounted volume even when the local .env uses file:./dev.db.
       SEDDLEUP_SQLITE_PATH: ${SEDDLEUP_SQLITE_PATH:-/app/data/seddleup.db}
       SEDDLEUP_ALLOW_INSECURE_SECRET: ${SEDDLEUP_ALLOW_INSECURE_SECRET:-}
+      SEDDLEUP_TRUST_PROXY_HEADERS: ${SEDDLEUP_TRUST_PROXY_HEADERS:-true}
     expose:
       - "3000"
     volumes:

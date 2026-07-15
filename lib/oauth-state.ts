@@ -2,13 +2,19 @@ import { prisma } from "@/lib/prisma";
 import { digestLookupToken, timingSafeEqualTokenDigest } from "@/lib/token-digest";
 
 const OAUTH_STATE_EXPIRATION_MINUTES = 10;
+export type OAuthStatePurpose = "login" | "link";
 
 export async function createOAuthStateCredential(input: {
   state: string;
   verifier: string;
   providerId: string;
+  purpose: OAuthStatePurpose;
+  userId?: string;
   now?: Date;
 }) {
+  if ((input.purpose === "link") !== Boolean(input.userId)) {
+    throw new Error("OAuth link state requires exactly one intended user.");
+  }
   const now = input.now ?? new Date();
   const expiresAt = new Date(now.getTime() + OAUTH_STATE_EXPIRATION_MINUTES * 60 * 1000);
   await prisma.$transaction([
@@ -18,6 +24,8 @@ export async function createOAuthStateCredential(input: {
         stateHash: digestLookupToken(input.state),
         verifierHash: digestLookupToken(input.verifier),
         providerId: input.providerId,
+        purpose: input.purpose,
+        userId: input.userId,
         expiresAt
       }
     })
@@ -42,7 +50,7 @@ export async function consumeOAuthStateCredential(input: {
     !timingSafeEqualTokenDigest(input.state, record.stateHash) ||
     !timingSafeEqualTokenDigest(input.verifier, record.verifierHash)
   ) {
-    return false;
+    return null;
   }
 
   const consumed = await prisma.oAuthStateCredential.updateMany({
@@ -56,5 +64,7 @@ export async function consumeOAuthStateCredential(input: {
     },
     data: { usedAt: now }
   });
-  return consumed.count === 1;
+  return consumed.count === 1
+    ? { purpose: record.purpose as OAuthStatePurpose, userId: record.userId }
+    : null;
 }
