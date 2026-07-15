@@ -29,18 +29,10 @@ git remote set-url origin https://github.com/cryptnetworks/seddleup.git
 
 ## Remaining Legacy References
 
-These references are intentionally retained because they are technical identifiers, deployment compatibility points, or test-only fixtures:
-
-| Reference                                                                          | Classification                  | Decision                                                                                                                                         |
-| ---------------------------------------------------------------------------------- | ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `package.json` and `package-lock.json` package name: `triptally`                   | Should remain for compatibility | Avoids package/lockfile churn during a brand-only release.                                                                                       |
-| Docker service, container, and volume names                                        | Renamed now                     | Compose now uses `seddleup`, `seddleup-nginx`, `seddleup-certbot`, `seddleup-cloudflared`, and `seddleup_data`.                                  |
-| SQLite database filename                                                           | Renamed with migration fallback | New Docker defaults use `/app/data/seddleup.db`; startup moves `/app/data/triptally.db` to the new path when present and the new file is absent. |
-| Environment variables with `TRIPTALLY_` prefixes used by Docker startup validation | Renamed with aliases            | New Docker config uses `SEDDLEUP_*`; the entrypoint still accepts legacy `TRIPTALLY_*` values as fallbacks.                                      |
-| Test hostnames, emails, fixture filenames, and secrets such as `triptally.test`    | Safe to rename later            | Not user-facing, but broad test updates should be isolated from the rebrand.                                                                     |
-| Nginx and Cloudflare internal service examples                                     | Renamed now                     | Reverse proxy and tunnel examples now target `http://seddleup:3000`.                                                                             |
-| Historical running-issues entries that quote past verification commands            | Should remain for audit history | These are historical notes, not current branding.                                                                                                |
-| Git history/log entries under `.git`                                               | Should remain                   | Git logs are immutable historical metadata.                                                                                                      |
+This report records the completed rebrand. The live inventory, ownership,
+migration procedure, rollback procedure, and release boundary for every retained
+name now live in the authoritative
+[Compatibility Name Migration Plan](wiki/Compatibility-Name-Migration-Plan.md).
 
 ## Decisions
 
@@ -53,5 +45,6 @@ These references are intentionally retained because they are technical identifie
 
 - Publish the first `ghcr.io/cryptnetworks/seddleup` image from the Docker workflow before using the updated pull commands in production.
 - Back up existing Docker volumes before switching from `triptally_data` to `seddleup_data`.
-- Consider a future major-version migration if internal package names, the OAuth cookie name, or test fixtures need to move from `triptally` to `seddleup`.
+- Follow the compatibility plan before changing internal package names,
+  environment aliases, legacy database handling, cookies, or test fixtures.
 - If internal test fixtures are renamed later, update fixtures, imports, test domains, and OAuth test config together.

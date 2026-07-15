@@ -7,6 +7,8 @@ This wiki is the operational and contributor documentation for the project.
 ## Start Here
 
 - [Running with Docker](Running-with-Docker)
+- [Production Deployment Checklist](Production-Deployment-Checklist)
+- [Release Checklist](Release-Checklist)
 - [Configuration](Configuration)
 - [Cloudflare Tunnel Deployment](Cloudflare-Tunnel-Deployment)
 - [Nginx and Let's Encrypt Deployment](Nginx-and-Lets-Encrypt-Deployment)
@@ -17,6 +19,8 @@ This wiki is the operational and contributor documentation for the project.
 - [Screenshots](Screenshots)
 - [Repository Automation](Repository-Automation)
 - [Architecture](Architecture)
+- [Compatibility Name Migration Plan](Compatibility-Name-Migration-Plan)
+- [Maintainability and Refactor Summary](https://github.com/cryptnetworks/seddleup/blob/main/docs/refactor-summary.md)
 - [Contributing](Contributing)
 - [Troubleshooting](Troubleshooting)
 

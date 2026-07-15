@@ -1,6 +1,23 @@
 # Repository Automation
 
-SeddleUp includes GitHub automation for validation, Docker images, dependency updates, and security scanning.
+SeddleUp includes GitHub automation for application and documentation validation,
+Docker images, dependency updates, and security scanning.
+
+## Documentation validation
+
+The Documentation workflow runs for Markdown, docs tooling, and documentation
+workflow changes. It installs dependencies with lifecycle scripts disabled, then
+runs:
+
+```bash
+npm run docs:check
+```
+
+`markdownlint-cli2` validates structure. The repository link checker validates
+relative files, repository-hosted files, wiki page targets, duplicate reference
+definitions, and GitHub-style heading anchors without requesting external URLs.
+External-link availability is deliberately outside routine CI so transient
+network failures cannot make docs changes flaky.
 
 ## CI
 
@@ -17,6 +34,7 @@ Local equivalent:
 npm run validate:config
 npx prisma validate
 npx prisma migrate deploy
+npm run docs:check
 npm run format:check
 npm run lint
 npm run typecheck
@@ -79,6 +97,7 @@ local `seddleup:ci` image without publishing it, then runs:
 
 ```bash
 npm run test:docker
+npm run test:docker:profiles
 ```
 
 The probe verifies:
@@ -97,6 +116,12 @@ Every probe resource has a run-specific Docker label. Cleanup runs on success,
 failure, and interruption, so the workflow never uses or deletes a named
 deployment volume. Expected failure logs contain paths and error categories but
 not database rows, secrets, tokens, or cookies.
+
+The optional-profile probe validates all three Compose profiles, invokes the
+Discord registration script without npm and without credentials, renders and
+syntax-checks nginx with an isolated certificate, and runs Cloudflare ingress
+validation with container networking disabled. It creates no Compose network,
+uses only run-labeled disposable containers, and cleans temporary files on every exit.
 
 ## Security Workflow
 

@@ -4,6 +4,8 @@
 
 - [Home](Home)
 - [Running with Docker](Running-with-Docker)
+- [Production Deployment Checklist](Production-Deployment-Checklist)
+- [Release Checklist](Release-Checklist)
 - [Configuration](Configuration)
 - [Cloudflare Tunnel Deployment](Cloudflare-Tunnel-Deployment)
 - [Nginx and Let's Encrypt Deployment](Nginx-and-Lets-Encrypt-Deployment)
@@ -15,5 +17,7 @@
 - [Screenshots](Screenshots)
 - [Repository Automation](Repository-Automation)
 - [Architecture](Architecture)
+- [Compatibility Name Migration Plan](Compatibility-Name-Migration-Plan)
+- [Maintainability Summary](https://github.com/cryptnetworks/seddleup/blob/main/docs/refactor-summary.md)
 - [Contributing](Contributing)
 - [Troubleshooting](Troubleshooting)
