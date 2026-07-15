@@ -21,11 +21,15 @@ npm run format:check
 npm run lint
 npm run typecheck
 npm test
-npm run test:e2e
+npm run test:e2e:ci
 npm run test:e2e:receipts
 npm run test:e2e:production
 npm run build
 ```
+
+`npm run test:e2e:ci` is the bounded development-server matrix used by the
+workflow. Run `npm run test:e2e` before a browser-sensitive pull request to
+exercise the complete local matrix.
 
 The browser launchers allocate free ports and unique ignored `tmp/` directories
 for SQLite and uploads. They never reuse a running development server or an

@@ -120,10 +120,12 @@ requested taxonomy.
   stale, but intentionally observational.
 - Implementation status: a full development matrix reproduced the non-failing
   warning twice in the Turbopack HMR client; repeated production WebKit route
-  checks stayed clean. Production checks fail on chunk errors, no browser errors
-  are globally suppressed, and the development-only classification and narrow
-  production-runner mitigation are documented. A distinct local-HTTP production
-  action timeout remains recorded separately.
+  checks stayed clean. Two CI repetitions later reproduced HMR invalidation and
+  stalled layout navigation. CI now uses a bounded development-server matrix;
+  the full matrix remains available locally. Production checks fail on chunk
+  errors, no browser errors are globally suppressed, and the development-only
+  classification and narrow mitigation are documented. A distinct local-HTTP
+  production action timeout remains recorded separately.
 
 ### #65 - Database: design Postgres support before accepting Postgres URLs
 

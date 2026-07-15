@@ -20,7 +20,7 @@ The highest-priority remaining product/security risk is email MFA enablement
 when SMTP delivery is unavailable or unverified. Receipt-upload enabled-path E2E
 is now automated. Turbopack/WebKit chunk warnings reproduced only in the
 development HMR client; repeated production route checks remained clean and the
-production-runner mitigation is documented.
+bounded-CI and production-runner mitigation is documented.
 
 Intentional TripTally compatibility names are preserved for now, including the
 package name, package lock name, and test fixtures.
@@ -67,7 +67,7 @@ package name, package lock name, and test fixtures.
 | CI/dependency cleanup        | Fixed          | CI includes format check; safe patch updates applied.                |
 | Email MFA without SMTP       | Open           | Needs product guardrails to avoid account lockout.                   |
 | Receipt upload enabled E2E   | Fixed          | Isolated upload/review and access-control E2E now runs in CI.        |
-| WebKit dev-server warnings   | Classified     | Reproduced in Turbopack HMR; production checks stayed clean.         |
+| WebKit dev-server warnings   | Classified     | Reproduced in Turbopack HMR; bounded CI and production checks added. |
 
 ### Recommended Next Phase
 
@@ -155,7 +155,7 @@ test coverage so users are not locked out by an undeliverable second factor.
     becomes flaky.
   - Risk level: Low
   - Estimated effort: Small
-  - Status: Classified; a later full development matrix reproduced the warning
+  - Status: Classified; later full development and CI matrices reproduced the warning
     twice in Turbopack's HMR client, while three repeated production route runs
     stayed clean. Real page/server chunk errors are observed and fail; a
     distinct local-HTTP production WebKit server-action timeout remains visible.

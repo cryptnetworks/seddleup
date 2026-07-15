@@ -24,6 +24,17 @@ separate receipt-upload directory. Playwright starts `next dev`; it does not
 reuse a server already listening on port 3000. The launcher removes only its own
 temporary directory after success or failure.
 
+The bounded development-server matrix used by CI is:
+
+```bash
+npm run test:e2e:ci
+```
+
+It runs health/auth, accessibility, disabled-receipt, and focused iPhone
+expense/SSO coverage in Chromium and Mobile Safari. The complete development
+matrix remains available through `npm run test:e2e`; it is intentionally not a
+single CI gate because long Turbopack HMR sessions can invalidate WebKit chunks.
+
 The production-server suite is:
 
 ```bash
@@ -52,7 +63,8 @@ provide the disposable launcher safeguards. `PLAYWRIGHT_DATABASE_URL`,
 
 ## Browser matrix
 
-- CI development coverage: Chromium and Mobile Safari/WebKit.
+- CI development coverage: focused Chromium and Mobile Safari/WebKit smoke,
+  accessibility, disabled-receipt, and iPhone flows.
 - CI production coverage: focused Chromium smoke and SEO checks.
 - Focused accessibility coverage: Chromium and Mobile Safari.
 - Enabled receipt coverage: Chromium with a disposable upload directory.
@@ -71,13 +83,18 @@ development-server warning. On 2026-07-14, three repeated Mobile Safari
 development runs (six authenticated expense/SSO tests) were clean. A later full
 five-project development run reproduced the warning twice during the long
 Mobile Safari layout flow while all 91 runnable tests passed. Both messages
-named the `[turbopack]/browser/dev/hmr-client` chunk. Three repeated production
+named the `[turbopack]/browser/dev/hmr-client` chunk. Two subsequent CI runs of
+the long Chromium/Mobile Safari development matrix reproduced HMR chunk
+invalidation followed by interrupted or stalled navigation in the layout spec.
+Three repeated production
 Mobile Safari route runs completed without a chunk error, so the evidence
 classifies the signal as development HMR invalidation rather than an application
 or production chunk defect.
 
-The mitigation is intentionally narrow: release-representative checks use the
-production runner, which scans server output for `ChunkLoadError`, failed
+The mitigation is intentionally narrow: CI uses `npm run test:e2e:ci` for a
+bounded development-server matrix, while the full matrix remains a documented
+local command. Release-representative checks use the production runner, which
+scans server output for `ChunkLoadError`, failed
 chunk-load, and loading-chunk failures, while the focused WebKit spec observes
 page errors and browser console errors. Real browser failures remain failures;
 there is no global unhandled-rejection suppression. A broader production Mobile

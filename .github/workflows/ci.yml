@@ -91,7 +91,7 @@ jobs:
           AUTH_CONFIG_ENCRYPTION_KEY: ci-playwright-auth-config-key
           SMTP_ENABLED: "false"
           TEST_OAUTH_PROVIDER_ENABLED: "true"
-        run: npm run test:e2e -- --project=Chromium --project='Mobile Safari'
+        run: npm run test:e2e:ci
 
       - name: Enabled receipt browser tests
         run: npm run test:e2e:receipts

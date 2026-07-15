@@ -52,9 +52,11 @@ npm run security:audit
 
 The E2E launcher uses a free port plus disposable SQLite and upload paths; it
 does not inherit Docker paths or reuse a developer server. Run the focused
-production build/server smoke and enabled receipt paths with:
+CI development matrix, production build/server smoke, and enabled receipt paths
+with:
 
 ```bash
+npm run test:e2e:ci
 npm run test:e2e:production
 npm run test:e2e:receipts
 ```
