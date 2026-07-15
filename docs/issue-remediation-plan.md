@@ -1,9 +1,16 @@
 # SeddleUp Issue Remediation Plan
 
-Last audited: June 28, 2026
+Last audited: July 14, 2026
 
 Source: open GitHub issues in `cryptnetworks/seddleup`, issues #59 through #81.
 No GitHub issues or labels were modified during this audit.
+
+Current batch: issues #74, #64, #79, #60, #77, and #93 are implemented on
+`agent/production-e2e-readiness`. #64 reproduced twice in a full Mobile Safari
+development run and was classified as Turbopack development HMR invalidation;
+repeated production route checks stayed clean. A separate local-HTTP production
+WebKit action timeout remains documented. The acceptance mapping and commands
+are in `docs/wiki/Testing-and-Production-Readiness.md`.
 
 ## Label Cleanup
 
@@ -56,6 +63,9 @@ requested taxonomy.
   `receipts`, `frontend`
 - Dependencies and notes: should follow core release blockers. Depends on stable
   receipt upload fixtures and test environment setup.
+- Implementation status: enabled upload, parse/review, owner download,
+  unauthenticated/cross-user denial, disabled-state, and temporary-file cleanup
+  are covered by an isolated Chromium runner and CI step.
 
 ### #61 - CI: add Docker build and runtime migration probes
 
@@ -108,6 +118,14 @@ requested taxonomy.
   `size:s`, `needs-discussion`, `mobile`
 - Dependencies and notes: needs reproduction before code. Complements #74. Not
   stale, but intentionally observational.
+- Implementation status: a full development matrix reproduced the non-failing
+  warning twice in the Turbopack HMR client; repeated production WebKit route
+  checks stayed clean. Two CI repetitions later reproduced HMR invalidation and
+  stalled layout navigation. CI now uses a bounded development-server matrix;
+  the full matrix remains available locally. Production checks fail on chunk
+  errors, no browser errors are globally suppressed, and the development-only
+  classification and narrow mitigation are documented. A distinct local-HTTP
+  production action timeout remains recorded separately.
 
 ### #65 - Database: design Postgres support before accepting Postgres URLs
 
@@ -227,6 +245,9 @@ requested taxonomy.
   `priority:medium`, `size:l`, `ready`, `ci`
 - Dependencies and notes: complements #64 and #61. Split local script from CI
   rollout if scope grows.
+- Implementation status: an isolated `next build`/`next start` runner applies
+  migrations, waits for readiness, covers the requested smoke paths, cleans up,
+  and runs in CI without removing development-server E2E.
 
 ### #75 - MFA: add recovery codes or admin reset for locked MFA accounts
 
@@ -268,6 +289,10 @@ requested taxonomy.
   `size:m`, `ready`, `auth`, `backend`
 - Dependencies and notes: related to #70. Avoid overbroad denylists that make
   tests noisy.
+- Implementation status: a recursive final logging boundary and regression
+  suite cover structured and rendered passwords, token/secret families, OAuth,
+  MFA/TOTP/recovery, SMTP/Discord, receipt paths, database URLs, bearer values,
+  query values, and emails while preserving operational IDs and timestamps.
 
 ### #78 - Docs: add markdown and link checking to documentation validation
 
@@ -292,6 +317,9 @@ requested taxonomy.
   `size:m`, `ready`, `auth`, `frontend`
 - Dependencies and notes: new dependency should be justified. Start with
   Playwright role/focus assertions if possible.
+- Implementation status: Chromium and Mobile Safari smoke tests cover auth,
+  registration validation, trip creation, expense create/edit, keyboard/focus,
+  labels, and mobile overflow without adding an accessibility dependency.
 
 ### #80 - Deployment: test restore from legacy TripTally database path
 
@@ -325,6 +353,21 @@ requested taxonomy.
   dependency-free liveness endpoint, safe public readiness states for config,
   SQLite, and bundled Prisma migrations, focused unit/E2E coverage, and stable
   Docker healthcheck behavior. No authenticated detail endpoint was needed.
+
+### #93 - SEO: complete production browser QA and investigate local SQLite path
+
+- Category: Testing, Bug, UX/UI
+- Priority: Medium
+- Size: M
+- Dependencies and notes: follows the production SEO implementation and Docker
+  runtime probes.
+- Implementation status: production Chromium checks cover common viewports,
+  overflow, canonical/social metadata, JSON-LD, sitemap, robots, manifest,
+  semantics, private-page robots, and response headers with an HTTPS public
+  origin. The local warning root cause was Playwright inheriting Docker paths
+  and silently reusing a server; supported launchers now force disposable local
+  paths and free ports. Docker validation and existing-file failure behavior are
+  unchanged. The in-app visual backend was unavailable during this batch.
 
 ## Suggested Implementation Order
 

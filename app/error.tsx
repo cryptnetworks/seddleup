@@ -16,7 +16,6 @@ export default function Error({
         level: "error",
         event: "app.error_boundary",
         time: new Date().toISOString(),
-        message: error.message,
         digest: error.digest
       })
     );
