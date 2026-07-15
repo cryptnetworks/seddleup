@@ -68,8 +68,8 @@ in its final redirect.
 Authenticator-app TOTP is not a stored one-time credential: it follows the
 standard short time-window verification model. It remains encrypted at rest and
 is never logged, but a valid TOTP value can be accepted more than once during
-its standards-defined window. Recovery credentials remain deferred to issue
-#75.
+its standards-defined window. Recovery credentials remain deferred to SeddleUp
+issue #75.
 
 ## CSRF
 
@@ -117,6 +117,17 @@ Configured globally:
   database contents, migration names, exception text, or filesystem paths.
 - Both endpoints disable caching. Detailed authenticated/admin diagnostics are
   intentionally outside the public readiness surface.
+
+## GitHub Actions Runner Trust
+
+SeddleUp is public, so fork pull-request code is routed to GitHub-hosted runners
+and must never execute on the persistent self-hosted runner. Trusted pushes,
+tags, schedules, and same-repository pull requests may use the Linux x64 runner.
+The workflows verify the pull-request source before checkout and do not use
+`pull_request_target` to execute proposed code. Outside-collaborator workflow
+runs require maintainer approval, including review of any workflow-file changes.
+Runner labels, prerequisites, scoped cleanup, group restrictions, and the outage
+fallback are documented in [Repository Automation](Repository-Automation).
 
 ## Residual Notes
 
