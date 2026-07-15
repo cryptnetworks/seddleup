@@ -32,7 +32,7 @@ test("rejects manipulated expense precision on the server", async ({ page }, tes
   await registerAndLogin(page, testInfo, "expense-precision");
   await createTripWithParticipants(page, uniqueLabel(testInfo, "Precision Trip"));
 
-  await page.getByRole("link", { name: "Add expense" }).click();
+  await page.getByTestId("add-expense").click();
   await page.getByTestId("expense-title").fill("Manipulated total");
   await page.getByTestId("expense-amount").fill("10.001");
   await page
