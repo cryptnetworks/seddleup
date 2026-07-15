@@ -7,13 +7,13 @@ import { LogoutButton } from "@/components/LogoutButton";
 export function MobileNav() {
   return (
     <nav
-      className="fixed inset-x-0 bottom-0 z-20 border-t border-line px-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-2 shadow-soft backdrop-blur md:hidden"
+      className="fixed inset-x-0 bottom-0 z-20 max-w-full border-t border-line pb-[max(0.75rem,env(safe-area-inset-bottom))] pl-[max(0.5rem,env(safe-area-inset-left))] pr-[max(0.5rem,env(safe-area-inset-right))] pt-2 shadow-soft backdrop-blur md:hidden"
       style={{ backgroundColor: "var(--app-card)" }}
       data-testid="mobile-bottom-nav"
     >
-      <div className="mx-auto grid max-w-md grid-cols-5 gap-1">
+      <div className="mx-auto grid min-w-0 max-w-md grid-cols-5 gap-1">
         <Link
-          className="flex flex-col items-center gap-1 rounded-lg px-2 py-2 text-xs font-medium text-muted"
+          className="flex min-h-11 min-w-0 flex-col items-center gap-1 rounded-lg px-1 py-2 text-xs font-medium text-muted focus:outline-none focus:ring-2 focus:ring-ocean"
           data-testid="mobile-nav-dashboard"
           href="/dashboard"
         >
@@ -21,7 +21,7 @@ export function MobileNav() {
           Home
         </Link>
         <Link
-          className="flex flex-col items-center gap-1 rounded-lg px-2 py-2 text-xs font-medium text-muted"
+          className="flex min-h-11 min-w-0 flex-col items-center gap-1 rounded-lg px-1 py-2 text-xs font-medium text-muted focus:outline-none focus:ring-2 focus:ring-ocean"
           data-testid="mobile-nav-trips"
           href="/trips"
         >
@@ -29,7 +29,7 @@ export function MobileNav() {
           Trips
         </Link>
         <Link
-          className="flex flex-col items-center gap-1 rounded-lg px-2 py-2 text-xs font-medium text-ocean"
+          className="flex min-h-11 min-w-0 flex-col items-center gap-1 rounded-lg px-1 py-2 text-xs font-medium text-ocean focus:outline-none focus:ring-2 focus:ring-ocean"
           data-testid="mobile-nav-new-trip"
           href="/trips/new"
         >
@@ -37,7 +37,7 @@ export function MobileNav() {
           New
         </Link>
         <Link
-          className="flex flex-col items-center gap-1 rounded-lg px-2 py-2 text-xs font-medium text-muted"
+          className="flex min-h-11 min-w-0 flex-col items-center gap-1 rounded-lg px-1 py-2 text-xs font-medium text-muted focus:outline-none focus:ring-2 focus:ring-ocean"
           data-testid="mobile-nav-account"
           href="/account"
         >

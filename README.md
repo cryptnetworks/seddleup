@@ -7,6 +7,9 @@ the balance, and the simplest reimbursement suggestions for settling up.
 ## What It Does
 
 - Tracks trips, participants, expenses, balances, and settlement suggestions.
+- Lets trip managers create revocable, optionally expiring bearer links to a
+  deliberately limited, read-only cost summary with privacy-filtered participant
+  names.
 - Supports collaborative trip memberships with owner, admin, member, and viewer
   roles.
 - Lets members create expenses and move them through draft, submitted, disputed,
@@ -68,10 +71,21 @@ The app is designed for single-container Docker deployments with SQLite stored
 in a persistent volume at `/app/data`. PostgreSQL is not currently supported by
 the schema or migrations.
 
+Operational endpoints distinguish process liveness from application readiness:
+`/api/health/live` confirms that the HTTP process is responding, while
+`/api/health` verifies runtime configuration, database connectivity, and that
+all bundled Prisma migrations are applied. Both responses expose only coarse
+status values and are never cached.
+
 Authentication uses NextAuth sessions plus app-level checks against the current
 database user. One-time tokens for invitations, email verification, password
 reset, and MFA handoff are stored as keyed digests. Stored OAuth provider client
 secrets are encrypted with `AUTH_CONFIG_ENCRYPTION_KEY`.
+
+Read-only trip sharing uses the same secret-backed keyed-digest pattern. Sharing
+URLs are unlisted bearer credentials, not user accounts: anyone who receives a
+link can view and forward its limited summary until it expires, is rotated, or is
+revoked.
 
 ## Install And Operate
 
@@ -91,8 +105,39 @@ variables, persistent storage, health checks, and update steps:
 - [Backups and Updates](https://github.com/cryptnetworks/seddleup/wiki/Backups-and-Updates)
 - [Troubleshooting](https://github.com/cryptnetworks/seddleup/wiki/Troubleshooting)
 
+Before the first production deployment, create a SQLite backup and rehearse the
+restore validation steps. Before every update, record the deployed image digest
+and keep a verified backup outside the application volume so both the image and
+database can be rolled back.
+
 The full documentation index is available in the
 [SeddleUp wiki](https://github.com/cryptnetworks/seddleup/wiki).
+
+## Search Discoverability
+
+Set `PUBLIC_APP_URL` to the final HTTPS production origin before deployment, for
+example `https://app.example.com`. SeddleUp uses that single origin for homepage
+canonical metadata, social previews, structured data, `/robots.txt`, and
+`/sitemap.xml`. Unsafe production values such as localhost or plain HTTP are not
+published as canonical URLs.
+
+Google and Bing ownership verification values are optional:
+
+```env
+GOOGLE_SITE_VERIFICATION=
+BING_SITE_VERIFICATION=
+```
+
+After deployment:
+
+1. Open `/robots.txt` and `/sitemap.xml` on the public origin and confirm that
+   only the homepage is indexable.
+2. Submit `/sitemap.xml` in Google Search Console and Bing Webmaster Tools.
+3. Inspect the deployed homepage in each search console and a social-preview
+   debugger to confirm its canonical URL, title, description, and image.
+
+These SEO controls improve eligibility for organic discovery. Paid placement is
+separate and requires a Google Ads or Microsoft Advertising account and campaign.
 
 ## Local Development
 
@@ -123,6 +168,20 @@ npm run test:e2e
 npm run build
 npm run security:audit
 ```
+
+Docker-impacting changes should also build the production image and run the
+isolated runtime probes:
+
+```bash
+docker build -t seddleup:ci .
+npm run test:docker
+```
+
+The probe creates temporary labeled Docker volumes and verifies fresh SQLite
+migrations, health, restart idempotency, data preservation, legacy
+`triptally.db` adoption, and explicit invalid, inaccessible, and failed-migration
+startup errors. It removes its containers and volumes when it exits and never
+uses an existing deployment volume.
 
 See the wiki for more detail:
 

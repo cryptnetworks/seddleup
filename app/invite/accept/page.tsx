@@ -64,8 +64,8 @@ export default async function AcceptInvitationPage({
     !query.error;
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-brand-page px-4 py-10">
-      <section className="auth-card w-full max-w-lg p-6">
+    <main className="flex min-h-screen min-w-0 items-center justify-center bg-brand-page px-4 py-8 sm:py-10">
+      <section className="auth-card w-full max-w-lg p-4 sm:p-6">
         <div className="mb-6 flex justify-center">
           <BrandLogo href="/" priority />
         </div>
@@ -77,7 +77,7 @@ export default async function AcceptInvitationPage({
         ) : null}
         {invitation && !statusError ? (
           <div className="mt-4 rounded-lg border border-line bg-surface p-4">
-            <p className="text-sm font-semibold text-ink">{invitation.email}</p>
+            <p className="break-all text-sm font-semibold text-ink">{invitation.email}</p>
             <p className="mt-1 text-sm text-muted">
               {invitation.invitedBy.username || invitation.invitedBy.email} invited you to SeddleUp
               {invitation.trip ? ` for ${invitation.trip.name}` : ""}.

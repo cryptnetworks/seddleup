@@ -68,6 +68,10 @@ requested taxonomy.
   `size:m`, `ready`, `docker`, `ci`
 - Dependencies and notes: enables stronger validation for #62, #74, #80, and
   #81. Main risk is CI runtime and cost.
+- Implementation status: in progress on `agent/docker-runtime-probes` together
+  with tightly related #80. A local/CI probe covers fresh migrations, health,
+  non-root startup, restart idempotency, data preservation, and explicit corrupt,
+  inaccessible, and failed-migration behavior using disposable Docker volumes.
 
 ### #62 - Docker: add profile smoke tests for Discord, nginx, and Cloudflare
 
@@ -248,6 +252,10 @@ requested taxonomy.
   `priority:high`, `size:s`, `ready`, `database`, `docs`
 - Dependencies and notes: related to #80 and #69. Avoid destructive commands
   without explicit backup warnings.
+- Implementation status: in progress on `docs/sqlite-restore-runbook`. The
+  runbook adds pre-restore integrity validation, rollback preservation,
+  migration and health verification, local deployment guidance, and accurate
+  legacy `triptally.db` behavior.
 
 ### #77 - Security: add log redaction regression tests for secrets and tokens
 
@@ -297,6 +305,10 @@ requested taxonomy.
   `priority:medium`, `size:m`, `ready`, `database`, `docs`
 - Dependencies and notes: related to #69 and #76. Needs only a temporary
   volume or fixture.
+- Implementation status: in progress on `agent/docker-runtime-probes` together
+  with #61. The probe creates an isolated migrated `triptally.db`, verifies its
+  sentinel data, starts the normal current-path container, and confirms the file
+  is validated, moved to `seddleup.db`, migrated, healthy, and data-preserving.
 
 ### #81 - Observability: add readiness diagnostics for config and database state
 
@@ -309,6 +321,10 @@ requested taxonomy.
   `priority:medium`, `size:m`, `ready`, `backend`, `database`, `ci`
 - Dependencies and notes: complements #61. Split public liveness from
   authenticated/admin diagnostics if details grow.
+- Implementation status: addressed by the readiness diagnostics PR with a
+  dependency-free liveness endpoint, safe public readiness states for config,
+  SQLite, and bundled Prisma migrations, focused unit/E2E coverage, and stable
+  Docker healthcheck behavior. No authenticated detail endpoint was needed.
 
 ## Suggested Implementation Order
 

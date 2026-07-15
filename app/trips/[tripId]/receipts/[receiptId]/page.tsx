@@ -47,15 +47,15 @@ export default async function ReceiptReviewPage({
         title="Review receipt"
         description="Correct parsed fields and decide whether this receipt should be split simply or by item."
       />
-      <div className="grid gap-5 lg:grid-cols-[1fr_0.8fr]">
-        <section className="card p-5">
+      <div className="grid min-w-0 gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(0,0.8fr)]">
+        <section className="card p-4 sm:p-5">
           {query.saved ? (
             <p className="mb-4 rounded-lg bg-brand-soft p-3 text-sm text-ocean">
               Receipt review saved.
             </p>
           ) : null}
-          <form className="grid gap-4" action={action}>
-            <div className="grid gap-4 sm:grid-cols-2">
+          <form className="grid min-w-0 gap-4" action={action}>
+            <div className="grid min-w-0 gap-4 sm:grid-cols-2">
               <div>
                 <label className="label" htmlFor="merchant">
                   Merchant
@@ -83,7 +83,7 @@ export default async function ReceiptReviewPage({
                 />
               </div>
             </div>
-            <div className="grid gap-4 sm:grid-cols-4">
+            <div className="grid min-w-0 gap-4 sm:grid-cols-2 lg:grid-cols-4">
               {(["subtotal", "tax", "tip", "total"] as const).map((field) => (
                 <div key={field}>
                   <label className="label capitalize" htmlFor={field}>
@@ -104,7 +104,7 @@ export default async function ReceiptReviewPage({
                 </div>
               ))}
             </div>
-            <div className="grid gap-4 sm:grid-cols-2">
+            <div className="grid min-w-0 gap-4 sm:grid-cols-2">
               <div>
                 <label className="label" htmlFor="splitMode">
                   Split mode
@@ -144,18 +144,21 @@ export default async function ReceiptReviewPage({
           </form>
         </section>
 
-        <aside className="grid content-start gap-5">
-          <section className="card p-5">
+        <aside className="grid min-w-0 content-start gap-5">
+          <section className="card p-4 sm:p-5">
             <h2 className="text-lg font-semibold text-ink">File</h2>
-            <p className="mt-2 text-sm text-muted">{receipt.originalFilename}</p>
+            <p className="mt-2 break-all text-sm text-muted">{receipt.originalFilename}</p>
             <p className="mt-1 text-xs text-muted">
               {(receipt.fileSize / 1024 / 1024).toFixed(2)} MB - {receipt.mimeType}
             </p>
-            <Link className="btn-secondary mt-4" href={`/api/receipts/${receipt.id}/file`}>
+            <Link
+              className="btn-secondary mt-4 w-full sm:w-auto"
+              href={`/api/receipts/${receipt.id}/file`}
+            >
               Open receipt file
             </Link>
           </section>
-          <section className="card p-5">
+          <section className="card p-4 sm:p-5">
             <h2 className="text-lg font-semibold text-ink">Parser</h2>
             <p className="mt-2 text-sm text-muted">
               {receipt.parserProvider} confidence {(receipt.parserConfidence * 100).toFixed(0)}%
@@ -164,7 +167,7 @@ export default async function ReceiptReviewPage({
         </aside>
       </div>
 
-      <section className="card mt-5 p-5">
+      <section className="card mt-5 p-4 sm:p-5">
         <h2 className="text-lg font-semibold text-ink">Line items</h2>
         {receipt.lineItems.length === 0 ? (
           <p className="mt-3 text-sm text-muted">
@@ -175,8 +178,8 @@ export default async function ReceiptReviewPage({
           <div className="mt-4 grid gap-3">
             {receipt.lineItems.map((item) => (
               <div key={item.id} className="rounded-lg border border-line bg-surface p-3">
-                <div className="flex items-start justify-between gap-3">
-                  <div>
+                <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                  <div className="min-w-0">
                     <p className="font-semibold text-ink">{item.name}</p>
                     <p className="text-sm text-muted">
                       Qty {Number(item.quantity).toString()} - assigned to{" "}
@@ -187,7 +190,7 @@ export default async function ReceiptReviewPage({
                       participant(s)
                     </p>
                   </div>
-                  <p className="font-semibold text-ink">
+                  <p className="break-all font-semibold tabular-nums text-ink sm:shrink-0">
                     {formatCurrency(Number(item.totalPrice))}
                   </p>
                 </div>

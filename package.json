@@ -24,6 +24,7 @@
     "test:e2e:ui": "playwright test --ui",
     "test:e2e:headed": "playwright test --headed",
     "test:e2e:ios": "playwright test --project='Mobile Safari'",
+    "test:docker": "bash scripts/probe-docker-runtime.sh seddleup:ci",
     "test:all": "npm run lint && npm run typecheck && npm test && npm run test:e2e",
     "security:audit": "npm audit --audit-level=high",
     "security:scan": "npm run security:audit",
@@ -39,8 +40,8 @@
     "@prisma/client": "^7.8.0",
     "bcryptjs": "^3.0.3",
     "emailjs": "^5.0.1",
-    "lucide-react": "^1.21.0",
-    "next": "^16.2.9",
+    "lucide-react": "^1.23.0",
+    "next": "^16.2.10",
     "next-auth": "^4.24.14",
     "pg": "^8.22.0",
     "prisma": "^7.8.0",
@@ -49,32 +50,32 @@
     "zod": "^4.4.3"
   },
   "devDependencies": {
-    "@babel/parser": "^8.0.0",
-    "@emnapi/core": "^1.11.1",
-    "@emnapi/runtime": "^1.11.1",
+    "@babel/parser": "^8.0.4",
+    "@emnapi/core": "^1.11.2",
+    "@emnapi/runtime": "^1.11.2",
     "@playwright/test": "^1.61.1",
-    "@tailwindcss/postcss": "^4.3.1",
+    "@tailwindcss/postcss": "^4.3.2",
     "@types/node": "^24.13.2",
     "@types/pg": "^8.20.0",
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
     "autoprefixer": "^10.5.2",
     "eslint": "^9.39.4",
-    "eslint-config-next": "^16.2.9",
-    "picomatch": "^4.0.4",
-    "postcss": "8.5.15",
-    "prettier": "^3.8.5",
-    "tailwindcss": "^4.3.1",
-    "tsx": "^4.22.4",
+    "eslint-config-next": "^16.2.10",
+    "picomatch": "^4.0.5",
+    "postcss": "8.5.16",
+    "prettier": "^3.9.4",
+    "tailwindcss": "^4.3.2",
+    "tsx": "^4.23.0",
     "typescript": "^6.0.3",
-    "vitest": "^4.1.9"
+    "vitest": "^4.1.10"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
   },
   "overrides": {
     "uuid": "11.1.1",
-    "postcss": "8.5.15",
+    "postcss": "8.5.16",
     "@hono/node-server": "1.19.13"
   }
 }

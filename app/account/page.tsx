@@ -106,8 +106,8 @@ export default async function AccountPage({
         description="Manage your profile, password, display mode, and active session."
       />
 
-      <div className="grid gap-4 lg:grid-cols-[1fr_0.85fr]">
-        <section className="card p-5">
+      <div className="grid min-w-0 gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,0.85fr)]">
+        <section className="card p-4 sm:p-5">
           <h2 className="text-xl font-semibold text-ink">Profile</h2>
           <p className="mt-1 text-sm leading-6 text-muted">
             These details are used for login and account identification.
@@ -160,8 +160,8 @@ export default async function AccountPage({
           </form>
         </section>
 
-        <aside className="grid gap-4">
-          <section className="card p-5">
+        <aside className="grid min-w-0 gap-4">
+          <section className="card p-4 sm:p-5">
             <h2 className="text-xl font-semibold text-ink">Appearance</h2>
             <p className="mt-1 text-sm leading-6 text-muted">
               Choose the display mode that works best for your device.
@@ -171,7 +171,7 @@ export default async function AccountPage({
             </div>
           </section>
 
-          <section className="card p-5">
+          <section className="card p-4 sm:p-5">
             <h2 className="text-xl font-semibold text-ink">Session</h2>
             <p className="mt-1 text-sm leading-6 text-muted">
               Signed in as {user.email}. Account created {user.createdAt.toLocaleDateString()}.
@@ -188,7 +188,7 @@ export default async function AccountPage({
           </section>
         </aside>
 
-        <section className="card p-5 lg:col-span-2">
+        <section className="card p-4 sm:p-5 lg:col-span-2">
           <h2 className="text-xl font-semibold text-ink">Settlement payment methods</h2>
           <p className="mt-1 text-sm leading-6 text-muted">
             Add external payment links or handles for trip members. SeddleUp never processes
@@ -272,21 +272,21 @@ export default async function AccountPage({
           <div className="mt-5 grid gap-3 md:grid-cols-2">
             {user.paymentMethods.map((method) => (
               <div key={method.id} className="rounded-lg border border-line bg-surface p-3">
-                <div className="flex items-start justify-between gap-3">
-                  <div>
+                <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                  <div className="min-w-0">
                     <p className="font-semibold text-ink">
                       {method.label || paymentProviderLabel(method.provider)}
                     </p>
-                    <p className="text-sm text-muted">
+                    <p className="break-all text-sm text-muted">
                       {method.handle || method.url || "No public handle"}
                     </p>
                     <p className="mt-1 text-xs text-muted">
                       {method.enabled ? "Enabled" : "Disabled"} - {method.visibility}
                     </p>
                   </div>
-                  <form action={deletePaymentMethod}>
+                  <form className="sm:shrink-0" action={deletePaymentMethod}>
                     <input name="paymentMethodId" type="hidden" value={method.id} />
-                    <button className="btn-secondary" type="submit">
+                    <button className="btn-secondary w-full sm:w-auto" type="submit">
                       Remove
                     </button>
                   </form>
@@ -296,7 +296,7 @@ export default async function AccountPage({
           </div>
         </section>
 
-        <section className="card p-5 lg:col-span-2">
+        <section className="card p-4 sm:p-5 lg:col-span-2">
           <h2 className="text-xl font-semibold text-ink">Two-factor authentication</h2>
           <p className="mt-1 text-sm leading-6 text-muted">
             Add a second step to login with email codes or a six-digit code from an authenticator
@@ -410,7 +410,7 @@ export default async function AccountPage({
           </div>
         </section>
 
-        <section className="card p-5 lg:col-span-2">
+        <section className="card p-4 sm:p-5 lg:col-span-2">
           <h2 className="text-xl font-semibold text-ink">Discord account</h2>
           <p className="mt-1 text-sm leading-6 text-muted">
             Discord linking is used by slash commands and never relies on matching emails.
@@ -458,7 +458,7 @@ export default async function AccountPage({
           </div>
         </section>
 
-        <section className="card p-5 lg:col-span-2">
+        <section className="card p-4 sm:p-5 lg:col-span-2">
           <h2 className="text-xl font-semibold text-ink">Linked sign-in providers</h2>
           <p className="mt-1 text-sm leading-6 text-muted">
             Link OAuth providers for SSO login. You cannot remove your final login method.
@@ -467,15 +467,17 @@ export default async function AccountPage({
             {user.authAccounts.map((account) => (
               <div
                 key={account.id}
-                className="flex items-center justify-between gap-3 rounded-lg border border-line bg-surface p-3"
+                className="flex min-w-0 flex-col items-stretch gap-3 rounded-lg border border-line bg-surface p-3 sm:flex-row sm:items-center sm:justify-between"
               >
-                <div>
+                <div className="min-w-0">
                   <p className="font-semibold text-ink">{account.providerId}</p>
-                  <p className="text-xs text-muted">{account.email || account.providerAccountId}</p>
+                  <p className="break-all text-xs text-muted">
+                    {account.email || account.providerAccountId}
+                  </p>
                 </div>
                 <form action={unlinkAuthProvider}>
                   <input name="providerId" type="hidden" value={account.providerId} />
-                  <button className="btn-secondary" type="submit">
+                  <button className="btn-secondary w-full sm:w-auto" type="submit">
                     Unlink
                   </button>
                 </form>
@@ -495,7 +497,7 @@ export default async function AccountPage({
           </div>
         </section>
 
-        <section className="card p-5 lg:col-span-2">
+        <section className="card p-4 sm:p-5 lg:col-span-2">
           <h2 className="text-xl font-semibold text-ink">Change password</h2>
           <p className="mt-1 text-sm leading-6 text-muted">
             Enter your current password before choosing a new one.

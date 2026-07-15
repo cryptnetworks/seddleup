@@ -153,6 +153,21 @@ jobs:
           if-no-files-found: error
           retention-days: 1
 
+  runtime-probes:
+    name: Docker runtime and migration probes
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Build probe image
+        run: docker build -t seddleup:ci .
+
+      - name: Run runtime probes
+        run: npm run test:docker
+
   docker-manifest:
     if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest

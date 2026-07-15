@@ -60,9 +60,9 @@ export default async function AdminAuditPage({
       </form>
       <div className="grid gap-3">
         {events.map((event) => (
-          <article key={event.id} className="card p-4">
+          <article key={event.id} className="card p-3 sm:p-4">
             <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
-              <div>
+              <div className="min-w-0">
                 <h2 className="font-semibold text-ink">{event.action}</h2>
                 <p className="text-sm text-muted">
                   {event.targetType}
@@ -72,7 +72,7 @@ export default async function AdminAuditPage({
               <p className="text-xs text-muted">{event.createdAt.toLocaleString()}</p>
             </div>
             {event.metadataJson ? (
-              <pre className="mt-3 overflow-x-auto rounded-lg bg-surface p-3 text-xs text-muted">
+              <pre className="mt-3 max-w-full overflow-x-auto rounded-lg bg-surface p-3 text-xs text-muted">
                 {event.metadataJson}
               </pre>
             ) : null}

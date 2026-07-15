@@ -15,10 +15,33 @@
 1. Container starts as the `nextjs` user.
 2. Entrypoint normalizes `DATABASE_URL`, `NEXTAUTH_URL`, `NEXTAUTH_SECRET`, and `TOKEN_DIGEST_SECRET`.
 3. SQLite path is forced into `/app/data` for Docker persistence when needed.
-4. Prisma Client is generated.
-5. Configuration is validated.
-6. Prisma migrations are applied.
-7. Next.js production server starts.
+4. The data directory must be writable. Existing current or legacy database
+   files must be regular, readable, writable SQLite files that pass
+   `PRAGMA quick_check`.
+5. A validated legacy `triptally.db` is moved only when `seddleup.db` is absent.
+6. Prisma Client is generated.
+7. Configuration is validated.
+8. Prisma migrations are applied with bounded retries. A failure prevents the
+   application server and health endpoint from starting.
+9. Next.js production server starts.
+
+The Docker workflow exercises this flow with disposable volumes, including
+fresh and already-migrated databases, preserved records, legacy adoption, and
+negative startup cases. The runtime remains single-container SQLite and the
+container remains non-root.
+
+## Runtime Health Signals
+
+- `GET /api/health/live` is dependency-free liveness. It proves only that the
+  Next.js process is responding.
+- `GET /api/health` is readiness. It validates configuration through the shared
+  Zod schema, queries SQLite, compares successful Prisma migration records with
+  the bundled migration directories, and rejects unfinished migrations.
+- The Docker and Compose health checks use readiness so dependent services do
+  not start against an invalid configuration or incomplete database.
+- Public responses contain only coarse check states. Detailed exception text,
+  configuration values, database paths, and migration names remain server-side
+  and are not logged by the readiness route.
 
 ## Data Model
 
@@ -43,6 +66,7 @@ Main entities:
 - `UserAuthAccount`
 - `AuthProviderConfig`
 - `AuditLog`
+- `TripShareLink`
 
 ## Core Application Areas
 
@@ -62,6 +86,21 @@ Main entities:
 - `lib/discord` - Discord request verification and account linking helpers
 - `lib/validation.ts` - Zod schemas and form helpers
 - `lib/calculations.ts` - expense/balance calculations
+- `lib/trip-sharing.ts` - bearer-token validation, privacy labels, and safe
+  anonymous summary projection
+
+## Read-Only Trip Sharing
+
+Each trip may have one current `TripShareLink`. The database stores a keyed token
+digest, privacy mode, optional expiration, revocation state, and creating manager;
+it never stores the raw bearer token. Rotation replaces the digest and immediately
+invalidates the old URL.
+
+The `/share/trip/[token]` route resolves the digest server-side and queries a
+minimal trip projection. It reuses `calculateBalances`, excludes drafts, strips
+internal identifiers before rendering, and does not use authenticated membership
+as an anonymous-access shortcut. All management remains in authenticated server
+actions under `lib/actions/trip-sharing.ts`.
 
 ## Collaborative Expense Model
 

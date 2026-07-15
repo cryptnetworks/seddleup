@@ -16,11 +16,13 @@ type ExpenseCardProps = {
 export function ExpenseCard({ expense, tripId, canEdit = true }: ExpenseCardProps) {
   return (
     <article className="card p-4" data-testid="expense-card">
-      <div className="flex items-start justify-between gap-3">
+      <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0">
-          <div className="flex flex-wrap items-center gap-2">
-            <h3 className="truncate text-base font-semibold text-ink">{expense.title}</h3>
-            <span className="rounded-full bg-surface px-2 py-0.5 text-xs font-semibold text-muted">
+          <div className="flex min-w-0 flex-wrap items-center gap-2">
+            <h3 className="min-w-0 break-words text-base font-semibold text-ink">
+              {expense.title}
+            </h3>
+            <span className="shrink-0 rounded-full bg-surface px-2 py-0.5 text-xs font-semibold text-muted">
               {expense.status}
             </span>
           </div>
@@ -28,21 +30,25 @@ export function ExpenseCard({ expense, tripId, canEdit = true }: ExpenseCardProp
             {expense.category} - {formatDate(expense.date)}
           </p>
         </div>
-        <div className="shrink-0 text-right">
-          <p className="font-bold text-ink">{formatCurrency(Number(expense.amount))}</p>
-          <p className="text-xs text-muted">Paid by {expense.payer.name}</p>
+        <div className="min-w-0 text-left sm:max-w-[45%] sm:text-right">
+          <p className="break-all font-bold tabular-nums text-ink">
+            {formatCurrency(Number(expense.amount))}
+          </p>
+          <p className="break-words text-xs text-muted">Paid by {expense.payer.name}</p>
         </div>
       </div>
-      {expense.notes ? <p className="mt-3 text-sm leading-6 text-muted">{expense.notes}</p> : null}
-      <div className="mt-3 flex items-center justify-between gap-3">
-        <p className="text-xs text-muted">
+      {expense.notes ? (
+        <p className="mt-3 break-words text-sm leading-6 text-muted">{expense.notes}</p>
+      ) : null}
+      <div className="mt-3 flex min-w-0 flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <p className="min-w-0 break-words text-xs text-muted">
           Uploaded by {expense.createdBy?.username || "Unknown"} - shared by {expense.shares.length}{" "}
           participant{expense.shares.length === 1 ? "" : "s"}
         </p>
         {canEdit ? (
           <Link
             href={`/trips/${tripId}/expenses/${expense.id}/edit`}
-            className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-line text-muted hover:text-ocean"
+            className="inline-flex h-11 w-11 shrink-0 items-center justify-center self-end rounded-lg border border-line text-muted hover:text-ocean focus:outline-none focus:ring-2 focus:ring-ocean sm:self-auto"
             aria-label={`Edit ${expense.title}`}
           >
             <Pencil className="h-4 w-4" aria-hidden />

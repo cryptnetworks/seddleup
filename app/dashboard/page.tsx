@@ -42,20 +42,22 @@ export default async function DashboardPage() {
         action={{ label: "Create Trip", href: "/trips/new" }}
       />
 
-      <section className="mb-5 grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <div className="card p-4">
+      <section className="mb-5 grid grid-cols-1 gap-3 min-[360px]:grid-cols-2 lg:grid-cols-4">
+        <div className="card p-3 sm:p-4">
           <p className="text-sm text-muted">Total trips</p>
           <p className="mt-1 text-2xl font-bold">{trips.length}</p>
         </div>
-        <div className="card p-4">
+        <div className="card p-3 sm:p-4">
           <p className="text-sm text-muted">Participants</p>
           <p className="mt-1 text-2xl font-bold">{totalParticipants}</p>
         </div>
-        <div className="card p-4">
+        <div className="card p-3 sm:p-4">
           <p className="text-sm text-muted">Expenses</p>
-          <p className="mt-1 text-2xl font-bold">{formatCurrency(totalExpenses)}</p>
+          <p className="mt-1 break-all text-2xl font-bold tabular-nums">
+            {formatCurrency(totalExpenses)}
+          </p>
         </div>
-        <div className="card p-4">
+        <div className="card p-3 sm:p-4">
           <p className="text-sm text-muted">Active trips</p>
           <p className="mt-1 text-2xl font-bold">{trips.length}</p>
         </div>

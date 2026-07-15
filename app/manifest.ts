@@ -1,10 +1,11 @@
 import type { MetadataRoute } from "next";
+import { SITE_DESCRIPTION } from "@/lib/seo";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
     name: "SeddleUp",
     short_name: "SeddleUp",
-    description: "Travel together. Settle up easily.",
+    description: SITE_DESCRIPTION,
     start_url: "/",
     scope: "/",
     display: "standalone",

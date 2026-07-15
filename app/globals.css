@@ -77,6 +77,15 @@
 html,
 body {
   min-height: 100%;
+  min-width: 0;
+  max-width: 100%;
+  width: 100%;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  scroll-padding-bottom: calc(6.5rem + env(safe-area-inset-bottom));
 }
 
 body {
@@ -96,11 +105,34 @@ input,
 select,
 textarea {
   font: inherit;
+  max-width: 100%;
+}
+
+input,
+select,
+textarea {
+  font-size: 16px;
+}
+
+button,
+a {
+  touch-action: manipulation;
+}
+
+p,
+h1,
+h2,
+h3,
+h4,
+li,
+dd,
+dt {
+  overflow-wrap: anywhere;
 }
 
 @layer components {
   .btn-primary {
-    @apply inline-flex min-h-11 items-center justify-center rounded-lg px-4 py-2.5 text-sm font-semibold text-white shadow-soft transition focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60;
+    @apply inline-flex min-h-11 max-w-full items-center justify-center rounded-lg px-4 py-2.5 text-center text-sm font-semibold text-white shadow-soft transition focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60;
     background-color: var(--app-button-primary);
   }
 
@@ -109,7 +141,7 @@ textarea {
   }
 
   .btn-secondary {
-    @apply inline-flex min-h-11 items-center justify-center rounded-lg border border-line px-4 py-2.5 text-sm font-semibold text-ink transition focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2;
+    @apply inline-flex min-h-11 max-w-full items-center justify-center rounded-lg border border-line px-4 py-2.5 text-center text-sm font-semibold text-ink transition focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2;
     background-color: var(--app-button-secondary);
   }
 
@@ -118,11 +150,11 @@ textarea {
   }
 
   .btn-danger {
-    @apply inline-flex min-h-11 items-center justify-center rounded-lg bg-coral px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-coral focus:ring-offset-2;
+    @apply inline-flex min-h-11 max-w-full items-center justify-center rounded-lg bg-coral px-4 py-2.5 text-center text-sm font-semibold text-white transition hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-coral focus:ring-offset-2;
   }
 
   .field {
-    @apply w-full rounded-lg border border-line px-3 py-3 text-base text-ink outline-none transition placeholder:text-slate-400 focus:border-accent focus:ring-2 focus:ring-accent/20;
+    @apply min-w-0 w-full rounded-lg border border-line px-3 py-3 text-base text-ink outline-none transition placeholder:text-slate-400 focus:border-accent focus:ring-2 focus:ring-accent/20;
     background-color: var(--app-card-solid);
   }
 
@@ -131,7 +163,7 @@ textarea {
   }
 
   .card {
-    @apply rounded-lg border border-line shadow-soft;
+    @apply min-w-0 max-w-full rounded-lg border border-line shadow-soft;
     background-color: var(--app-card);
   }
 
@@ -148,7 +180,7 @@ textarea {
   }
 
   .auth-card {
-    @apply rounded-lg border border-line shadow-soft backdrop-blur;
+    @apply min-w-0 max-w-full rounded-lg border border-line shadow-soft backdrop-blur;
     background-color: var(--app-card);
   }
 }

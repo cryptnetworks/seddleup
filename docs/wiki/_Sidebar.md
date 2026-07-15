@@ -7,6 +7,7 @@
 - [Nginx and Let's Encrypt Deployment](Nginx-and-Lets-Encrypt-Deployment)
 - [Admin and OAuth Providers](Admin-and-OAuth-Providers)
 - [Email and MFA](Email-and-MFA)
+- [Read-Only Trip Sharing](Read-Only-Trip-Sharing)
 - [Backups and Updates](Backups-and-Updates)
 - [Security Model](Security-Model)
 - [Screenshots](Screenshots)

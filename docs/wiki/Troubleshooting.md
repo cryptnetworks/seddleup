@@ -16,6 +16,22 @@ View logs:
 docker logs seddleup
 ```
 
+Database startup failures are explicit:
+
+- `SQLite directory is not writable` means the mounted directory permissions
+  do not permit the non-root `nextjs` user to create SQLite files.
+- `SQLite database is not readable` or `is not writable` means an existing file
+  has incompatible ownership or permissions.
+- `failed SQLite integrity validation` means the existing current or legacy file
+  is not a valid SQLite database. Restore a verified backup; do not delete the
+  file merely to make startup create an empty database.
+- `Prisma migrations failed after 5 attempts` means the database was readable
+  but migrations could not complete. Preserve the file and the preceding Prisma
+  error, then follow the backup/rollback runbook.
+
+The entrypoint never logs database rows or credentials. Redact secrets if other
+application logs are included in a support request.
+
 ## OAuth Redirects to localhost or 0.0.0.0
 
 Set all public URL values to the public HTTPS URL:
@@ -66,16 +82,38 @@ The app database should live at:
 /app/data/seddleup.db
 ```
 
-## Healthcheck Fails
+If an older volume contains only `/app/data/triptally.db`, startup validates it
+and moves it to the current path. A validation failure leaves the legacy file in
+place and exits. If both names exist, SeddleUp uses `seddleup.db` and leaves
+`triptally.db` untouched.
 
-Check logs and database connectivity:
+## Readiness Check Fails
+
+Compare liveness and readiness, then inspect the structured startup/readiness
+logs:
 
 ```bash
 docker logs seddleup
+curl http://localhost:3000/api/health/live
 curl http://localhost:3000/api/health
 ```
 
-The `/api/health` endpoint checks database connectivity.
+If liveness succeeds but readiness returns HTTP 503, use the reported check:
+
+- `configuration: unavailable` means required runtime configuration is invalid.
+  Run `npm run validate:config` or inspect the preceding container startup log;
+  the public response intentionally omits the invalid value.
+- `database: unavailable` means SQLite did not accept a connectivity query.
+  Check volume ownership, permissions, available space, and the configured
+  database file without posting its contents.
+- `migrations: unavailable` means the bundled migration manifest could not be
+  read, an expected migration is not applied, or Prisma recorded an unfinished
+  migration. Preserve and back up the database before following the migration or
+  restore procedure in [Backups and Updates](Backups-and-Updates).
+
+Checks after the first unavailable dependency report `not_checked`. Readiness
+logs include only the failed check category, not exception messages, secrets,
+URLs, migration names, or filesystem paths.
 
 ## Styling, Logo, Or Navigation Looks Broken
 

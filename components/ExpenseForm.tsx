@@ -31,7 +31,7 @@ export function ExpenseForm({
   const sharedIds = new Set(expense?.shares.map((share) => share.participantId));
 
   return (
-    <form className="grid gap-4" action={action} data-testid="expense-form">
+    <form className="grid min-w-0 gap-4" action={action} data-testid="expense-form">
       <ItemLookupBox />
       <div>
         <label className="label" htmlFor="title">
@@ -47,8 +47,8 @@ export function ExpenseForm({
           required
         />
       </div>
-      <div className="grid gap-4 sm:grid-cols-2">
-        <div>
+      <div className="grid min-w-0 gap-4 sm:grid-cols-2">
+        <div className="min-w-0">
           <label className="label" htmlFor="amount">
             Amount
           </label>
@@ -66,7 +66,7 @@ export function ExpenseForm({
             required
           />
         </div>
-        <div>
+        <div className="min-w-0">
           <label className="label" htmlFor="category">
             Category
           </label>
@@ -86,8 +86,8 @@ export function ExpenseForm({
           </select>
         </div>
       </div>
-      <div className="grid gap-4 sm:grid-cols-2">
-        <div>
+      <div className="grid min-w-0 gap-4 sm:grid-cols-2">
+        <div className="min-w-0">
           <label className="label" htmlFor="payerId">
             Payer
           </label>
@@ -106,7 +106,7 @@ export function ExpenseForm({
             ))}
           </select>
         </div>
-        <div>
+        <div className="min-w-0">
           <label className="label" htmlFor="date">
             Date
           </label>
@@ -142,11 +142,11 @@ export function ExpenseForm({
       </div>
       <fieldset>
         <legend className="label">Shared by</legend>
-        <div className="grid gap-2 sm:grid-cols-2" data-testid="expense-shares">
+        <div className="grid min-w-0 gap-2 sm:grid-cols-2" data-testid="expense-shares">
           {participants.map((participant) => (
             <label
               key={participant.id}
-              className="flex min-h-11 items-center gap-3 rounded-lg border border-line bg-surface px-3 py-2 text-sm"
+              className="flex min-h-11 min-w-0 items-center gap-3 break-words rounded-lg border border-line bg-surface px-3 py-2 text-sm"
             >
               <input
                 data-testid="expense-share-checkbox"

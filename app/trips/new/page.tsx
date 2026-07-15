@@ -13,8 +13,8 @@ export default async function NewTripPage() {
         title="Create trip"
         description="Add the core trip details. Participants and expenses come next."
       />
-      <section className="card mx-auto max-w-2xl p-5">
-        <form className="grid gap-4" action={createTrip} data-testid="trip-form">
+      <section className="card mx-auto max-w-2xl p-4 sm:p-5">
+        <form className="grid min-w-0 gap-4" action={createTrip} data-testid="trip-form">
           <div>
             <label className="label" htmlFor="name">
               Trip name
@@ -40,8 +40,8 @@ export default async function NewTripPage() {
               maxLength={140}
             />
           </div>
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div>
+          <div className="grid min-w-0 gap-4 sm:grid-cols-2">
+            <div className="min-w-0">
               <label className="label" htmlFor="startDate">
                 Start date
               </label>
@@ -53,7 +53,7 @@ export default async function NewTripPage() {
                 type="date"
               />
             </div>
-            <div>
+            <div className="min-w-0">
               <label className="label" htmlFor="endDate">
                 End date
               </label>

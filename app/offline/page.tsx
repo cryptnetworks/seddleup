@@ -3,8 +3,8 @@ import { BrandLogo } from "@/components/BrandLogo";
 
 export default function OfflinePage() {
   return (
-    <main className="flex min-h-screen items-center justify-center bg-brand-page px-4 py-10">
-      <section className="auth-card w-full max-w-md p-6 text-center">
+    <main className="flex min-h-screen min-w-0 items-center justify-center bg-brand-page px-4 py-8 sm:py-10">
+      <section className="auth-card w-full max-w-md p-4 text-center sm:p-6">
         <div className="mb-6 flex justify-center">
           <BrandLogo href="/" priority />
         </div>
