@@ -5,12 +5,18 @@ import { useEffect } from "react";
 export function ServiceWorkerRegister() {
   useEffect(() => {
     const onUnhandledRejection = (event: PromiseRejectionEvent) => {
+      const reason = event.reason;
+      const errorName = reason instanceof Error ? reason.name : typeof reason;
+      const chunkLoadError =
+        reason instanceof Error &&
+        /ChunkLoadError|Loading chunk|Failed to load chunk/i.test(reason.message);
       console.error(
         JSON.stringify({
           level: "error",
           event: "client.unhandled_rejection",
           time: new Date().toISOString(),
-          error: event.reason instanceof Error ? event.reason.message : String(event.reason)
+          errorName,
+          chunkLoadError
         })
       );
     };
