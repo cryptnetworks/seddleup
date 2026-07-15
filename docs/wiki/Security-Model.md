@@ -140,6 +140,17 @@ Configured globally:
 - Both endpoints disable caching. Detailed authenticated/admin diagnostics are
   intentionally outside the public readiness surface.
 
+## GitHub Actions Runner Trust
+
+SeddleUp is public, so fork pull-request code is routed to GitHub-hosted runners
+and must never execute on the persistent self-hosted runner. Trusted pushes,
+tags, schedules, and same-repository pull requests may use the Linux x64 runner.
+The workflows verify the pull-request source before checkout and do not use
+`pull_request_target` to execute proposed code. Outside-collaborator workflow
+runs require maintainer approval, including review of any workflow-file changes.
+Runner labels, prerequisites, scoped cleanup, group restrictions, and the outage
+fallback are documented in [Repository Automation](Repository-Automation).
+
 ## Residual Notes
 
 The CSP permits inline scripts/styles for Next.js compatibility and the theme bootstrap script. Development mode may also require browser eval support for React diagnostics, but production should not rely on `unsafe-eval`. If strict nonce/hash CSP support is added later, this can be tightened.
