@@ -37,14 +37,15 @@ those pull requests are intentionally eligible for the self-hosted runner.
 SeddleUp is public and can receive pull requests from forks. Fork pull requests
 are always routed to `ubuntu-latest`; their code never executes on the
 self-hosted runner. Pushes, tags, scheduled runs, and same-repository pull
-requests use the self-hosted runner unless the repository variable
-`USE_SELF_HOSTED_X64` is exactly `false`. The workflows do not use
+requests use the self-hosted runner only when the repository variable
+`USE_SELF_HOSTED_X64` is exactly `true`. An absent variable or any other value
+selects GitHub-hosted runners. The workflows do not use
 `pull_request_target` to execute pull-request code.
 
 GitHub Actions cannot automatically fall back from an offline self-hosted
-runner. If the runner is unavailable, set the repository variable
-`USE_SELF_HOSTED_X64=false`, cancel the queued run, and rerun it. Remove the
-variable or set it to `true` after the runner is healthy. This is also the
+runner. If the runner is unavailable, remove the repository variable or set
+`USE_SELF_HOSTED_X64=false`, cancel the queued run, and rerun it. Set the
+variable back to `true` after the runner is healthy. This is also the
 supported temporary return to GitHub-hosted x64 runners; no workflow edit is
 required.
 

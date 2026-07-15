@@ -31,7 +31,7 @@ permissions:
 jobs:
   audit:
     # Fork pull requests and the operator fallback stay on GitHub-hosted runners.
-    runs-on: ${{ fromJSON(vars.USE_SELF_HOSTED_X64 != 'false' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && '["self-hosted","linux","x64"]' || '"ubuntu-latest"') }}
+    runs-on: ${{ fromJSON(vars.USE_SELF_HOSTED_X64 == 'true' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && '["self-hosted","linux","x64"]' || '"ubuntu-latest"') }}
     steps:
       - name: Verify trusted self-hosted source
         if: runner.environment == 'self-hosted'
@@ -76,7 +76,7 @@ jobs:
 
   trivy-filesystem:
     # Fork pull requests and the operator fallback stay on GitHub-hosted runners.
-    runs-on: ${{ fromJSON(vars.USE_SELF_HOSTED_X64 != 'false' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && '["self-hosted","linux","x64"]' || '"ubuntu-latest"') }}
+    runs-on: ${{ fromJSON(vars.USE_SELF_HOSTED_X64 == 'true' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && '["self-hosted","linux","x64"]' || '"ubuntu-latest"') }}
     steps:
       - name: Verify trusted self-hosted source
         if: runner.environment == 'self-hosted'
@@ -118,7 +118,7 @@ jobs:
 
   trivy-image:
     # Fork pull requests and the operator fallback stay on GitHub-hosted runners.
-    runs-on: ${{ fromJSON(vars.USE_SELF_HOSTED_X64 != 'false' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && '["self-hosted","linux","x64"]' || '"ubuntu-latest"') }}
+    runs-on: ${{ fromJSON(vars.USE_SELF_HOSTED_X64 == 'true' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && '["self-hosted","linux","x64"]' || '"ubuntu-latest"') }}
     env:
       SCAN_IMAGE: seddleup:security-${{ github.run_id }}-${{ github.run_attempt }}
     steps:
