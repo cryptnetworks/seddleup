@@ -1,14 +1,20 @@
 import type { Settlement } from "@/lib/calculations";
+import Link from "next/link";
 import { paymentProviderLabel, type SettlementPaymentMethod } from "@/lib/payments";
 import { isSafeHttpUrl } from "@/lib/url";
 
 export function SettlementList({
   settlements,
-  paymentMethodsByParticipantId = {}
+  paymentMethodsByParticipantId = {},
+  tripId,
+  confirmableSettlementKeys = []
 }: {
   settlements: Settlement[];
   paymentMethodsByParticipantId?: Record<string, SettlementPaymentMethod[]>;
+  tripId?: string;
+  confirmableSettlementKeys?: string[];
 }) {
+  const confirmableSettlementKeySet = new Set(confirmableSettlementKeys);
   if (settlements.length === 0) {
     return (
       <div className="card p-4 text-sm text-muted" data-testid="settlement-empty">
@@ -26,9 +32,11 @@ export function SettlementList({
           data-testid="settlement-card"
         >
           <p className="break-words">{settlement.label}</p>
-          {paymentMethodsByParticipantId[settlement.creditorId]?.length ? (
-            <div className="mt-3 flex flex-wrap gap-2">
-              {paymentMethodsByParticipantId[settlement.creditorId].map((method) =>
+          {paymentMethodsByParticipantId[settlement.creditorId]?.length ||
+          (tripId &&
+            confirmableSettlementKeySet.has(`${settlement.debtorId}:${settlement.creditorId}`)) ? (
+            <div className="mt-3 flex min-w-0 flex-wrap gap-2">
+              {(paymentMethodsByParticipantId[settlement.creditorId] ?? []).map((method) =>
                 method.url && isSafeHttpUrl(method.url) ? (
                   <a
                     key={`${method.provider}-${method.url}`}
@@ -48,6 +56,15 @@ export function SettlementList({
                   </span>
                 )
               )}
+              {tripId &&
+              confirmableSettlementKeySet.has(`${settlement.debtorId}:${settlement.creditorId}`) ? (
+                <Link
+                  className="btn-primary min-h-11 whitespace-normal px-3 py-1.5"
+                  href={`/trips/${encodeURIComponent(tripId)}/payments/new?sender=${encodeURIComponent(settlement.debtorId)}&recipient=${encodeURIComponent(settlement.creditorId)}`}
+                >
+                  Confirm payment received
+                </Link>
+              ) : null}
             </div>
           ) : null}
         </div>

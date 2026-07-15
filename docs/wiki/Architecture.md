@@ -54,6 +54,7 @@ Main entities:
 - `Expense`
 - `ExpenseShare`
 - `PaymentMethod`
+- `TripPayment`
 - `Receipt`
 - `ReceiptLineItem`
 - `RetailerLookupCache`
@@ -122,11 +123,9 @@ before/after JSON where practical.
 
 Participant records are removable only while no financial history references
 them. Paid expenses, allocated expense shares, and receipt line-item assignments
-all block deletion in both the server action and SQLite foreign-key policy. The
-application does not silently cascade, reassign, or archive those records. A
-future settlement-payment ledger must enforce the same restriction for payment
-senders and recipients before participant deletion can be considered complete
-for that feature.
+all block deletion in both the server action and SQLite foreign-key policy.
+Settlement payments sent or received enforce the same restriction. The
+application does not silently cascade, reassign, or archive those records.
 
 User deletion follows a separate explicit ownership policy. A required trip
 owner can never be deleted by database cascade. Administrators must transfer
@@ -151,6 +150,26 @@ decimal string without passing through binary floating point. Expense shares are
 allocated from those integer cents, including any one-cent remainder, so stored
 shares reconcile exactly to the stored expense. Optional receipt totals preserve
 blank values as `null` and allow an explicit zero.
+
+`TripPayment` records a completed transfer between two participants in one trip.
+It is distinct from `PaymentMethod`, which is only a destination profile. The
+sender, recipient, and trip are protected by database foreign keys and same-trip
+triggers. The recipient's linked user is recorded as `confirmedByUserId`, and a
+database trigger rejects confirmations attributed to anyone else. Participant
+deletion is restricted while payment history references that participant;
+confirmer deletion uses `SET NULL` so surviving trip history does not require a
+deleted account.
+
+Confirmation transactions recalculate the current expense/payment ledger under
+SQLite's serializable isolation and advance a trip settlement revision before
+writing. Concurrent or stale submissions cannot confirm more than the current
+sender-to-recipient suggestion. Sender, recipient, amount, confirmer, and
+confirmation timestamp are immutable; corrections to those fields require
+deleting the confirmation and confirming a replacement.
+
+Authenticated balance calculation adds payments sent and subtracts payments
+received from the expense-only net. Anonymous trip sharing deliberately omits
+the `TripPayment` relation and continues to project expense-only totals.
 
 ## Expansion Services
 

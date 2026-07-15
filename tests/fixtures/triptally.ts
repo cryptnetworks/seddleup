@@ -46,3 +46,15 @@ export function testExpense({
     }))
   };
 }
+
+export function testTripPayment(
+  senderParticipantId: string,
+  recipientParticipantId: string,
+  amount: number
+) {
+  return {
+    senderParticipantId,
+    recipientParticipantId,
+    amount: new Prisma.Decimal(amount)
+  };
+}

@@ -9,9 +9,18 @@ export const dateStringSchema = z
   .string()
   .trim()
   .regex(/^\d{4}-\d{2}-\d{2}$/)
-  .refine((value) => !Number.isNaN(new Date(`${value}T00:00:00`).getTime()), {
-    message: "Invalid date."
-  });
+  .refine(
+    (value) => {
+      const [year, month, day] = value.split("-").map(Number);
+      const parsed = new Date(Date.UTC(year, month - 1, day));
+      return (
+        parsed.getUTCFullYear() === year &&
+        parsed.getUTCMonth() === month - 1 &&
+        parsed.getUTCDate() === day
+      );
+    },
+    { message: "Invalid date." }
+  );
 
 const optionalText = (max: number) =>
   z
@@ -199,6 +208,28 @@ export const receiptReviewSchema = z.object({
 });
 
 export type ExpenseFormData = z.infer<typeof expenseSchema>;
+
+export const tripPaymentConfirmationSchema = z
+  .object({
+    senderParticipantId: idSchema,
+    recipientParticipantId: idSchema,
+    amount: positiveUsdMoneySchema,
+    date: dateStringSchema,
+    note: optionalText(500)
+  })
+  .refine((data) => data.senderParticipantId !== data.recipientParticipantId, {
+    message: "Paid by and paid to must be different participants.",
+    path: ["recipientParticipantId"]
+  });
+
+export type TripPaymentConfirmationData = z.infer<typeof tripPaymentConfirmationSchema>;
+
+export const tripPaymentEditSchema = z.object({
+  date: dateStringSchema,
+  note: optionalText(500)
+});
+
+export type TripPaymentEditData = z.infer<typeof tripPaymentEditSchema>;
 
 export function formString(formData: FormData, key: string) {
   const value = formData.get(key);

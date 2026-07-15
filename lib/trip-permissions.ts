@@ -14,6 +14,17 @@ export type ExpensePermissionTarget = {
   status: string;
 };
 
+export type TripPaymentPermissionTarget = {
+  confirmedByUserId: string | null;
+  recipientParticipantUserId: string | null;
+};
+
+export type TripPaymentConfirmationTarget = {
+  senderParticipantId: string;
+  recipientParticipantId: string;
+  recipientParticipantUserId: string | null;
+};
+
 export function normalizeTripRole(role?: string | null): TripRole {
   return tripRoles.includes(role as TripRole) ? (role as TripRole) : "viewer";
 }
@@ -32,6 +43,39 @@ export function isTripManager(role?: string | null) {
 export function canCreateTripExpense(role?: string | null) {
   const normalized = normalizeTripRole(role);
   return normalized === "owner" || normalized === "admin" || normalized === "member";
+}
+
+export function canConfirmTripPayment(
+  role: string | null | undefined,
+  userId: string,
+  target: TripPaymentConfirmationTarget
+) {
+  const normalized = normalizeTripRole(role);
+  return (
+    normalized !== "viewer" &&
+    target.senderParticipantId !== target.recipientParticipantId &&
+    target.recipientParticipantUserId === userId
+  );
+}
+
+export function canEditConfirmedTripPayment(
+  role: string | null | undefined,
+  userId: string,
+  payment: TripPaymentPermissionTarget
+) {
+  return (
+    normalizeTripRole(role) !== "viewer" &&
+    payment.confirmedByUserId === userId &&
+    payment.recipientParticipantUserId === userId
+  );
+}
+
+export function canDeleteConfirmedTripPayment(
+  role: string | null | undefined,
+  userId: string,
+  payment: TripPaymentPermissionTarget
+) {
+  return canEditConfirmedTripPayment(role, userId, payment);
 }
 
 export function canViewDraftExpense(

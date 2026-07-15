@@ -23,10 +23,13 @@ export function BalanceCard({ balance }: { balance: ParticipantWithBalances }) {
       <p className="mt-2 text-sm text-muted">
         Paid {formatCurrency(balance.paid)}, owes {formatCurrency(balance.owed)}
       </p>
+      <p className="mt-1 text-xs text-muted">
+        Payments sent {formatCurrency(balance.sent)} · received {formatCurrency(balance.received)}
+      </p>
       <p
         className={`${isPositive ? "text-ocean" : "text-coral"} mt-2 break-all text-2xl font-bold tabular-nums`}
       >
-        {formatCurrency(balance.net)}
+        {formatCurrency(balance.net)} remaining
       </p>
     </article>
   );

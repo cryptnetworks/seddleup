@@ -38,6 +38,7 @@ model User {
   authAccounts                 UserAuthAccount[]
   auditLogs                    AuditLog[]               @relation("AuditActor")
   tripShareLinksCreated        TripShareLink[]          @relation("TripShareLinkCreator")
+  tripPaymentsConfirmed        TripPayment[]            @relation("TripPaymentConfirmer")
 
   @@index([role])
   @@index([disabledAt])
@@ -192,22 +193,24 @@ model Invitation {
 }
 
 model Trip {
-  id           String         @id @default(cuid())
-  name         String
-  destination  String?
-  startDate    DateTime?
-  endDate      DateTime?
-  createdAt    DateTime       @default(now())
-  updatedAt    DateTime       @updatedAt
-  ownerId      String
-  owner        User           @relation(fields: [ownerId], references: [id], onDelete: Restrict)
-  members      TripMember[]
-  participants Participant[]
-  expenses     Expense[]
-  receipts     Receipt[]
-  auditLogs    AuditLog[]
-  invitations  Invitation[]
-  shareLink    TripShareLink?
+  id                 String         @id @default(cuid())
+  name               String
+  destination        String?
+  startDate          DateTime?
+  endDate            DateTime?
+  createdAt          DateTime       @default(now())
+  updatedAt          DateTime       @updatedAt
+  ownerId            String
+  owner              User           @relation(fields: [ownerId], references: [id], onDelete: Restrict)
+  members            TripMember[]
+  participants       Participant[]
+  expenses           Expense[]
+  receipts           Receipt[]
+  auditLogs          AuditLog[]
+  invitations        Invitation[]
+  shareLink          TripShareLink?
+  payments           TripPayment[]
+  settlementRevision Int            @default(0)
 
   @@index([ownerId])
   @@map("trips")
@@ -249,18 +252,20 @@ model TripMember {
 }
 
 model Participant {
-  id            String                       @id @default(cuid())
-  name          String
-  email         String?
-  createdAt     DateTime                     @default(now())
-  updatedAt     DateTime                     @updatedAt
-  tripId        String
-  userId        String?
-  trip          Trip                         @relation(fields: [tripId], references: [id], onDelete: Cascade)
-  user          User?                        @relation(fields: [userId], references: [id], onDelete: SetNull)
-  expensesPaid  Expense[]                    @relation("ExpensePayer")
-  shares        ExpenseShare[]
-  receiptSplits ReceiptLineItemParticipant[]
+  id               String                       @id @default(cuid())
+  name             String
+  email            String?
+  createdAt        DateTime                     @default(now())
+  updatedAt        DateTime                     @updatedAt
+  tripId           String
+  userId           String?
+  trip             Trip                         @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  user             User?                        @relation(fields: [userId], references: [id], onDelete: SetNull)
+  expensesPaid     Expense[]                    @relation("ExpensePayer")
+  shares           ExpenseShare[]
+  receiptSplits    ReceiptLineItemParticipant[]
+  paymentsSent     TripPayment[]                @relation("TripPaymentSender")
+  paymentsReceived TripPayment[]                @relation("TripPaymentRecipient")
 
   @@index([tripId])
   @@index([userId])
@@ -297,6 +302,30 @@ model Expense {
   @@index([updatedByUserId])
   @@index([tripId, status])
   @@map("expenses")
+}
+
+model TripPayment {
+  id                     String      @id @default(cuid())
+  amount                 Decimal
+  date                   DateTime
+  note                   String?
+  createdAt              DateTime    @default(now())
+  updatedAt              DateTime    @updatedAt
+  tripId                 String
+  senderParticipantId    String
+  recipientParticipantId String
+  confirmedByUserId      String?
+  confirmedAt            DateTime    @default(now())
+  trip                   Trip        @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  sender                 Participant @relation("TripPaymentSender", fields: [senderParticipantId], references: [id], onDelete: Restrict)
+  recipient              Participant @relation("TripPaymentRecipient", fields: [recipientParticipantId], references: [id], onDelete: Restrict)
+  confirmedBy            User?       @relation("TripPaymentConfirmer", fields: [confirmedByUserId], references: [id], onDelete: SetNull)
+
+  @@index([tripId, date])
+  @@index([senderParticipantId])
+  @@index([recipientParticipantId])
+  @@index([confirmedByUserId])
+  @@map("trip_payments")
 }
 
 model PaymentMethod {

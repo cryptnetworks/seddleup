@@ -1,4 +1,4 @@
-import type { Expense, ExpenseShare, Participant } from "@prisma/client";
+import type { Expense, ExpenseShare, Participant, TripPayment } from "@prisma/client";
 import { equalShareCents } from "@/lib/money";
 
 export type ParticipantWithBalances<
@@ -7,6 +7,8 @@ export type ParticipantWithBalances<
   participant: TParticipant;
   paid: number;
   owed: number;
+  sent: number;
+  received: number;
   net: number;
 };
 
@@ -23,6 +25,11 @@ export type BalanceExpenseInput = Pick<Expense, "amount" | "payerId"> & {
   shares: Pick<ExpenseShare, "participantId" | "shareAmount">[];
 };
 
+export type BalanceTripPaymentInput = Pick<
+  TripPayment,
+  "amount" | "senderParticipantId" | "recipientParticipantId"
+>;
+
 export function roundCurrency(value: number) {
   return Math.round((value + Number.EPSILON) * 100) / 100;
 }
@@ -38,7 +45,8 @@ export function calculateEqualShares(amount: number, participantCount: number) {
 
 export function calculateBalances<TParticipant extends Pick<Participant, "id" | "name">>(
   participants: TParticipant[],
-  expenses: BalanceExpenseInput[]
+  expenses: BalanceExpenseInput[],
+  payments: BalanceTripPaymentInput[] = []
 ) {
   const totals = new Map<string, ParticipantWithBalances<TParticipant>>();
 
@@ -47,6 +55,8 @@ export function calculateBalances<TParticipant extends Pick<Participant, "id" | 
       participant,
       paid: 0,
       owed: 0,
+      sent: 0,
+      received: 0,
       net: 0
     });
   }
@@ -75,8 +85,25 @@ export function calculateBalances<TParticipant extends Pick<Participant, "id" | 
     }
   }
 
+  for (const payment of payments) {
+    if (payment.senderParticipantId === payment.recipientParticipantId) {
+      throw new Error("Trip payment sender and recipient must differ.");
+    }
+    const sender = totals.get(payment.senderParticipantId);
+    const recipient = totals.get(payment.recipientParticipantId);
+    if (!sender || !recipient) {
+      throw new Error("Trip payment participants must belong to the calculated trip.");
+    }
+    const amount = Number(payment.amount);
+    if (!Number.isFinite(amount) || amount <= 0) {
+      throw new Error("Trip payment amount must be positive and finite.");
+    }
+    sender.sent = roundCurrency(sender.sent + amount);
+    recipient.received = roundCurrency(recipient.received + amount);
+  }
+
   for (const summary of totals.values()) {
-    summary.net = roundCurrency(summary.paid - summary.owed);
+    summary.net = roundCurrency(summary.paid - summary.owed + summary.sent - summary.received);
   }
 
   const balances = Array.from(totals.values());

@@ -10,14 +10,18 @@ describe("participant financial dependency policy", () => {
       hasParticipantFinancialDependencies({
         expensesPaid: 0,
         expenseShares: 0,
-        receiptAssignments: 0
+        receiptAssignments: 0,
+        paymentsSent: 0,
+        paymentsReceived: 0
       })
     ).toBe(false);
     expect(
       hasParticipantFinancialDependencies({
         expensesPaid: 0,
         expenseShares: 1,
-        receiptAssignments: 0
+        receiptAssignments: 0,
+        paymentsSent: 0,
+        paymentsReceived: 0
       })
     ).toBe(true);
   });
@@ -27,8 +31,12 @@ describe("participant financial dependency policy", () => {
       participantDependencySummary({
         expensesPaid: 1,
         expenseShares: 2,
-        receiptAssignments: 1
+        receiptAssignments: 1,
+        paymentsSent: 3,
+        paymentsReceived: 4
       })
-    ).toBe("1 paid expense, 2 expense shares, 1 receipt assignment");
+    ).toBe(
+      "1 paid expense, 2 expense shares, 1 receipt assignment, 3 payments sent, 4 payments received"
+    );
   });
 });

@@ -98,6 +98,18 @@ describe("read-only trip sharing", () => {
         uploaderUserId: owner.id
       }
     });
+    await prisma.tripPayment.create({
+      data: {
+        tripId: trip.id,
+        senderParticipantId: bob.id,
+        recipientParticipantId: alice.id,
+        amount: new Prisma.Decimal(10),
+        date: new Date("2026-07-12T00:00:00Z"),
+        note: "private settlement note",
+        confirmedByUserId: owner.id,
+        confirmedAt: new Date("2026-07-12T01:00:00Z")
+      }
+    });
 
     const token = generateTripShareToken();
     const link = await prisma.tripShareLink.create({
@@ -120,7 +132,10 @@ describe("read-only trip sharing", () => {
       "Traveler 1",
       "Traveler 2"
     ]);
+    expect(summary?.balances.map((balance) => balance.net)).toEqual([30, -30]);
     const exposed = JSON.stringify(summary);
+    expect(exposed).not.toContain("tripPayment");
+    expect(exposed).not.toContain("confirmedBy");
     for (const sensitiveValue of [
       owner.email,
       alice.id,
@@ -132,7 +147,8 @@ describe("read-only trip sharing", () => {
       "private-receipt.pdf",
       "private raw receipt text",
       "private-payment-handle",
-      "private-payment-link"
+      "private-payment-link",
+      "private settlement note"
     ]) {
       expect(exposed).not.toContain(sensitiveValue);
     }
