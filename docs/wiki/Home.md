@@ -14,6 +14,7 @@ This wiki is the operational and contributor documentation for the project.
 - [Nginx and Let's Encrypt Deployment](Nginx-and-Lets-Encrypt-Deployment)
 - [Admin and OAuth Providers](Admin-and-OAuth-Providers)
 - [Email and MFA](Email-and-MFA)
+- [Settlement Payments](Settlement-Payments)
 - [Backups and Updates](Backups-and-Updates)
 - [Security Model](Security-Model)
 - [Screenshots](Screenshots)
@@ -35,6 +36,7 @@ docker pull ghcr.io/cryptnetworks/seddleup:latest
 - Trip, participant, expense, balance, and settlement tracking
 - Collaborative trip memberships with owner/admin/member/viewer permissions
 - Member-created expenses with draft, submitted, disputed, approved, and settled states
+- Recorded settlement payments with role-safe history, editing, and adjusted balances
 - Credentials login with email verification and password reset
 - Admin and trip invitations for new users
 - Email-code or authenticator-app MFA

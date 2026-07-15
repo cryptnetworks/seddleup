@@ -36,6 +36,9 @@ historical [issue remediation plan](issue-remediation-plan.md).
   runners use disposable databases, bounded readiness, and cleanup.
 - Browser coverage includes auth, trips, expenses, accessibility, mobile Safari,
   receipt authorization, SEO metadata, and production chunk-load observation.
+- Creditor-confirmed settlement payments use server-authorized immutable ledger
+  fields, the shared integer-cent money boundary, and restrictive participant
+  references.
 - CI includes formatting, linting, type checking, unit/integration tests,
   production browser smoke, dependency review, CodeQL, npm audit, Trivy scans,
   multi-architecture Docker builds, and runtime probes.
@@ -70,20 +73,13 @@ historical [issue remediation plan](issue-remediation-plan.md).
   migrations, backup, rollback, and CI before accepting Postgres URLs.
 - [#66](https://github.com/cryptnetworks/seddleup/issues/66): isolated ESLint 10
   and Node 26 upgrade windows after upstream compatibility.
-- [#70](https://github.com/cryptnetworks/seddleup/issues/70),
-  [#75](https://github.com/cryptnetworks/seddleup/issues/75), and
-  [#98](https://github.com/cryptnetworks/seddleup/issues/98): browser-visible
-  MFA secret regression coverage, recovery/admin reset, and atomic one-time
-  credential consumption.
+- [#70](https://github.com/cryptnetworks/seddleup/issues/70) and
+  [#75](https://github.com/cryptnetworks/seddleup/issues/75): browser-visible
+  MFA secret regression coverage and recovery/admin reset.
 - [#93](https://github.com/cryptnetworks/seddleup/issues/93): final real-origin
   post-deployment SEO verification remains environment-dependent.
-- [#97](https://github.com/cryptnetworks/seddleup/issues/97) and
-  [#102](https://github.com/cryptnetworks/seddleup/issues/102): explicit safe
-  participant and account deletion policies.
-- [#99](https://github.com/cryptnetworks/seddleup/issues/99),
-  [#100](https://github.com/cryptnetworks/seddleup/issues/100), and
-  [#101](https://github.com/cryptnetworks/seddleup/issues/101): receipt file
-  lifecycle, shared money precision, and complete itemized review workflows.
+- [#101](https://github.com/cryptnetworks/seddleup/issues/101): complete
+  itemized receipt-review workflows.
 
 ## Validation expectations for future cleanup
 

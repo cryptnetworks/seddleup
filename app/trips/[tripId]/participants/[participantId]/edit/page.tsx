@@ -31,7 +31,15 @@ export default async function EditParticipantPage({
     },
     include: {
       trip: true,
-      _count: { select: { expensesPaid: true, shares: true, receiptSplits: true } }
+      _count: {
+        select: {
+          expensesPaid: true,
+          shares: true,
+          receiptSplits: true,
+          paymentsSent: true,
+          paymentsReceived: true
+        }
+      }
     }
   });
 
@@ -42,7 +50,9 @@ export default async function EditParticipantPage({
   const dependencies = {
     expensesPaid: participant._count.expensesPaid,
     expenseShares: participant._count.shares,
-    receiptAssignments: participant._count.receiptSplits
+    receiptAssignments: participant._count.receiptSplits,
+    paymentsSent: participant._count.paymentsSent,
+    paymentsReceived: participant._count.paymentsReceived
   };
   const deletionBlocked = hasParticipantFinancialDependencies(dependencies);
 

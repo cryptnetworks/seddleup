@@ -124,4 +124,38 @@ describe("participant deletion integrity", () => {
       prisma.participant.delete({ where: { id: fixture.referenced.id } })
     ).rejects.toBeInstanceOf(Prisma.PrismaClientKnownRequestError);
   });
+
+  it.each(["sender", "recipient"] as const)(
+    "restricts deletion when the participant is a payment %s",
+    async (role) => {
+      const fixture = await createTripFixture(`payment-${role}`);
+      const sender = role === "sender" ? fixture.referenced : fixture.unreferenced;
+      const recipient = role === "recipient" ? fixture.referenced : fixture.unreferenced;
+      await prisma.participant.update({
+        where: { id: recipient.id },
+        data: { userId: fixture.user.id }
+      });
+      const payment = await prisma.tripPayment.create({
+        data: {
+          amount: new Prisma.Decimal("4.00"),
+          date: new Date(),
+          tripId: fixture.trip.id,
+          senderParticipantId: sender.id,
+          recipientParticipantId: recipient.id,
+          confirmedByUserId: fixture.user.id
+        }
+      });
+
+      const dependencies = await participantFinancialDependencies(prisma, fixture.referenced.id);
+      expect(dependencies).toMatchObject(
+        role === "sender" ? { paymentsSent: 1 } : { paymentsReceived: 1 }
+      );
+      await expect(
+        prisma.participant.delete({ where: { id: fixture.referenced.id } })
+      ).rejects.toBeInstanceOf(Prisma.PrismaClientKnownRequestError);
+      await expect(
+        prisma.tripPayment.findUnique({ where: { id: payment.id } })
+      ).resolves.not.toBeNull();
+    }
+  );
 });

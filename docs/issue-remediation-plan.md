@@ -16,11 +16,18 @@ Data-integrity batch: #98, #99, #100, and #102 are implemented on
 `agent/data-integrity-hardening`; the acceptance mapping, migrations, rollback
 boundary, and focused verification are recorded in
 [`docs/data-integrity-hardening.md`](data-integrity-hardening.md). The current
-financial relations for #97 are protected, but #97 remains related rather than
-closed until the settlement-payment relations from draft PR #105 land on
-`main` and receive sender/recipient deletion coverage. Issue #101 remains
-deliberately deferred until this receipt-lifecycle and money-validation base is
-merged.
+financial relations for #97 are protected. The settlement integration adds the
+remaining sender and recipient restrictions and coverage, completing the
+participant-deletion policy without reassigning or deleting financial history.
+Issue #101 remains deliberately deferred until this receipt-lifecycle,
+money-validation, and settlement base is merged.
+
+Settlement payments add a dedicated `TripPayment` ledger, creditor-linked
+confirmation permissions for non-viewer trip members, adjusted balance
+calculations, authenticated history and management routes, migration coverage,
+and private audit events. Viewers remain read-only, and role alone never permits
+a user to confirm receipt on another participant's behalf. The ledger remains
+separate from external `PaymentMethod` profiles and anonymous trip sharing.
 
 ## Label Cleanup
 

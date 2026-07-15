@@ -6,6 +6,8 @@ export type ParticipantFinancialDependencies = {
   expensesPaid: number;
   expenseShares: number;
   receiptAssignments: number;
+  paymentsSent: number;
+  paymentsReceived: number;
 };
 
 export function hasParticipantFinancialDependencies(
@@ -18,13 +20,16 @@ export async function participantFinancialDependencies(
   client: ParticipantIntegrityClient,
   participantId: string
 ): Promise<ParticipantFinancialDependencies> {
-  const [expensesPaid, expenseShares, receiptAssignments] = await Promise.all([
-    client.expense.count({ where: { payerId: participantId } }),
-    client.expenseShare.count({ where: { participantId } }),
-    client.receiptLineItemParticipant.count({ where: { participantId } })
-  ]);
+  const [expensesPaid, expenseShares, receiptAssignments, paymentsSent, paymentsReceived] =
+    await Promise.all([
+      client.expense.count({ where: { payerId: participantId } }),
+      client.expenseShare.count({ where: { participantId } }),
+      client.receiptLineItemParticipant.count({ where: { participantId } }),
+      client.tripPayment.count({ where: { senderParticipantId: participantId } }),
+      client.tripPayment.count({ where: { recipientParticipantId: participantId } })
+    ]);
 
-  return { expensesPaid, expenseShares, receiptAssignments };
+  return { expensesPaid, expenseShares, receiptAssignments, paymentsSent, paymentsReceived };
 }
 
 export function participantDependencySummary(dependencies: ParticipantFinancialDependencies) {
@@ -42,6 +47,16 @@ export function participantDependencySummary(dependencies: ParticipantFinancialD
   if (dependencies.receiptAssignments) {
     parts.push(
       `${dependencies.receiptAssignments} receipt assignment${dependencies.receiptAssignments === 1 ? "" : "s"}`
+    );
+  }
+  if (dependencies.paymentsSent) {
+    parts.push(
+      `${dependencies.paymentsSent} payment${dependencies.paymentsSent === 1 ? "" : "s"} sent`
+    );
+  }
+  if (dependencies.paymentsReceived) {
+    parts.push(
+      `${dependencies.paymentsReceived} payment${dependencies.paymentsReceived === 1 ? "" : "s"} received`
     );
   }
   return parts.join(", ");

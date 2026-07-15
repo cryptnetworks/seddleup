@@ -10,6 +10,11 @@
   membership authorization.
 - Payment methods store only external handles or links, never payment
   credentials.
+- Recorded settlement payments are authenticated trip ledger entries, not
+  processed transactions. Only the non-viewer trip member linked to the recipient
+  participant may confirm receipt. Owner, trip-admin, and application-admin roles
+  do not grant authority over another creditor's confirmation. Only the confirming
+  creditor can edit its date/note or delete it.
 - Retail lookup runs server-side so provider keys are not exposed to clients.
 - Discord interactions verify request signatures before processing commands.
 
@@ -33,6 +38,8 @@
 - Shared data excludes email addresses, account and invitation data, audit logs,
   draft expenses, notes, receipts and parser output, payment methods, and internal
   database identifiers.
+- Recorded settlement payments and their private notes are also excluded from
+  anonymous shared summaries.
 - Creation, rotation, settings changes, and revocation are audited without the raw
   token or full sharing URL.
 
@@ -68,8 +75,8 @@ in its final redirect.
 Authenticator-app TOTP is not a stored one-time credential: it follows the
 standard short time-window verification model. It remains encrypted at rest and
 is never logged, but a valid TOTP value can be accepted more than once during
-its standards-defined window. Recovery credentials remain deferred to issue
-#75.
+its standards-defined window. Recovery credentials remain deferred to SeddleUp
+issue #75.
 
 ## CSRF
 

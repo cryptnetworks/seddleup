@@ -4,9 +4,9 @@ This document is the authoritative implementation and verification ledger for
 issues #97, #98, #99, #100, and #102. The batch starts from `origin/main` commit
 `1ae3411a989ccf0b17f3972924907750e1c9b3cf`.
 
-Issue #101 is intentionally excluded. Settlement payments are also not present
-on this base: draft PR #105 targets `develop` and must be reviewed and merged
-independently. This batch does not copy or depend on that feature branch.
+Issue #101 is intentionally excluded. Settlement payments were originally
+developed in PR #105 on `develop`; the final integration reconciles that work
+with the data-integrity changes already merged on `main`.
 
 ## Acceptance matrix
 
@@ -19,7 +19,7 @@ independently. This batch does not copy or depend on that feature branch.
 | #100  | Document the USD-only policy                                                                    | Architecture and testing/operator documentation identify the two-decimal USD boundary                                                                                                                          | Documentation review and link checks where available                                                                   |
 | #97   | Never silently cascade financial history when deleting a participant                            | Server action counts payer, share, and receipt-line assignment dependencies before deletion; database relations move from cascade to restrict where required                                                   | Integration tests for an unreferenced participant and each present dependency; fresh and upgraded migration validation |
 | #97   | Explain blocked deletion in the UI                                                              | Participant edit page shows dependency-aware wording and safe error states                                                                                                                                     | Component/browser assertions                                                                                           |
-| #97   | Handle settlement sender and recipient dependencies                                             | Do not duplicate draft PR #105. Its migration already proposes restrictive payment foreign keys; this criterion remains dependent on settlement code landing on `main`                                         | Re-evaluate after #105 is merged; use `Related to #97` until payment coverage exists on the PR base                    |
+| #97   | Handle settlement sender and recipient dependencies                                             | Payment sender and recipient foreign keys are restrictive; server and UI dependency counts include both directions                                                                                             | Unit, integration, and browser coverage for payment-only participant dependencies                                      |
 | #99   | Compensate failed uploads                                                                       | Remove only the newly created receipt directory when parsing or persistence fails                                                                                                                              | Temporary-directory unit tests and enabled receipt failure coverage                                                    |
 | #99   | Safely and idempotently remove stored receipt data                                              | A containment-checked helper validates the expected receipt directory before recursive removal and tolerates absence                                                                                           | Traversal, mismatched-path, symlink, and repeated-delete tests                                                         |
 | #99   | Cover receipt, expense, trip, and user deletion behavior                                        | Individual receipt deletion removes its directory; expense deletion preserves detached receipts; trip/user deletion snapshots affected receipt paths before the database transaction and cleans them afterward | Focused action/integration tests and disposable Docker receipt-volume probe                                            |
@@ -41,19 +41,17 @@ Receipt cleanup is available to the user-deletion workflow. Authentication
 concurrency changes come last because they require a dedicated security review
 and the broadest regression run.
 
-The #97 payment-specific acceptance criterion cannot be demonstrated on this
-branch while #105 remains unmerged and based on `develop`. The current financial
-relations will still be protected now, and the issue will not be claimed as
-fully closed unless settlement payment coverage becomes available on `main`
-before publication.
+The #97 payment-specific criterion is completed during the settlement
+integration. Payment senders and recipients receive the same server-side,
+database, and user-interface deletion protection as other financial history.
 
 ## Implemented behavior
 
 - USD input is parsed to integer cents and canonical decimal strings at the
   server boundary. Expense shares distribute any remainder cents explicitly.
-- Participant deletion is rejected when an expense payer, expense share, or
-  receipt line-item assignment references the participant. Settlement payment
-  relations remain outside this branch because draft PR #105 is not on `main`.
+- Participant deletion is rejected when an expense payer, expense share,
+  receipt line-item assignment, sent payment, or received payment references
+  the participant.
 - Receipt cleanup proves containment beneath the configured upload root,
   compensates failed uploads, and emits a redacted operator event if cleanup
   after a committed database deletion fails.
@@ -67,11 +65,15 @@ before publication.
 
 ## Migration and rollback
 
-Three forward migrations change existing deployments: participant financial
-relations and trip ownership become restrictive foreign keys, and a new table
-stores OAuth-state digests. They do not rewrite financial rows, receipt data, or
-user records. Fresh and representative upgraded SQLite databases must pass
-foreign-key validation before release.
+The forward migrations make participant financial relations and trip ownership
+restrictive, add the payment ledger and settlement revision, and store OAuth
+state digests. Because the settlement and owner-restriction work originally
+landed on different branches, a final forward migration reconciles the `trips`
+table shape. It preserves all business fields and financial records while
+resetting only the internal settlement concurrency revision during the stopped
+deployment. Existing migrations remain immutable. Fresh databases plus
+representative upgrades from both former branch histories must pass foreign-key
+validation before release.
 
 Back up the SQLite database and private receipt directory from the same stopped
 application state before deploying. Rollback means restoring that coordinated
@@ -86,7 +88,8 @@ changes by deleting migration rows or editing an existing migration. See
   direct form manipulation.
 - `tests/integration/participant-integrity.test.ts`,
   `tests/integration/user-integrity.test.ts`, and the matching Playwright specs
-  cover restrictive deletion and explicit ownership transfer.
+  cover restrictive deletion—including payment senders and recipients—and
+  explicit ownership transfer.
 - `tests/unit/receipt-storage.test.ts` and the enabled receipt browser suite use
   temporary upload roots for compensation and scoped deletion.
 - `tests/integration/one-time-credentials.test.ts` and invitation integration
