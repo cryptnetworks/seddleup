@@ -5,7 +5,9 @@
 - Next.js App Router
 - React and TypeScript
 - Prisma ORM
-- SQLite only; Postgres is not supported until a future schema and migration plan
+- SQLite only; Postgres is not supported until the
+  [PostgreSQL support design](../postgres-support-design.md) is implemented in
+  full. URL validation must remain restrictive during foundation work.
   explicitly adds it
 - NextAuth credentials sessions
 - Docker startup entrypoint for validation and migrations

@@ -159,6 +159,11 @@ requested taxonomy.
   `priority:low`, `size:xl`, `needs-design`, `database`
 - Dependencies and notes: should be design-only first. Split design from
   implementation and migration work.
+- Design status: the authoritative
+  [PostgreSQL support design](postgres-support-design.md) defines coexistence,
+  engine-specific schemas and migrations, one-way SQLite cutover, recovery,
+  adapters, configuration, CI, and the acceptance gate. Runtime support and URL
+  acceptance remain intentionally deferred.
 
 ### #66 - Dependencies: plan ESLint 10 and Node 26 upgrade windows
 
