@@ -13,8 +13,7 @@ import type { TripPaymentConfirmationData, TripPaymentEditData } from "@/lib/val
 export type TripPaymentMutationFailure = "forbidden" | "participants" | "not-found" | "stale";
 
 type TripPaymentMutationResult<T> =
-  | { ok: true; value: T }
-  | { ok: false; reason: TripPaymentMutationFailure };
+  { ok: true; value: T } | { ok: false; reason: TripPaymentMutationFailure };
 
 function tripRole(
   trip: { ownerId: string; members: { role: string; userId: string }[] },

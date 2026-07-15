@@ -56,8 +56,7 @@ function linkParticipantToUser(tripId: string, participantName: string, userEmai
   try {
     db.exec("PRAGMA foreign_keys = ON");
     const user = db.prepare("SELECT id FROM users WHERE email = ?").get(userEmail) as
-      | { id: string }
-      | undefined;
+      { id: string } | undefined;
     if (!user) throw new Error("Expected the registered E2E user to exist");
     db.prepare(
       `UPDATE participants SET userId = ?, updatedAt = CURRENT_TIMESTAMP
