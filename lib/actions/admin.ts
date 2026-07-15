@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { Prisma } from "@prisma/client";
 import * as bcrypt from "bcryptjs";
 import { writeAuditLog } from "@/lib/audit";
 import { countActiveAdmins, requireAdminAction } from "@/lib/authorization";
@@ -10,7 +11,8 @@ import { prisma } from "@/lib/prisma";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { cleanupStoredReceipts } from "@/lib/receipts/cleanup";
 import { setAuthSettings } from "@/lib/settings";
-import { adminInvitationSchema, formString } from "@/lib/validation";
+import { OwnershipTransferError, transferTripOwnershipInTransaction } from "@/lib/user-integrity";
+import { adminInvitationSchema, formString, idSchema } from "@/lib/validation";
 import { createAndSendInvitation, resendInvitation, revokeInvitation } from "@/lib/invitations";
 
 function checked(formData: FormData, key: string) {
@@ -79,24 +81,93 @@ export async function deleteUser(formData: FormData) {
   if (target.id === actor.id) {
     redirect("/admin/users?error=self-lockout");
   }
-  if (target.role === "admin" && (await countActiveAdmins(target.id)) === 0) {
-    redirect("/admin/users?error=final-admin");
+  let deletion;
+  try {
+    deletion = await prisma.$transaction(async (tx) => {
+      if (target.role === "admin") {
+        const remainingActiveAdmins = await tx.user.count({
+          where: {
+            id: { not: target.id },
+            role: { in: ["owner", "admin"] },
+            disabledAt: null
+          }
+        });
+        if (remainingActiveAdmins === 0) return { status: "final-admin" as const };
+      }
+
+      const ownedTripCount = await tx.trip.count({ where: { ownerId: userId } });
+      if (ownedTripCount > 0) {
+        return { status: "owned-trips" as const, ownedTripCount };
+      }
+
+      const receipts = await tx.receipt.findMany({
+        where: { uploaderUserId: userId },
+        select: { id: true, storedPath: true }
+      });
+      await tx.user.delete({ where: { id: userId } });
+      return { status: "deleted" as const, receipts };
+    });
+  } catch (error) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2003") {
+      redirect("/admin/users?error=account-dependencies");
+    }
+    throw error;
   }
 
-  const receipts = await prisma.receipt.findMany({
-    where: { uploaderUserId: userId },
-    select: { id: true, storedPath: true }
-  });
-  await prisma.user.delete({ where: { id: userId } });
+  if (deletion.status === "final-admin") redirect("/admin/users?error=final-admin");
+  if (deletion.status === "owned-trips") {
+    redirect(`/admin/users?error=owned-trips&count=${deletion.ownedTripCount}`);
+  }
+
+  const receipts = deletion.receipts;
   await cleanupStoredReceipts(receipts, "user.delete");
   await writeAuditLog({
     actorUserId: actor.id,
     action: "user.deleted",
     targetType: "user",
-    targetId: userId,
-    metadata: { email: target.email }
+    targetId: userId
   });
   revalidatePath("/admin/users");
+}
+
+export async function transferTripOwnership(formData: FormData) {
+  const actor = await requireAdminAction();
+  const parsedTripId = idSchema.safeParse(formString(formData, "tripId"));
+  const parsedReplacementId = idSchema.safeParse(formString(formData, "replacementOwnerId"));
+  if (!parsedTripId.success || !parsedReplacementId.success) {
+    redirect("/admin/users?transfer=invalid");
+  }
+
+  try {
+    await prisma.$transaction(async (tx) => {
+      const transfer = await transferTripOwnershipInTransaction(tx, {
+        tripId: parsedTripId.data,
+        replacementOwnerId: parsedReplacementId.data
+      });
+      await writeAuditLog(
+        {
+          actorUserId: actor.id,
+          tripId: transfer.tripId,
+          action: "trip.ownership_transferred",
+          targetType: "trip",
+          targetId: transfer.tripId,
+          metadata: {
+            previousOwnerUserId: transfer.previousOwnerId,
+            replacementOwnerUserId: transfer.replacementOwnerId
+          }
+        },
+        tx
+      );
+    });
+  } catch (error) {
+    if (error instanceof OwnershipTransferError) {
+      redirect(`/admin/users?transfer=${error.reason}`);
+    }
+    throw error;
+  }
+
+  revalidatePath("/admin/users");
+  redirect("/admin/users?transfer=success");
 }
 
 export async function resetUserPassword(formData: FormData) {

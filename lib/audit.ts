@@ -1,5 +1,8 @@
 import { headers } from "next/headers";
+import type { Prisma, PrismaClient } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
+
+type AuditClient = PrismaClient | Prisma.TransactionClient;
 
 type AuditInput = {
   actorUserId?: string | null;
@@ -14,7 +17,7 @@ type AuditInput = {
   metadata?: Record<string, unknown>;
 };
 
-export async function writeAuditLog(input: AuditInput) {
+export async function writeAuditLog(input: AuditInput, client: AuditClient = prisma) {
   const requestHeaders = await headers();
   const ipAddress =
     requestHeaders.get("x-forwarded-for")?.split(",")[0]?.trim() ||
@@ -22,7 +25,7 @@ export async function writeAuditLog(input: AuditInput) {
     null;
   const userAgent = requestHeaders.get("user-agent");
 
-  await prisma.auditLog.create({
+  await client.auditLog.create({
     data: {
       actorUserId: input.actorUserId || null,
       tripId: input.tripId || null,

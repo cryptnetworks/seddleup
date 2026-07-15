@@ -20,6 +20,7 @@ export {
   resetUserPassword,
   revokeUserInvitation,
   setUserDisabled,
+  transferTripOwnership,
   updateAuthProviderConfig,
   updateLocalAuthSettings,
   updateUserRole

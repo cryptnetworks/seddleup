@@ -128,6 +128,15 @@ future settlement-payment ledger must enforce the same restriction for payment
 senders and recipients before participant deletion can be considered complete
 for that feature.
 
+User deletion follows a separate explicit ownership policy. A required trip
+owner can never be deleted by database cascade. Administrators must transfer
+each owned trip to a different active, non-readonly user first. The transfer
+atomically updates `Trip.ownerId`, promotes the replacement's membership to
+`owner`, demotes the previous owner membership to `admin`, and writes the audit
+record. Expenses, participants, receipts, invitations, and other trip records
+remain attached to the trip. Disabling an account remains reversible and does
+not transfer or delete ownership.
+
 ### Currency boundary
 
 SeddleUp is USD-only until per-trip currency support is designed. Every
