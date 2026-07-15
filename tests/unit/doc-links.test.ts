@@ -12,6 +12,7 @@ import {
 describe("documentation link validation", () => {
   it("matches GitHub-style heading slugs and duplicate suffixes", () => {
     expect(githubSlug("Release & rollback readiness")).toBe("release-rollback-readiness");
+    expect(githubSlug("[<strong>Safe</strong> heading](guide.md)")).toBe("safe-heading");
     expect(markdownAnchors("# Deploy\n\n## Verify\n\n## Verify")).toEqual(
       new Set(["deploy", "verify", "verify-1"])
     );

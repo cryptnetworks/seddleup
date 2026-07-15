@@ -27,12 +27,30 @@ async function markdownFilesUnder(directory) {
   return files;
 }
 
+function withoutHtmlTags(value) {
+  let result = "";
+  let cursor = 0;
+
+  while (cursor < value.length) {
+    const opening = value.indexOf("<", cursor);
+    if (opening === -1) return result + value.slice(cursor);
+
+    result += value.slice(cursor, opening);
+    const closing = value.indexOf(">", opening + 1);
+    if (closing === -1) return result + value.slice(opening);
+    cursor = closing + 1;
+  }
+
+  return result;
+}
+
 export function githubSlug(value) {
-  return value
-    .replace(/<[^>]+>/g, "")
+  const markdownText = value
     .replace(/!\[([^\]]*)\]\([^)]*\)/g, "$1")
     .replace(/\[([^\]]+)\]\([^)]*\)/g, "$1")
-    .replace(/[`*_~]/g, "")
+    .replace(/[`*_~]/g, "");
+
+  return withoutHtmlTags(markdownText)
     .trim()
     .toLowerCase()
     .replace(/[^\p{L}\p{N}\s_-]/gu, "")
