@@ -56,3 +56,37 @@ export async function writeSystemAuditLog(input: Omit<AuditInput, "actorUserId">
     }
   });
 }
+
+const auditActionLabels: Record<string, string> = {
+  "expense.create": "Added an expense",
+  "expense.delete": "Deleted an expense",
+  "expense.update": "Updated an expense",
+  "invitation.created": "Sent an invitation",
+  "invitation.resent": "Resent an invitation",
+  "invitation.revoked": "Revoked an invitation",
+  "participant.create": "Added a participant",
+  "participant.delete": "Removed a participant",
+  "participant.update": "Updated a participant",
+  "receipt.review": "Reviewed a receipt",
+  "receipt.upload": "Uploaded a receipt",
+  "trip.create": "Created the trip",
+  "trip.delete": "Deleted the trip",
+  "trip.update": "Updated trip details",
+  "trip_payment.confirm": "Confirmed a payment received",
+  "trip_payment.delete": "Deleted a payment confirmation",
+  "trip_payment.update": "Updated a payment confirmation",
+  "trip_share.revoke": "Revoked a share link",
+  "trip_share.settings_update": "Updated sharing settings"
+};
+
+export function auditActionLabel(action: string) {
+  const knownLabel = auditActionLabels[action];
+  if (knownLabel) return knownLabel;
+
+  const words = action
+    .split(/[._-]+/)
+    .map((word) => word.trim())
+    .filter(Boolean)
+    .join(" ");
+  return words ? `${words.charAt(0).toUpperCase()}${words.slice(1)}` : "Activity recorded";
+}

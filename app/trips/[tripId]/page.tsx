@@ -7,6 +7,8 @@ import { ExpenseCard } from "@/components/ExpenseCard";
 import { PageHeader } from "@/components/PageHeader";
 import { PageShell } from "@/components/PageShell";
 import { SettlementList } from "@/components/SettlementList";
+import { TripPaymentCard } from "@/components/TripPaymentCard";
+import { auditActionLabel } from "@/lib/audit";
 import { calculateBalances } from "@/lib/calculations";
 import { createParticipant, deleteParticipant, deleteTrip } from "@/lib/actions";
 import { getAppConfig } from "@/lib/config";
@@ -17,7 +19,9 @@ import { requireUser } from "@/lib/session";
 import { requireTripAccess } from "@/lib/trip-access";
 import {
   canCreateTripExpense,
+  canConfirmTripPayment,
   canEditExpense,
+  canEditConfirmedTripPayment,
   canIncludeExpenseInBalances,
   canViewExpense,
   isTripManager
@@ -62,6 +66,14 @@ export default async function TripDetailPage({
           shares: { include: { participant: true } }
         }
       },
+      payments: {
+        orderBy: [{ date: "desc" }, { createdAt: "desc" }],
+        include: {
+          sender: true,
+          recipient: true,
+          confirmedBy: { select: { username: true } }
+        }
+      },
       auditLogs: { orderBy: { createdAt: "desc" }, take: 8 }
     }
   });
@@ -79,12 +91,33 @@ export default async function TripDetailPage({
   const balanceExpenses = visibleExpenses.filter((expense) =>
     canIncludeExpenseInBalances(expense.status)
   );
-  const { balances, settlements } = calculateBalances(trip.participants, balanceExpenses);
+  const { balances, settlements } = calculateBalances(
+    trip.participants,
+    balanceExpenses,
+    trip.payments
+  );
+  const participantById = new Map(
+    trip.participants.map((participant) => [participant.id, participant] as const)
+  );
+  const confirmableSettlementKeys = settlements
+    .filter((settlement) => {
+      const recipient = participantById.get(settlement.creditorId);
+      return (
+        recipient &&
+        canConfirmTripPayment(role, user.id, {
+          senderParticipantId: settlement.debtorId,
+          recipientParticipantId: settlement.creditorId,
+          recipientParticipantUserId: recipient.userId
+        })
+      );
+    })
+    .map((settlement) => `${settlement.debtorId}:${settlement.creditorId}`);
   logger.info("settlement.calculate.success", {
     userId: user.id,
     tripId: trip.id,
     participants: trip.participants.length,
     expenses: balanceExpenses.length,
+    payments: trip.payments.length,
     settlements: settlements.length
   });
   const totalCost = balanceExpenses.reduce((sum, expense) => sum + Number(expense.amount), 0);
@@ -312,6 +345,34 @@ export default async function TripDetailPage({
               </div>
             )}
           </section>
+
+          <section className="card min-w-0 p-3 sm:p-4" data-testid="trip-payment-history">
+            <div className="mb-4 flex min-w-0 flex-wrap items-center justify-between gap-3">
+              <div>
+                <h2 className="text-lg font-semibold text-ink">Confirmed payments</h2>
+                <p className="mt-1 text-sm text-muted">
+                  Recipient confirmations that adjust balances without changing expenses.
+                </p>
+              </div>
+            </div>
+            {trip.payments.length === 0 ? (
+              <p className="text-sm text-muted">No payments have been confirmed yet.</p>
+            ) : (
+              <div className="grid gap-3">
+                {trip.payments.map((payment) => (
+                  <TripPaymentCard
+                    key={payment.id}
+                    canEdit={canEditConfirmedTripPayment(role, user.id, {
+                      confirmedByUserId: payment.confirmedByUserId,
+                      recipientParticipantUserId: payment.recipient.userId
+                    })}
+                    payment={payment}
+                    tripId={trip.id}
+                  />
+                ))}
+              </div>
+            )}
+          </section>
         </div>
 
         <aside className="grid min-w-0 content-start gap-5">
@@ -334,6 +395,8 @@ export default async function TripDetailPage({
             <SettlementList
               settlements={settlements}
               paymentMethodsByParticipantId={paymentMethodsByParticipantId}
+              confirmableSettlementKeys={confirmableSettlementKeys}
+              tripId={trip.id}
             />
           </section>
           <section className="card p-3 sm:p-4" data-testid="trip-activity">
@@ -346,7 +409,9 @@ export default async function TripDetailPage({
               <div className="grid gap-3">
                 {trip.auditLogs.map((entry) => (
                   <div key={entry.id} className="rounded-lg border border-line p-3">
-                    <p className="text-sm font-semibold text-ink">{entry.action}</p>
+                    <p className="text-sm font-semibold text-ink">
+                      {auditActionLabel(entry.action)}
+                    </p>
                     <p className="text-xs text-muted">{formatDate(entry.createdAt)}</p>
                   </div>
                 ))}

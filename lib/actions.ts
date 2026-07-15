@@ -32,6 +32,11 @@ export {
 } from "@/lib/actions/participants";
 export { createExpense, deleteExpense, updateExpense } from "@/lib/actions/expenses";
 export { deletePaymentMethod, savePaymentMethod } from "@/lib/actions/payments";
+export {
+  createTripPayment,
+  deleteTripPayment,
+  updateTripPayment
+} from "@/lib/actions/trip-payments";
 export { saveReceiptReview, uploadReceipt } from "@/lib/actions/receipts";
 export {
   createOrRotateTripShareLink,
