@@ -20,7 +20,7 @@ export default async function ForgotPasswordPage({
           Enter your email and we will send password reset instructions if an account exists.
         </p>
         {query.sent ? (
-          <p className="mt-4 rounded-lg bg-teal-50 p-3 text-sm text-ocean">
+          <p className="alert-success mt-4">
             If that email is registered, a reset link has been sent.
           </p>
         ) : null}

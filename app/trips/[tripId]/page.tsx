@@ -7,6 +7,7 @@ import { ExpenseCard } from "@/components/ExpenseCard";
 import { PageHeader } from "@/components/PageHeader";
 import { PageShell } from "@/components/PageShell";
 import { SettlementList } from "@/components/SettlementList";
+import { StatCard } from "@/components/StatCard";
 import { TripPaymentCard } from "@/components/TripPaymentCard";
 import { auditActionLabel } from "@/lib/audit";
 import { calculateBalances } from "@/lib/calculations";
@@ -204,25 +205,11 @@ export default async function TripDetailPage({
         ) : null}
       </div>
 
-      <section className="mb-5 grid grid-cols-1 gap-3 min-[360px]:grid-cols-2 lg:grid-cols-4">
-        <div className="card p-3 sm:p-4">
-          <p className="text-sm text-muted">Total cost</p>
-          <p className="mt-1 break-all text-2xl font-bold tabular-nums">
-            {formatCurrency(totalCost)}
-          </p>
-        </div>
-        <div className="card p-3 sm:p-4">
-          <p className="text-sm text-muted">Participants</p>
-          <p className="mt-1 text-2xl font-bold">{trip.participants.length}</p>
-        </div>
-        <div className="card p-3 sm:p-4">
-          <p className="text-sm text-muted">Expenses</p>
-          <p className="mt-1 text-2xl font-bold">{balanceExpenses.length}</p>
-        </div>
-        <div className="card p-3 sm:p-4">
-          <p className="text-sm text-muted">Balances</p>
-          <p className="mt-1 text-2xl font-bold">{balances.length}</p>
-        </div>
+      <section className="mb-7 grid grid-cols-1 gap-3 min-[360px]:grid-cols-2 lg:grid-cols-4">
+        <StatCard compact label="Total cost" value={formatCurrency(totalCost)} />
+        <StatCard compact label="Participants" value={trip.participants.length} />
+        <StatCard compact label="Expenses" value={balanceExpenses.length} />
+        <StatCard compact label="Balances" value={balances.length} />
       </section>
 
       <div className="grid min-w-0 gap-5 lg:grid-cols-[minmax(0,1.35fr)_minmax(0,0.9fr)]">

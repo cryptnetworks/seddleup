@@ -29,13 +29,12 @@ export function BrandLogo({
   const content = (
     <span
       className={[
-        "inline-flex items-center rounded-lg text-ink",
+        "inline-flex items-center border border-slate-200 bg-white text-ink",
         compact
-          ? "h-11 w-11 max-w-full justify-center shadow-soft"
-          : "w-44 max-w-full px-2 py-1.5 shadow-soft md:w-56",
+          ? "h-11 w-11 max-w-full justify-center rounded-xl"
+          : "w-40 max-w-full rounded-xl px-2 py-1.5 md:w-48",
         className
       ].join(" ")}
-      style={{ backgroundColor: "#ffffff" }}
     >
       {image}
     </span>

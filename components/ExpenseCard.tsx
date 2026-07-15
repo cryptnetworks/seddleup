@@ -2,6 +2,7 @@ import type { Expense, Participant } from "@prisma/client";
 import Link from "next/link";
 import { Pencil } from "lucide-react";
 import { formatCurrency, formatDate } from "@/lib/format";
+import { StatusBadge } from "@/components/StatusBadge";
 
 type ExpenseCardProps = {
   expense: Expense & {
@@ -14,17 +15,24 @@ type ExpenseCardProps = {
 };
 
 export function ExpenseCard({ expense, tripId, canEdit = true }: ExpenseCardProps) {
+  const statusTone =
+    expense.status === "settled" || expense.status === "approved"
+      ? "success"
+      : expense.status === "disputed"
+        ? "danger"
+        : expense.status === "submitted"
+          ? "warning"
+          : "neutral";
+
   return (
-    <article className="card p-4" data-testid="expense-card">
+    <article className="rounded-xl border border-line bg-surface p-4" data-testid="expense-card">
       <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0">
           <div className="flex min-w-0 flex-wrap items-center gap-2">
             <h3 className="min-w-0 break-words text-base font-semibold text-ink">
               {expense.title}
             </h3>
-            <span className="shrink-0 rounded-full bg-surface px-2 py-0.5 text-xs font-semibold text-muted">
-              {expense.status}
-            </span>
+            <StatusBadge tone={statusTone}>{expense.status}</StatusBadge>
           </div>
           <p className="mt-1 text-sm text-muted">
             {expense.category} - {formatDate(expense.date)}
@@ -48,7 +56,7 @@ export function ExpenseCard({ expense, tripId, canEdit = true }: ExpenseCardProp
         {canEdit ? (
           <Link
             href={`/trips/${tripId}/expenses/${expense.id}/edit`}
-            className="inline-flex h-11 w-11 shrink-0 items-center justify-center self-end rounded-lg border border-line text-muted hover:text-ocean focus:outline-none focus:ring-2 focus:ring-ocean sm:self-auto"
+            className="icon-button self-end sm:self-auto"
             aria-label={`Edit ${expense.title}`}
           >
             <Pencil className="h-4 w-4" aria-hidden />

@@ -167,12 +167,7 @@ export function LoginForm() {
     <>
       <form className="grid gap-4" data-testid="login-form" onSubmit={onSubmit}>
         {error ? (
-          <p
-            aria-live="assertive"
-            className="rounded-lg bg-red-50 p-3 text-sm text-coral"
-            id="login-error"
-            role="alert"
-          >
+          <p aria-live="assertive" className="alert-error" id="login-error" role="alert">
             {error}
           </p>
         ) : null}

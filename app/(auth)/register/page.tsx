@@ -26,11 +26,7 @@ export default async function RegisterPage({
           Create an account to keep your trips private and synced.
         </p>
         {errorMessage ? (
-          <p
-            className="mt-4 rounded-lg bg-red-50 p-3 text-sm text-coral"
-            id="register-error"
-            role="alert"
-          >
+          <p className="alert-error mt-4" id="register-error" role="alert">
             {errorMessage}
           </p>
         ) : null}

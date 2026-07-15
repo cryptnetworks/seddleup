@@ -3,6 +3,7 @@ import { PageHeader } from "@/components/PageHeader";
 import { PageShell } from "@/components/PageShell";
 import { TripCard } from "@/components/TripCard";
 import { EmptyState } from "@/components/EmptyState";
+import { StatCard } from "@/components/StatCard";
 import { formatCurrency } from "@/lib/format";
 import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/session";
@@ -42,25 +43,11 @@ export default async function DashboardPage() {
         action={{ label: "Create Trip", href: "/trips/new" }}
       />
 
-      <section className="mb-5 grid grid-cols-1 gap-3 min-[360px]:grid-cols-2 lg:grid-cols-4">
-        <div className="card p-3 sm:p-4">
-          <p className="text-sm text-muted">Total trips</p>
-          <p className="mt-1 text-2xl font-bold">{trips.length}</p>
-        </div>
-        <div className="card p-3 sm:p-4">
-          <p className="text-sm text-muted">Participants</p>
-          <p className="mt-1 text-2xl font-bold">{totalParticipants}</p>
-        </div>
-        <div className="card p-3 sm:p-4">
-          <p className="text-sm text-muted">Expenses</p>
-          <p className="mt-1 break-all text-2xl font-bold tabular-nums">
-            {formatCurrency(totalExpenses)}
-          </p>
-        </div>
-        <div className="card p-3 sm:p-4">
-          <p className="text-sm text-muted">Active trips</p>
-          <p className="mt-1 text-2xl font-bold">{trips.length}</p>
-        </div>
+      <section className="mb-7 grid grid-cols-1 gap-3 min-[360px]:grid-cols-2 lg:grid-cols-4">
+        <StatCard compact label="Total trips" value={trips.length} />
+        <StatCard compact label="Participants" value={totalParticipants} />
+        <StatCard compact label="Expenses" value={formatCurrency(totalExpenses)} />
+        <StatCard compact label="Active trips" value={trips.length} />
       </section>
 
       {trips.length === 0 ? (
@@ -72,7 +59,7 @@ export default async function DashboardPage() {
         />
       ) : (
         <>
-          <div className="mb-3 flex items-center justify-between">
+          <div className="mb-4 flex items-center justify-between">
             <h2 className="text-lg font-semibold text-ink">Recent trips</h2>
             <Link className="text-sm font-semibold text-ocean" href="/trips">
               View all

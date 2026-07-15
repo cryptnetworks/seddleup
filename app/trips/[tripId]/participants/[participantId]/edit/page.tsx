@@ -65,7 +65,7 @@ export default async function EditParticipantPage({
       />
       <section className="card mx-auto max-w-2xl p-4 sm:p-5">
         {query.error === "financial-history" || deletionBlocked ? (
-          <p className="mb-4 rounded-lg border border-line bg-surface p-3 text-sm text-coral">
+          <p className="alert-error mb-4">
             This participant cannot be deleted because financial history references them
             {deletionBlocked ? `: ${participantDependencySummary(dependencies)}` : ""}. Reassigning
             or archiving financial history requires a separate reviewed workflow.

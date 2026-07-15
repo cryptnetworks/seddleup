@@ -13,8 +13,8 @@ const adminLinks = [
 export function AdminShell({ children }: { children: React.ReactNode }) {
   return (
     <PageShell>
-      <div className="grid min-w-0 gap-5 lg:grid-cols-[240px_minmax(0,1fr)]">
-        <aside className="card h-fit min-w-0 p-3">
+      <div className="grid min-w-0 gap-6 lg:grid-cols-[220px_minmax(0,1fr)]">
+        <aside className="card h-fit min-w-0 p-3 lg:sticky lg:top-24">
           <div className="mb-3 flex items-center gap-2 px-2 py-1 text-sm font-bold text-ink">
             <ShieldCheck className="h-4 w-4 text-ocean" aria-hidden />
             Admin
@@ -24,11 +24,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
             aria-label="Admin"
           >
             {adminLinks.map((link) => (
-              <Link
-                key={link.href}
-                className="min-h-11 shrink-0 rounded-lg px-3 py-2.5 text-sm font-semibold text-muted transition hover:bg-surface hover:text-ink focus:outline-none focus:ring-2 focus:ring-ocean"
-                href={link.href}
-              >
+              <Link key={link.href} className="nav-link shrink-0" href={link.href}>
                 {link.label}
               </Link>
             ))}

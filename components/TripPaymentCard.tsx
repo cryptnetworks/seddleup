@@ -18,7 +18,10 @@ export function TripPaymentCard({
   canEdit: boolean;
 }) {
   return (
-    <article className="rounded-lg border border-line p-3 sm:p-4" data-testid="trip-payment-card">
+    <article
+      className="rounded-xl border border-line bg-surface p-3 sm:p-4"
+      data-testid="trip-payment-card"
+    >
       <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0">
           <h3 className="break-words font-semibold text-ink">
