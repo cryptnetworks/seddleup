@@ -13,8 +13,8 @@ export function BalanceCard({ balance }: { balance: ParticipantWithBalances }) {
         <span
           className={
             isPositive
-              ? "rounded-full bg-teal-50 px-2.5 py-1 text-xs font-semibold text-ocean"
-              : "rounded-full bg-red-50 px-2.5 py-1 text-xs font-semibold text-coral"
+              ? "rounded-lg bg-success-soft px-2.5 py-1 text-xs font-semibold text-success"
+              : "rounded-lg bg-danger-soft px-2.5 py-1 text-xs font-semibold text-danger"
           }
         >
           {isPositive ? "Reimburse" : "Owes"}
@@ -24,7 +24,7 @@ export function BalanceCard({ balance }: { balance: ParticipantWithBalances }) {
         Paid {formatCurrency(balance.paid)}, owes {formatCurrency(balance.owed)}
       </p>
       <p
-        className={`${isPositive ? "text-ocean" : "text-coral"} mt-2 break-all text-2xl font-bold tabular-nums`}
+        className={`${isPositive ? "text-success" : "text-danger"} mt-2 break-all text-2xl font-bold tabular-nums`}
       >
         {formatCurrency(balance.net)}
       </p>

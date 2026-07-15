@@ -1,6 +1,6 @@
 # Screenshots
 
-These screenshots use bundled demo data from the static SeddleUp application demo. They are intended to show the core application flow without exposing private deployment data.
+These screenshots use bundled demo data from the static SeddleUp application demo. They are intended to show the core application flow without exposing private deployment data. The application supports the same calm forest, sage, clay, and warm-neutral design system in both light and dark modes.
 
 ## Dashboard
 

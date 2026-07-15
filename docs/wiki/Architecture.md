@@ -89,6 +89,24 @@ Main entities:
 - `lib/trip-sharing.ts` - bearer-token validation, privacy labels, and safe
   anonymous summary projection
 
+## Visual Design System
+
+The shared light and dark themes live in `app/globals.css`. Components should use
+semantic tokens (`background`, `surface`, `elevated`, `inset`, `ink`, `muted`,
+`line`, `primary`, `success`, `warning`, `danger`, and `focus`) instead of raw
+palette utilities. Compatibility aliases such as `ocean` and `coral` remain for
+older component call sites, but resolve to the semantic primary and danger colors.
+
+Authenticated pages use solid warm-neutral surfaces, quiet borders, and a small
+shared card shadow. Status messages use the shared `status-success`,
+`status-warning`, `status-danger`, or `status-neutral` treatments so their meaning
+is carried by text as well as color. Buttons, fields, focus rings, disabled states,
+autofill, and reduced-motion behavior are also centralized in the global theme.
+
+`BrandLogo` switches between the checked-in light and dark logo files. Those assets
+retain their original blue artwork; changing the logo palette requires a separate,
+intentional brand-asset update rather than a CSS filter or automatic recoloring.
+
 ## Read-Only Trip Sharing
 
 Each trip may have one current `TripShareLink`. The database stores a keyed token

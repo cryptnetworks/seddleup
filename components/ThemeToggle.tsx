@@ -22,15 +22,22 @@ function applyTheme(theme: Theme) {
 }
 
 export function ThemeToggle() {
-  const [theme, setTheme] = useState<Theme>(() => preferredTheme());
+  const [theme, setTheme] = useState<Theme>("light");
 
   useEffect(() => {
-    applyTheme(theme);
-  }, [theme]);
+    const frame = window.requestAnimationFrame(() => {
+      const initialTheme = preferredTheme();
+      setTheme(initialTheme);
+      applyTheme(initialTheme);
+    });
+
+    return () => window.cancelAnimationFrame(frame);
+  }, []);
 
   function toggleTheme() {
     const nextTheme = theme === "dark" ? "light" : "dark";
     setTheme(nextTheme);
+    applyTheme(nextTheme);
     window.localStorage.setItem("theme", nextTheme);
   }
 

@@ -1,5 +1,5 @@
-import Link from "next/link";
 import { ShieldCheck } from "lucide-react";
+import { AppNavLink } from "@/components/AppNavLink";
 import { PageShell } from "@/components/PageShell";
 
 const adminLinks = [
@@ -24,13 +24,14 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
             aria-label="Admin"
           >
             {adminLinks.map((link) => (
-              <Link
+              <AppNavLink
                 key={link.href}
-                className="min-h-11 shrink-0 rounded-lg px-3 py-2.5 text-sm font-semibold text-muted transition hover:bg-surface hover:text-ink focus:outline-none focus:ring-2 focus:ring-ocean"
+                className="shrink-0"
                 href={link.href}
+                section={link.href !== "/admin"}
               >
                 {link.label}
-              </Link>
+              </AppNavLink>
             ))}
           </nav>
         </aside>

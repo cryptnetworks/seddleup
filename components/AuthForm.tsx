@@ -166,7 +166,11 @@ export function LoginForm() {
   return (
     <>
       <form className="grid gap-4" data-testid="login-form" onSubmit={onSubmit}>
-        {error ? <p className="rounded-lg bg-red-50 p-3 text-sm text-coral">{error}</p> : null}
+        {error ? (
+          <p className="status-danger" role="alert">
+            {error}
+          </p>
+        ) : null}
         {requiresCode ? (
           <>
             <div>

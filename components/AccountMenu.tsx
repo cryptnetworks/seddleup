@@ -43,7 +43,7 @@ export function AccountMenu({ name, email }: AccountMenuProps) {
 
       {isOpen ? (
         <div
-          className="absolute right-0 mt-2 w-72 max-w-[calc(100vw-2rem)] rounded-lg border border-line p-2 shadow-soft"
+          className="absolute right-0 mt-2 w-72 max-w-[calc(100vw-2rem)] rounded-xl border border-line bg-elevated p-2"
           style={{ backgroundColor: "var(--app-card-solid)" }}
           role="menu"
           data-testid="account-menu"
@@ -54,7 +54,7 @@ export function AccountMenu({ name, email }: AccountMenuProps) {
           </div>
           <div className="grid gap-1 py-2">
             <Link
-              className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-semibold text-ink transition hover:bg-surface focus:outline-none focus:ring-2 focus:ring-ocean"
+              className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-semibold text-ink transition hover:bg-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ocean"
               href="/account"
               role="menuitem"
               onClick={() => setIsOpen(false)}

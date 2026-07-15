@@ -78,10 +78,8 @@ export default async function HomePage() {
 
       <section className="mx-auto grid w-full max-w-6xl gap-8 px-4 pb-16 pt-5 sm:px-6 md:grid-cols-[1.05fr_0.95fr] md:items-center md:pb-24 md:pt-12">
         <div>
-          <p className="mb-3 text-sm font-bold uppercase tracking-normal text-ocean">
-            Travel expenses, handled clearly
-          </p>
-          <h1 className="max-w-3xl text-4xl font-bold leading-tight text-ink sm:text-5xl md:text-6xl">
+          <p className="mb-3 text-sm font-semibold text-ocean">Travel expenses, handled clearly</p>
+          <h1 className="max-w-3xl text-4xl font-bold leading-tight text-ink sm:text-5xl">
             Travel together. Settle up easily.
           </h1>
           <p className="mt-5 max-w-xl text-base leading-7 text-muted md:text-lg">
@@ -99,21 +97,14 @@ export default async function HomePage() {
         </div>
 
         <div className="card overflow-hidden p-4 md:p-5">
-          <div
-            className="rounded-lg p-4"
-            style={{
-              background:
-                "linear-gradient(135deg, var(--app-brand-soft), var(--app-card-solid), var(--app-surface))"
-            }}
-          >
+          <div className="rounded-xl bg-surface p-4">
             <BrandLogo className="mx-auto mb-6" priority />
             <div className="grid gap-3">
               {features.map((feature) => {
                 const Icon = feature.icon;
                 return (
                   <article
-                    className="rounded-lg border border-line p-4 shadow-sm"
-                    style={{ backgroundColor: "var(--app-card)" }}
+                    className="rounded-lg border border-line bg-elevated p-4"
                     key={feature.title}
                   >
                     <div className="flex gap-3">
@@ -133,10 +124,10 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <section className="border-y border-line bg-white/70">
+      <section className="border-y border-line bg-elevated">
         <div className="mx-auto w-full max-w-6xl px-4 py-14 sm:px-6 md:py-20">
           <div className="max-w-2xl">
-            <p className="text-sm font-bold uppercase tracking-normal text-ocean">How it works</p>
+            <p className="text-sm font-semibold text-ocean">How it works</p>
             <h2 className="mt-2 text-3xl font-bold text-ink sm:text-4xl">
               One clear path from the first booking to the final payment
             </h2>
@@ -180,9 +171,9 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <section className="border-t border-line bg-white/70">
+      <section className="border-t border-line bg-elevated">
         <div className="mx-auto w-full max-w-4xl px-4 py-14 sm:px-6 md:py-20">
-          <p className="text-sm font-bold uppercase tracking-normal text-ocean">Common questions</p>
+          <p className="text-sm font-semibold text-ocean">Common questions</p>
           <h2 className="mt-2 text-3xl font-bold text-ink">SeddleUp FAQ</h2>
           <div className="mt-8 grid gap-4">
             {HOMEPAGE_FAQS.map((item) => (

@@ -114,11 +114,7 @@ export default async function AccountPage({
           </p>
           {profileStatus ? (
             <p
-              className={
-                query.profile === "updated"
-                  ? "mt-4 rounded-lg bg-brand-soft p-3 text-sm text-ocean"
-                  : "mt-4 rounded-lg border border-line bg-surface p-3 text-sm text-coral"
-              }
+              className={query.profile === "updated" ? "status-success mt-4" : "status-danger mt-4"}
             >
               {profileStatus}
             </p>
@@ -196,11 +192,7 @@ export default async function AccountPage({
           </p>
           {paymentStatus ? (
             <p
-              className={
-                query.payment === "invalid"
-                  ? "mt-4 rounded-lg border border-line bg-surface p-3 text-sm text-coral"
-                  : "mt-4 rounded-lg bg-brand-soft p-3 text-sm text-ocean"
-              }
+              className={query.payment === "invalid" ? "status-danger mt-4" : "status-success mt-4"}
             >
               {paymentStatus}
             </p>
@@ -306,8 +298,8 @@ export default async function AccountPage({
             <p
               className={
                 query.twoFactor === "updated" || query.twoFactor === "authenticator-enabled"
-                  ? "mt-4 rounded-lg bg-brand-soft p-3 text-sm text-ocean"
-                  : "mt-4 rounded-lg border border-line bg-surface p-3 text-sm text-coral"
+                  ? "status-success mt-4"
+                  : "status-danger mt-4"
               }
             >
               {twoFactorStatus}
@@ -417,11 +409,7 @@ export default async function AccountPage({
           </p>
           {discordStatus ? (
             <p
-              className={
-                query.discord === "invalid"
-                  ? "mt-4 rounded-lg border border-line bg-surface p-3 text-sm text-coral"
-                  : "mt-4 rounded-lg bg-brand-soft p-3 text-sm text-ocean"
-              }
+              className={query.discord === "invalid" ? "status-danger mt-4" : "status-success mt-4"}
             >
               {discordStatus}
             </p>
@@ -505,9 +493,7 @@ export default async function AccountPage({
           {passwordStatus ? (
             <p
               className={
-                query.password === "updated"
-                  ? "mt-4 rounded-lg bg-brand-soft p-3 text-sm text-ocean"
-                  : "mt-4 rounded-lg border border-line bg-surface p-3 text-sm text-coral"
+                query.password === "updated" ? "status-success mt-4" : "status-danger mt-4"
               }
             >
               {passwordStatus}

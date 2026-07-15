@@ -28,9 +28,7 @@ export default function Error({
         <div className="mb-6 flex justify-center">
           <BrandLogo href="/" priority />
         </div>
-        <p className="text-xs font-bold uppercase tracking-normal text-coral">
-          Something went wrong
-        </p>
+        <p className="text-sm font-semibold text-danger">Something went wrong</p>
         <h1 className="mt-2 text-2xl font-bold text-ink">SeddleUp could not load this view.</h1>
         <p className="mt-3 text-sm leading-6 text-muted">
           Try again. If the problem continues, check the server logs for the error digest.

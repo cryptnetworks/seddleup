@@ -7,6 +7,7 @@ import { ExpenseCard } from "@/components/ExpenseCard";
 import { PageHeader } from "@/components/PageHeader";
 import { PageShell } from "@/components/PageShell";
 import { SettlementList } from "@/components/SettlementList";
+import { TripActivity } from "@/components/TripActivity";
 import { calculateBalances } from "@/lib/calculations";
 import { createParticipant, deleteParticipant, deleteTrip } from "@/lib/actions";
 import { getAppConfig } from "@/lib/config";
@@ -62,7 +63,11 @@ export default async function TripDetailPage({
           shares: { include: { participant: true } }
         }
       },
-      auditLogs: { orderBy: { createdAt: "desc" }, take: 8 }
+      auditLogs: {
+        orderBy: { createdAt: "desc" },
+        take: 8,
+        include: { actor: { select: { username: true, email: true } } }
+      }
     }
   });
 
@@ -281,9 +286,9 @@ export default async function TripDetailPage({
               {filters.map(([value, label]) => (
                 <Link
                   key={value}
-                  className={`min-h-11 shrink-0 snap-start rounded-full border px-3 py-2.5 text-sm font-semibold focus:outline-none ${
+                  className={`min-h-11 shrink-0 snap-start rounded-lg border px-3 py-2.5 text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ocean ${
                     filter === value
-                      ? "border-ocean bg-ocean text-white"
+                      ? "border-ocean bg-ocean text-[var(--app-button-primary-text)]"
                       : "border-line bg-surface text-muted"
                   }`}
                   href={`/trips/${trip.id}?filter=${value}`}
@@ -336,23 +341,7 @@ export default async function TripDetailPage({
               paymentMethodsByParticipantId={paymentMethodsByParticipantId}
             />
           </section>
-          <section className="card p-3 sm:p-4" data-testid="trip-activity">
-            <h2 className="mb-4 text-lg font-semibold text-ink">Trip activity</h2>
-            {trip.auditLogs.length === 0 ? (
-              <p className="text-sm text-muted">
-                Expense and participant changes will appear here.
-              </p>
-            ) : (
-              <div className="grid gap-3">
-                {trip.auditLogs.map((entry) => (
-                  <div key={entry.id} className="rounded-lg border border-line p-3">
-                    <p className="text-sm font-semibold text-ink">{entry.action}</p>
-                    <p className="text-xs text-muted">{formatDate(entry.createdAt)}</p>
-                  </div>
-                ))}
-              </div>
-            )}
-          </section>
+          <TripActivity entries={trip.auditLogs} />
         </aside>
       </div>
     </PageShell>

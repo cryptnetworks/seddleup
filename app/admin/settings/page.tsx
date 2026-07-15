@@ -20,11 +20,7 @@ export default async function AdminSettingsPage({
         title="Settings"
         description="Control local authentication, registration, email verification, and default account policy."
       />
-      {query.error ? (
-        <p className="mb-4 rounded-lg border border-line bg-surface p-3 text-sm text-coral">
-          Settings rejected: {query.error}.
-        </p>
-      ) : null}
+      {query.error ? <p className="status-danger mb-4">Settings rejected: {query.error}.</p> : null}
       <form className="card grid gap-4 p-5" action={updateLocalAuthSettings}>
         <label className="flex min-h-11 items-center gap-3 rounded-lg border border-line bg-surface px-3 py-2 text-sm font-semibold text-ink">
           <input

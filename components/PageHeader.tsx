@@ -14,10 +14,8 @@ export function PageHeader({ eyebrow, title, description, action }: PageHeaderPr
   return (
     <header className="mb-5 flex min-w-0 flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
       <div className="min-w-0">
-        {eyebrow ? (
-          <p className="mb-1 text-xs font-bold uppercase tracking-normal text-ocean">{eyebrow}</p>
-        ) : null}
-        <h1 className="break-words text-2xl font-bold leading-tight text-ink sm:text-3xl md:text-4xl">
+        {eyebrow ? <p className="mb-1 text-sm font-semibold text-ocean">{eyebrow}</p> : null}
+        <h1 className="break-words text-2xl font-bold leading-tight text-ink sm:text-3xl">
           {title}
         </h1>
         {description ? (

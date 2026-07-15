@@ -53,7 +53,7 @@ export default async function SharedTripPage({ params }: { params: Promise<{ tok
 
   return (
     <div className="min-h-screen bg-brand-page">
-      <header className="border-b border-line bg-white px-4 py-4 sm:px-6">
+      <header className="border-b border-line bg-elevated px-4 py-4 sm:px-6">
         <div className="mx-auto flex min-w-0 max-w-5xl flex-wrap items-center justify-between gap-3">
           <div className="min-w-0 w-40 sm:w-48">
             <BrandLogo />
@@ -66,9 +66,7 @@ export default async function SharedTripPage({ params }: { params: Promise<{ tok
 
       <main className="mx-auto min-w-0 w-full max-w-5xl px-4 py-6 sm:px-6 sm:py-10">
         <header className="mb-6">
-          <p className="text-xs font-bold uppercase tracking-normal text-ocean">
-            Shared trip costs
-          </p>
+          <p className="text-sm font-semibold text-ocean">Shared trip costs</p>
           <h1 className="mt-1 break-words text-2xl font-bold leading-tight text-ink sm:text-4xl">
             {summary.trip.name}
           </h1>

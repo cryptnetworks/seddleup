@@ -29,39 +29,27 @@ export default async function LoginPage({
           Track trip costs, split expenses, and settle up clearly.
         </p>
         {query.registered ? (
-          <p className="mt-4 rounded-lg bg-teal-50 p-3 text-sm text-ocean">
+          <p className="status-success mt-4">
             Account created. Verify your email before logging in.
           </p>
         ) : null}
         {query.verify ? (
-          <p className="mt-4 rounded-lg bg-teal-50 p-3 text-sm text-ocean">
-            Check your inbox for a verification link.
-          </p>
+          <p className="status-success mt-4">Check your inbox for a verification link.</p>
         ) : null}
         {query.verified ? (
-          <p className="mt-4 rounded-lg bg-teal-50 p-3 text-sm text-ocean">
-            Email verified. Login to continue.
-          </p>
+          <p className="status-success mt-4">Email verified. Login to continue.</p>
         ) : null}
         {query.verificationSent ? (
-          <p className="mt-4 rounded-lg bg-teal-50 p-3 text-sm text-ocean">
+          <p className="status-success mt-4">
             If that email needs verification, a new link has been sent.
           </p>
         ) : null}
         {query.reset ? (
-          <p className="mt-4 rounded-lg bg-teal-50 p-3 text-sm text-ocean">
-            Password updated. Login with your new password.
-          </p>
+          <p className="status-success mt-4">Password updated. Login with your new password.</p>
         ) : null}
-        {query.logout ? (
-          <p className="mt-4 rounded-lg bg-teal-50 p-3 text-sm text-ocean">
-            You have been logged out.
-          </p>
-        ) : null}
+        {query.logout ? <p className="status-success mt-4">You have been logged out.</p> : null}
         {query.oauth && query.oauth !== "complete" ? (
-          <p className="mt-4 rounded-lg border border-line bg-surface p-3 text-sm text-coral">
-            OAuth sign-in failed: {query.oauth}.
-          </p>
+          <p className="status-danger mt-4">OAuth sign-in failed: {query.oauth}.</p>
         ) : null}
         <div className="mt-6">
           <LoginForm />

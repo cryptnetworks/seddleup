@@ -48,7 +48,7 @@ export function ExpenseCard({ expense, tripId, canEdit = true }: ExpenseCardProp
         {canEdit ? (
           <Link
             href={`/trips/${tripId}/expenses/${expense.id}/edit`}
-            className="inline-flex h-11 w-11 shrink-0 items-center justify-center self-end rounded-lg border border-line text-muted hover:text-ocean focus:outline-none focus:ring-2 focus:ring-ocean sm:self-auto"
+            className="inline-flex h-11 w-11 shrink-0 items-center justify-center self-end rounded-lg border border-line text-muted hover:text-ocean focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ocean sm:self-auto"
             aria-label={`Edit ${expense.title}`}
           >
             <Pencil className="h-4 w-4" aria-hidden />

@@ -54,10 +54,7 @@ function SettingsFields({ participantNameMode }: { participantNameMode: TripShar
 function ActionMessage({ state }: { state: TripShareActionState }) {
   if (!state.message) return null;
   return (
-    <p
-      className={state.status === "error" ? "text-sm text-coral" : "text-sm text-ocean"}
-      role="status"
-    >
+    <p className={state.status === "error" ? "status-danger" : "status-success"} role="status">
       {state.message}
     </p>
   );
@@ -169,7 +166,7 @@ export function TripShareControls({
       ) : null}
 
       {hasCurrentLink ? (
-        <section className="card border-red-100 p-4 sm:p-5">
+        <section className="card border-danger/30 p-4 sm:p-5">
           <h2 className="text-lg font-semibold text-ink">Revoke sharing</h2>
           <p className="mt-2 text-sm leading-6 text-muted">
             Revocation takes effect immediately. Recipients will see the same unavailable page used

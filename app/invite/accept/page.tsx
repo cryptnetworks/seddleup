@@ -71,7 +71,7 @@ export default async function AcceptInvitationPage({
         </div>
         <h1 className="text-center text-3xl font-bold text-ink">Accept invitation</h1>
         {statusError ? (
-          <p className="mt-4 rounded-lg border border-line bg-surface p-3 text-sm text-coral">
+          <p className="status-danger mt-4">
             {errorMessages[statusError] || "This invitation cannot be accepted."}
           </p>
         ) : null}
@@ -98,7 +98,7 @@ export default async function AcceptInvitationPage({
         ) : null}
 
         {invitation && signedInUser && signedInUser.email.toLowerCase() !== invitation.email ? (
-          <p className="mt-4 rounded-lg border border-line bg-surface p-3 text-sm text-coral">
+          <p className="status-danger mt-4">
             Sign in as {invitation.email} to accept this invitation.
           </p>
         ) : null}

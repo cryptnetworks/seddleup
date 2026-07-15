@@ -21,9 +21,7 @@ export default async function VerifyEmailPage({
           Email verification is required before you can sign in to SeddleUp.
         </p>
         {query.error ? (
-          <p className="mt-4 rounded-lg border border-line bg-surface p-3 text-sm text-coral">
-            This verification link is invalid or expired.
-          </p>
+          <p className="status-danger mt-4">This verification link is invalid or expired.</p>
         ) : null}
         <form className="mt-6" action={verifyEmailAddress}>
           <input name="token" type="hidden" value={token} />

@@ -49,11 +49,7 @@ export default async function ReceiptReviewPage({
       />
       <div className="grid min-w-0 gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(0,0.8fr)]">
         <section className="card p-4 sm:p-5">
-          {query.saved ? (
-            <p className="mb-4 rounded-lg bg-brand-soft p-3 text-sm text-ocean">
-              Receipt review saved.
-            </p>
-          ) : null}
+          {query.saved ? <p className="status-success mb-4">Receipt review saved.</p> : null}
           <form className="grid min-w-0 gap-4" action={action}>
             <div className="grid min-w-0 gap-4 sm:grid-cols-2">
               <div>

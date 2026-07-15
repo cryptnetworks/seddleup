@@ -1,6 +1,6 @@
-import Link from "next/link";
 import { getServerSession } from "next-auth";
 import { AccountMenu } from "@/components/AccountMenu";
+import { AppNavLink } from "@/components/AppNavLink";
 import { BrandLogo } from "@/components/BrandLogo";
 import { MobileNav } from "@/components/MobileNav";
 import { authOptions } from "@/lib/auth";
@@ -18,26 +18,21 @@ export async function PageShell({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="min-h-screen min-w-0 max-w-full bg-brand-page pb-[calc(6.5rem+env(safe-area-inset-bottom))] md:pb-0">
-      <header
-        className="sticky top-0 z-10 min-w-0 max-w-full border-b border-line py-3 pl-[max(1rem,env(safe-area-inset-left))] pr-[max(1rem,env(safe-area-inset-right))] backdrop-blur md:px-6"
-        style={{ backgroundColor: "var(--app-card)" }}
-      >
+      <header className="sticky top-0 z-10 min-w-0 max-w-full border-b border-line bg-elevated py-3 pl-[max(1rem,env(safe-area-inset-left))] pr-[max(1rem,env(safe-area-inset-right))] md:px-6">
         <div className="mx-auto flex min-w-0 max-w-6xl items-center justify-between gap-3">
           <BrandLogo href="/dashboard" priority />
-          <nav className="hidden items-center gap-2 md:flex" aria-label="Primary">
-            <Link className="btn-secondary" href="/dashboard">
-              Dashboard
-            </Link>
-            <Link className="btn-secondary" href="/trips">
+          <nav className="hidden items-center gap-1 md:flex" aria-label="Primary">
+            <AppNavLink href="/dashboard">Dashboard</AppNavLink>
+            <AppNavLink href="/trips" section>
               Trips
-            </Link>
-            <Link className="btn-primary" href="/trips/new">
+            </AppNavLink>
+            <AppNavLink href="/trips/new" prominent>
               New trip
-            </Link>
+            </AppNavLink>
             {isAdminRole(currentUser?.role) ? (
-              <Link className="btn-secondary" href="/admin">
+              <AppNavLink href="/admin" section>
                 Admin
-              </Link>
+              </AppNavLink>
             ) : null}
             <AccountMenu name={session?.user?.name} email={session?.user?.email} />
           </nav>

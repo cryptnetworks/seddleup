@@ -79,17 +79,9 @@ export default async function AdminUsersPage({
         title="Users"
         description="Manage user roles, status, local passwords, and linked authentication providers."
       />
-      {query.error ? (
-        <p className="mb-4 rounded-lg border border-line bg-surface p-3 text-sm text-coral">
-          Action blocked: {query.error}.
-        </p>
-      ) : null}
+      {query.error ? <p className="status-danger mb-4">Action blocked: {query.error}.</p> : null}
       {inviteMessage ? (
-        <p
-          className={`mb-4 rounded-lg border border-line p-3 text-sm ${
-            isInviteSuccess(query.invite) ? "bg-teal-50 text-ocean" : "bg-surface text-coral"
-          }`}
-        >
+        <p className={`mb-4 ${isInviteSuccess(query.invite) ? "status-success" : "status-danger"}`}>
           {inviteMessage}
         </p>
       ) : null}

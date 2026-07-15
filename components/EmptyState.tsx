@@ -11,7 +11,7 @@ type EmptyStateProps = {
 export function EmptyState({ title, description, actionLabel, actionHref }: EmptyStateProps) {
   return (
     <div className="card flex min-h-56 min-w-0 flex-col items-center justify-center px-4 py-8 text-center transition sm:px-5 sm:py-10">
-      <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-xl bg-brand-soft p-2 shadow-soft">
+      <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-xl bg-brand-soft p-2">
         <Image
           src="/mark-512.png"
           alt=""

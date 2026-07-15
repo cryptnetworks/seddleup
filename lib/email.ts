@@ -39,15 +39,17 @@ type EmailMessage = {
 const BRAND = {
   appName: "SeddleUp",
   tagline: "Travel together. Settle up easily.",
-  primary: "#0F172A",
-  secondary: "#1E293B",
-  accent: "#2563EB",
-  success: "#10B981",
-  background: "#F8FAFC",
-  text: "#111827",
-  muted: "#64748B",
-  border: "#E2E8F0",
-  brandSoft: "#DBEAFE"
+  primary: "#315C4C",
+  secondary: "#466657",
+  accent: "#315C4C",
+  success: "#32684D",
+  background: "#F5F3EE",
+  elevated: "#FFFEFA",
+  text: "#24302A",
+  muted: "#59655F",
+  border: "#CFD7D0",
+  brandSoft: "#DDE8E0",
+  buttonText: "#FFFFFF"
 } as const;
 
 const legacyAppNamePattern = /^(triptally|trip tally|trip-tally)$/i;
@@ -353,7 +355,7 @@ function brandedEmailTemplate(input: {
   const intro = escapeHtml(input.intro);
   const footer = escapeHtml(input.footer);
   const action = input.ctaUrl
-    ? `<a href="${escapeHtml(input.ctaUrl)}" style="display:block;text-align:center;background:${BRAND.accent};color:#ffffff;text-decoration:none;border-radius:10px;padding:14px 18px;font-size:16px;font-weight:700;">${escapeHtml(input.ctaLabel || "Open SeddleUp")}</a>
+    ? `<a href="${escapeHtml(input.ctaUrl)}" style="display:block;text-align:center;background:${BRAND.accent};color:${BRAND.buttonText};text-decoration:none;border-radius:10px;padding:14px 18px;font-size:16px;font-weight:700;">${escapeHtml(input.ctaLabel || "Open SeddleUp")}</a>
        <p style="margin:20px 0 0;font-size:13px;line-height:1.5;color:${BRAND.muted};">If the button does not work, copy and paste this link into your browser:<br><span style="word-break:break-all;color:${BRAND.accent};">${escapeHtml(input.ctaUrl)}</span></p>`
     : `<div style="margin:20px 0;text-align:center;font-size:32px;letter-spacing:.24em;font-weight:800;color:${BRAND.text};">${escapeHtml(input.code || "")}</div>`;
   const logo = logoUrl
@@ -363,7 +365,7 @@ function brandedEmailTemplate(input: {
   return `
     <div style="margin:0;padding:0;background:${BRAND.background};font-family:Arial,sans-serif;color:${BRAND.text};">
       <div style="max-width:540px;margin:0 auto;padding:28px 16px;">
-        <div style="background:#ffffff;border:1px solid ${BRAND.border};border-radius:14px;padding:26px;">
+        <div style="background:${BRAND.elevated};border:1px solid ${BRAND.border};border-radius:14px;padding:26px;">
           <div style="margin:0 0 18px;padding:16px 12px;border-radius:12px;background:${BRAND.brandSoft};text-align:center;">
             ${logo}
             <strong style="display:block;font-size:22px;color:${BRAND.primary};">${appName}</strong>

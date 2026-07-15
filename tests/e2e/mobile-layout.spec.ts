@@ -15,6 +15,8 @@ const tripViewports = [
   { width: 390, height: 844 },
   { width: 412, height: 915 },
   { width: 430, height: 932 },
+  // A 1280px desktop viewport reflows to this CSS width at 200% zoom.
+  { width: 640, height: 900 },
   { width: 768, height: 1024 },
   { width: 1280, height: 900 }
 ];
@@ -22,6 +24,7 @@ const tripViewports = [
 const publicViewports = [
   { width: 320, height: 568 },
   { width: 390, height: 844 },
+  { width: 640, height: 900 },
   { width: 768, height: 1024 },
   { width: 1280, height: 900 }
 ];
@@ -203,10 +206,12 @@ test("default trip detail remains usable with long realistic content", async ({
     await expect(page.getByTestId("balance-card").first()).toBeVisible();
 
     if (viewport.width < 768) {
+      await expect(page.getByTestId("mobile-nav-trips")).toHaveAttribute("aria-current", "page");
       const lastSection = page.getByTestId("trip-activity");
-      await lastSection.scrollIntoViewIfNeeded();
+      const lastActivity = lastSection.getByTestId("trip-activity-item").last();
+      await lastActivity.scrollIntoViewIfNeeded();
       const navBox = await page.getByTestId("mobile-bottom-nav").boundingBox();
-      const lastBox = await lastSection.boundingBox();
+      const lastBox = await lastActivity.boundingBox();
       expect(navBox).not.toBeNull();
       expect(lastBox).not.toBeNull();
       expect(lastBox!.y + lastBox!.height).toBeLessThanOrEqual(navBox!.y + 1);

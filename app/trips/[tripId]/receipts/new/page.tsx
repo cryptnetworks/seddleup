@@ -48,9 +48,7 @@ export default async function NewReceiptPage({
       />
       <section className="card mx-auto max-w-2xl p-4 sm:p-5">
         {query.error ? (
-          <p className="mb-4 rounded-lg border border-line bg-surface p-3 text-sm text-coral">
-            Receipt upload failed: {query.error}.
-          </p>
+          <p className="status-danger mb-4">Receipt upload failed: {query.error}.</p>
         ) : null}
         <form className="grid min-w-0 gap-4" action={action}>
           <div>

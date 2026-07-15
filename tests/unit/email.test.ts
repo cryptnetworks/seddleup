@@ -18,11 +18,11 @@ function expectSeddleUpBranding(message: { subject: string; text: string; html: 
   expect(message.text).not.toMatch(staleBrandPattern);
   expect(message.html).toContain("SeddleUp");
   expect(message.html).toContain("Travel together. Settle up easily.");
-  expect(message.html).toContain("#2563EB");
-  expect(message.html).toContain("#0F172A");
-  expect(message.html).toContain("#F8FAFC");
-  expect(message.html).toContain("#111827");
-  expect(message.html).toContain("#E2E8F0");
+  expect(message.html).toContain("#315C4C");
+  expect(message.html).toContain("#F5F3EE");
+  expect(message.html).toContain("#FFFEFA");
+  expect(message.html).toContain("#24302A");
+  expect(message.html).toContain("#CFD7D0");
   expect(message.html).not.toMatch(staleBrandPattern);
 }
 
@@ -54,7 +54,7 @@ describe("SeddleUp emails", () => {
     expectSeddleUpBranding(message);
   });
 
-  it("uses the checked-in SeddleUp logo palette and tagline in email templates", () => {
+  it("keeps the checked-in logo while using the natural email palette", () => {
     const message = buildPasswordResetEmail({
       to: "person@example.com",
       resetUrl: "https://app.seddleup.com/reset-password?token=abc",
@@ -63,6 +63,8 @@ describe("SeddleUp emails", () => {
 
     for (const color of ["#2563EB", "#0F172A", "#64748B"]) {
       expect(logoSvg).toContain(color);
+    }
+    for (const color of ["#315C4C", "#F5F3EE", "#59655F"]) {
       expect(message.html).toContain(color);
     }
     expect(logoSvg).toContain("Travel together. Settle up easily.");

@@ -8,7 +8,7 @@ export default function NotFound() {
         <div className="mb-6 flex justify-center">
           <BrandLogo href="/" priority />
         </div>
-        <p className="text-xs font-bold uppercase tracking-normal text-ocean">Not found</p>
+        <p className="text-sm font-semibold text-ocean">Not found</p>
         <h1 className="mt-2 text-2xl font-bold text-ink">This page is not available.</h1>
         <p className="mt-3 text-sm leading-6 text-muted">
           The trip, expense, or page may have been deleted or you may not have access.

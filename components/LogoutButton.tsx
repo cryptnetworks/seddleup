@@ -10,9 +10,9 @@ type LogoutButtonProps = {
 
 const styles = {
   nav: "btn-secondary gap-2",
-  menu: "flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm font-semibold text-ink transition hover:bg-surface focus:outline-none focus:ring-2 focus:ring-ocean",
+  menu: "flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm font-semibold text-ink transition hover:bg-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ocean",
   mobile:
-    "flex min-h-11 min-w-0 w-full flex-col items-center gap-1 rounded-lg px-1 py-2 text-xs font-medium text-muted focus:outline-none focus:ring-2 focus:ring-ocean",
+    "flex min-h-11 min-w-0 w-full flex-col items-center gap-1 rounded-lg px-1 py-2 text-xs font-medium text-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ocean",
   button: "btn-danger gap-2"
 };
 
@@ -46,7 +46,7 @@ export function LogoutButton({ variant = "button" }: LogoutButtonProps) {
           {isPending ? "Logging out..." : "Logout"}
         </span>
       </button>
-      {error ? <span className="mt-1 block break-words text-xs text-coral">{error}</span> : null}
+      {error ? <span className="mt-1 block break-words text-xs text-danger">{error}</span> : null}
     </span>
   );
 }

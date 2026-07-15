@@ -92,5 +92,5 @@ export async function addExpense(page: Page, title: string, amount: string) {
   await page.getByLabel("Amount").fill(amount);
   await page.getByLabel("Date").fill("2026-07-02");
   await page.getByRole("button", { name: "Record expense" }).click();
-  await expect(page.getByText(title)).toBeVisible();
+  await expect(page.getByText(title, { exact: true })).toBeVisible();
 }

@@ -14,28 +14,46 @@ export function BrandLogo({
   priority = false,
   className = ""
 }: BrandLogoProps) {
-  const image = (
+  const image = compact ? (
     <Image
-      src={compact ? "/mark-512.png" : "/logo.png"}
+      src="/mark-512.png"
       alt="SeddleUp"
-      width={compact ? 512 : 1160}
-      height={compact ? 512 : 360}
+      width={512}
+      height={512}
       priority={priority}
-      className={compact ? "h-9 w-9 object-contain" : "h-auto w-full object-contain"}
-      sizes={compact ? "40px" : "(min-width: 768px) 220px, 170px"}
+      className="h-9 w-9 object-contain"
+      sizes="40px"
     />
+  ) : (
+    <>
+      <Image
+        src="/logo.png"
+        alt="SeddleUp"
+        width={1160}
+        height={360}
+        priority={priority}
+        className="h-auto w-full object-contain dark:hidden"
+        sizes="(min-width: 768px) 220px, 170px"
+      />
+      <Image
+        src="/logo-dark.png"
+        alt="SeddleUp"
+        width={1160}
+        height={360}
+        priority={priority}
+        className="hidden h-auto w-full object-contain dark:block"
+        sizes="(min-width: 768px) 220px, 170px"
+      />
+    </>
   );
 
   const content = (
     <span
       className={[
-        "inline-flex items-center rounded-lg text-ink",
-        compact
-          ? "h-11 w-11 max-w-full justify-center shadow-soft"
-          : "w-44 max-w-full px-2 py-1.5 shadow-soft md:w-56",
+        "inline-flex items-center text-ink",
+        compact ? "h-11 w-11 max-w-full justify-center rounded-lg" : "w-44 max-w-full md:w-56",
         className
       ].join(" ")}
-      style={{ backgroundColor: "#ffffff" }}
     >
       {image}
     </span>

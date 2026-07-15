@@ -19,4 +19,5 @@ test("creates and edits a trip", async ({ page }, testInfo) => {
   await page.getByLabel("Destination").fill("Seattle");
   await page.getByRole("button", { name: "Save changes" }).click();
   await expect(page.getByText("Seattle")).toBeVisible();
+  await expect(page.getByTestId("trip-activity")).toContainText("updated the trip details");
 });

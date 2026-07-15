@@ -15,11 +15,8 @@ export function TripCard({ trip }: TripCardProps) {
 
   return (
     <Link href={`/trips/${trip.id}`} className="block min-w-0" data-testid="trip-card-link">
-      <article
-        className="card h-full p-4 transition hover:-translate-y-0.5 hover:border-ocean/40"
-        data-testid="trip-card"
-      >
-        <p className="break-words text-xs font-bold uppercase tracking-normal text-ocean">
+      <article className="card h-full p-4 transition hover:border-ocean/40" data-testid="trip-card">
+        <p className="break-words text-sm font-semibold text-ocean">
           {trip.destination || "Destination pending"}
         </p>
         <h2 className="mt-2 break-words text-xl font-semibold text-ink">{trip.name}</h2>

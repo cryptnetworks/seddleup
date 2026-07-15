@@ -25,9 +25,7 @@ export default async function RegisterPage({
         <p className="mt-2 text-sm text-muted">
           Create an account to keep your trips private and synced.
         </p>
-        {errorMessage ? (
-          <p className="mt-4 rounded-lg bg-red-50 p-3 text-sm text-coral">{errorMessage}</p>
-        ) : null}
+        {errorMessage ? <p className="status-danger mt-4">{errorMessage}</p> : null}
         <form className="mt-6 grid gap-4" action={registerUser} data-testid="register-form">
           <div>
             <label className="label" htmlFor="username">
