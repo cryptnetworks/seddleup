@@ -18,6 +18,8 @@ the balance, and the simplest reimbursement suggestions for settling up.
   belongs to everyone.
 - Shows external payment links or handles for settlement convenience without
   processing payments or storing payment credentials.
+- Lets a linked creditor confirm money they received, keeps that private
+  settlement history separate from expenses, and adjusts remaining balances.
 - Stores receipt uploads locally, keeps receipt files outside public assets, and
   serves them only after trip membership checks.
 - Provides a receipt parser and itemized receipt line item storage for review
@@ -56,9 +58,12 @@ More screenshots are available in the [Screenshots wiki page](https://github.com
    included in balances.
 5. SeddleUp calculates each participant's net position and suggests payments that
    settle the trip with fewer transfers.
-6. Once an expense is marked settled, normal edits and deletes are locked so the
+6. The linked participant who is owed money can confirm a full or partial payment
+   after receiving it. A confirmation changes remaining balances without changing
+   expenses; SeddleUp does not process or independently verify the transfer.
+7. Once an expense is marked settled, normal edits and deletes are locked so the
    trip ledger stays stable.
-7. Admin and trip activity is written to audit logs, with trip context where
+8. Admin and trip activity is written to audit logs, with trip context where
    practical.
 
 ## Runtime Model
@@ -186,6 +191,7 @@ uses an existing deployment volume.
 See the wiki for more detail:
 
 - [Architecture](https://github.com/cryptnetworks/seddleup/wiki/Architecture)
+- [Settlement Payments](https://github.com/cryptnetworks/seddleup/wiki/Settlement-Payments)
 - [Security Model](https://github.com/cryptnetworks/seddleup/wiki/Security-Model)
 - [Repository Automation](https://github.com/cryptnetworks/seddleup/wiki/Repository-Automation)
 - [Contributing](https://github.com/cryptnetworks/seddleup/wiki/Contributing)

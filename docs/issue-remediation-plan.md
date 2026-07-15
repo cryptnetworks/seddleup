@@ -5,6 +5,17 @@ Last audited: June 28, 2026
 Source: open GitHub issues in `cryptnetworks/seddleup`, issues #59 through #81.
 No GitHub issues or labels were modified during this audit.
 
+## Additional Feature Work
+
+- Settlement payments: implementation in progress on
+  `feature/trip-settlement-payments`. This adds a dedicated `TripPayment` ledger,
+  creditor-linked confirmation permissions for non-viewer trip members, adjusted
+  balance calculations, authenticated history and management routes, migration
+  coverage, and private audit events. Viewers remain read-only, and role alone
+  never permits a user to confirm receipt on another participant's behalf. It
+  remains separate from external `PaymentMethod` profiles and anonymous trip
+  sharing.
+
 ## Label Cleanup
 
 The repository currently uses labels such as `type:bug`, `priority:p0`,
