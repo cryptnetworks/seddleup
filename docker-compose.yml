@@ -1,9 +1,9 @@
 services:
   seddleup:
-    image: ghcr.io/cryptnetworks/seddleup:latest
+    image: ${SEDDLEUP_IMAGE:-ghcr.io/cryptnetworks/seddleup:latest}
     container_name: seddleup
     env_file:
-      - .env
+      - ${SEDDLEUP_ENV_FILE:-.env}
     environment:
       NODE_ENV: production
       PORT: "3000"
@@ -54,7 +54,7 @@ services:
     profiles:
       - nginx
     env_file:
-      - .env
+      - ${SEDDLEUP_ENV_FILE:-.env}
     volumes:
       - certbot_etc:/etc/letsencrypt
       - certbot_var:/var/lib/letsencrypt
@@ -72,11 +72,11 @@ services:
     restart: unless-stopped
 
   discord-commands:
-    image: ghcr.io/cryptnetworks/seddleup:latest
+    image: ${SEDDLEUP_IMAGE:-ghcr.io/cryptnetworks/seddleup:latest}
     profiles:
       - discord
     env_file:
-      - .env
+      - ${SEDDLEUP_ENV_FILE:-.env}
     environment:
       NODE_ENV: production
     command: node scripts/register-discord-commands.mjs
