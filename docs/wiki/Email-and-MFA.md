@@ -33,15 +33,9 @@ branding.
 
 ## Deferred Compatibility Names
 
-These names are intentionally not changed by email branding work:
-
-| Name area                                                                | Why it remains                                                            |
-| ------------------------------------------------------------------------ | ------------------------------------------------------------------------- |
-| `package.json` / lockfile package name `triptally`                       | Avoids package metadata churn during app rebrand cleanup.                 |
-| Legacy `TRIPTALLY_*` Docker env aliases                                  | Keeps existing deployments bootable while operators move to `SEDDLEUP_*`. |
-| Legacy SQLite filename migration from `triptally.db`                     | Preserves existing Docker volume data during the rename.                  |
-| Test domains, fixtures, and generated test emails using `triptally.test` | Test-only identifiers; broad fixture renames should stay isolated.        |
-| Historical docs and migration history                                    | Audit and migration history should remain truthful.                       |
+The authoritative inventory, owners, release boundaries, migration procedures,
+and rollback requirements are in the
+[Compatibility Name Migration Plan](Compatibility-Name-Migration-Plan).
 
 ## Email Verification
 

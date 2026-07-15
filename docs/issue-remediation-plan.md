@@ -94,6 +94,10 @@ requested taxonomy.
   `size:m`, `ready`, `docker`, `ci`, `discord`
 - Dependencies and notes: can build on #61. External-service profiles must stay
   credential-free in CI.
+- Implementation status: `test:docker:profiles` validates all Compose profiles,
+  proves Discord registration is callable without npm, syntax-checks rendered
+  nginx, and validates Cloudflare ingress with fake inputs and disabled external
+  networking. The existing Docker workflow runs it after runtime probes.
 
 ### #63 - Security: add shared-store rate limiting for multi-replica deployments
 
@@ -162,6 +166,8 @@ requested taxonomy.
   `priority:medium`, `size:s`, `ready`, `docs`
 - Dependencies and notes: related to #68 and #76. Low code risk; avoid
   duplicating existing docs.
+- Implementation status: the wiki owns one concise production checklist linking
+  configuration, backup/restore, auth, proxy, SEO, smoke, and rollback runbooks.
 
 ### #68 - Docs: add release checklist
 
@@ -174,6 +180,9 @@ requested taxonomy.
   `priority:medium`, `size:s`, `ready`, `docs`, `ci`
 - Dependencies and notes: pairs naturally with #67 but should remain a separate
   PR.
+- Implementation status: the wiki owns one maintainer release checklist covering
+  candidate validation, GitHub gates, multi-architecture publication,
+  post-release smoke, rollback, and housekeeping.
 
 ### #69 - Branding: plan safe migration for deferred TripTally compatibility names
 
@@ -187,6 +196,10 @@ requested taxonomy.
   `priority:low`, `size:m`, `ready`, `docs`
 - Dependencies and notes: related to #80. Planning only unless a migration
   proposal is accepted.
+- Implementation status: the authoritative compatibility plan inventories
+  package, Docker, database, environment, email, cookie, internal, fixture, and
+  historical names with owners, release boundaries, migrations, rollback, and
+  required tests. No risky compatibility rename is performed.
 
 ### #70 - MFA: add browser-level regression for setup secrets not appearing in URLs
 
@@ -233,6 +246,9 @@ requested taxonomy.
 - Missing standardized labels: `documentation`, `technical-debt`,
   `priority:medium`, `size:xs`, `ready`, `docs`
 - Dependencies and notes: low-risk docs gap. Could be a quick standalone PR.
+- Implementation status: `docs/refactor-summary.md` records verified architecture
+  boundaries, current hardening, superseded mechanisms, intentional
+  compatibility names, open debt, and validation expectations.
 
 ### #74 - Testing: add production-server E2E mode
 
@@ -305,6 +321,9 @@ requested taxonomy.
   `priority:medium`, `size:m`, `ready`, `docs`, `ci`
 - Dependencies and notes: consider splitting markdown lint and external link
   checking if noisy. Avoid unnecessary dependencies.
+- Implementation status: `docs:check` combines `markdownlint-cli2` with an
+  offline repository link/heading validator and a docs-only workflow. External
+  URL availability remains deliberately outside routine CI.
 
 ### #79 - Testing: add accessibility smoke tests for auth and expense forms
 

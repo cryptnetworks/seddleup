@@ -85,6 +85,10 @@ COMPOSE_PROFILES=nginx
 
 Leave `COMPOSE_PROFILES` empty only when running the private app container without a public deployment profile.
 
+Validate all optional profiles with `npm run test:docker:profiles` after building
+`seddleup:ci`. The probe supplies synthetic configuration and does not use the
+operator `.env` file.
+
 ## SMTP
 
 SMTP is optional but recommended for production:

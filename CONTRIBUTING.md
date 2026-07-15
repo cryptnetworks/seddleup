@@ -42,6 +42,7 @@ Run these before opening a pull request:
 
 ```bash
 npm run format:check
+npm run docs:check
 npm run lint
 npm run typecheck
 npm test
@@ -70,11 +71,13 @@ For Docker-impacting changes:
 ```bash
 docker build -t seddleup:ci .
 npm run test:docker
+npm run test:docker:profiles
 ```
 
 `test:docker` uses only temporary labeled volumes and containers. It must never
 be pointed at an operator or production volume. The probe image is local and is
-not published.
+not published. `test:docker:profiles` uses only fake configuration, isolated
+certificates, and disabled container networking for external-service commands.
 
 ## Prisma Changes
 
