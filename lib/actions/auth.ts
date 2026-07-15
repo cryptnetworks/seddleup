@@ -57,7 +57,7 @@ export async function registerUser(formData: FormData) {
     redirect("/register?error=domain");
   }
 
-  const rateLimit = checkRateLimit(`register:${email}`, {
+  const rateLimit = await checkRateLimit(`register:${email}`, {
     limit: 5,
     windowMs: 15 * 60 * 1000
   });
@@ -112,7 +112,7 @@ export async function requestPasswordReset(formData: FormData) {
   }
 
   const email = parsed.data.email;
-  const rateLimit = checkRateLimit(`password-reset:${email}`, {
+  const rateLimit = await checkRateLimit(`password-reset:${email}`, {
     limit: 3,
     windowMs: 60 * 60 * 1000
   });
@@ -170,7 +170,7 @@ export async function verifyEmailAddress(formData: FormData) {
 export async function resendVerificationEmail(formData: FormData) {
   await assertSameOriginRequest("auth.email_verification.resend");
   const email = formString(formData, "email").trim().toLowerCase();
-  const rateLimit = checkRateLimit(`email-verification:${email}`, {
+  const rateLimit = await checkRateLimit(`email-verification:${email}`, {
     limit: 3,
     windowMs: 60 * 60 * 1000
   });
@@ -231,7 +231,7 @@ export async function acceptInvitationAndCreateAccount(formData: FormData) {
     );
   }
 
-  const rateLimit = checkRateLimit(`invite-accept:${parsed.data.token}`, {
+  const rateLimit = await checkRateLimit(`invite-accept:${parsed.data.token}`, {
     limit: 5,
     windowMs: 15 * 60 * 1000
   });

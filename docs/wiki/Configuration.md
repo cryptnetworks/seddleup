@@ -118,14 +118,22 @@ same supported database file. It combines account, source, and account/source
 limits and fails closed when the bucket store cannot be updated. Other action
 limiters remain process-local.
 
+For a separately designed multi-replica deployment, set an optional authenticated
+HTTPS shared-store endpoint. It coordinates login and action counters without
+making an external service mandatory for single-instance users. The complete
+protocol, configuration, availability requirements, redacted data boundary,
+failure modes, rollout, and rollback are defined in the
+[shared rate-limit store contract](../shared-rate-limit-store.md). The default
+`deny` failure mode protects endpoints but makes the store part of the login
+availability path; `local` is an explicit availability/security tradeoff.
+
 Set `SEDDLEUP_TRUST_PROXY_HEADERS=true` only when a trusted reverse proxy
 overwrites or safely appends `X-Forwarded-For`/`X-Real-IP`. The supplied nginx
 and Cloudflare Compose paths meet that deployment assumption. Keep it `false`
 when exposing the app directly; spoofable forwarding headers are then ignored.
 
 SeddleUp's SQLite runtime remains a single-deployment database architecture.
-Do not invent a multi-replica topology without a supported database and shared
-rate-limit migration plan.
+The shared limiter alone does not make application data multi-replica safe.
 
 ## Security Migration Impact
 

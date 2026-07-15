@@ -1,10 +1,6 @@
 import { beforeEach, describe, expect, it } from "vitest";
-import {
-  checkLoginRateLimit,
-  trustedLoginSource,
-  type AsyncRateLimitStore
-} from "@/lib/login-rate-limit";
-import type { RateLimitOptions, RateLimitResult } from "@/lib/rate-limit";
+import { checkLoginRateLimit, trustedLoginSource } from "@/lib/login-rate-limit";
+import type { AsyncRateLimitStore, RateLimitOptions, RateLimitResult } from "@/lib/rate-limit";
 
 type Bucket = { count: number; resetAt: number };
 

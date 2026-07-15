@@ -102,6 +102,10 @@ issue #75.
   Enable it only behind a proxy that overwrites or safely appends those headers.
 - Other lower-risk action limiters remain process-local. Multi-replica deployment
   is not supported with the current SQLite runtime model.
+- An optional authenticated HTTPS store can coordinate every limiter using only
+  keyed bucket digests. Its strict response boundary and explicit fail-closed or
+  process-local outage behavior are documented in the
+  [shared rate-limit store contract](../shared-rate-limit-store.md).
 
 ## Receipt Files
 

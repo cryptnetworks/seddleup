@@ -28,6 +28,10 @@ export const appConfigSchema = z
     receiptUploadDir: z.string().trim().min(1).default("uploads/receipts"),
     maxReceiptUploadMb: z.coerce.number().positive().max(50).default(10),
     trustProxyHeaders: optionalBooleanString,
+    rateLimitSharedUrl: z.url().optional(),
+    rateLimitSharedToken: z.string().min(24).optional(),
+    rateLimitSharedFailureMode: z.enum(["deny", "local"]).default("deny"),
+    rateLimitSharedTimeoutMs: z.coerce.number().int().min(100).max(10_000).default(1500),
     itemLookupEnabled: optionalBooleanString,
     itemLookupProvider: z.enum(["mock", "amazon", "walmart", "target", "manual"]).default("mock"),
     itemLookupCacheTtlSeconds: z.coerce.number().int().min(60).max(86400).default(3600),
@@ -46,7 +50,21 @@ export const appConfigSchema = z
   .refine((config) => !config.discordEnabled || Boolean(config.discordPublicKey), {
     message: "DISCORD_PUBLIC_KEY is required when DISCORD_ENABLED=true.",
     path: ["discordPublicKey"]
-  });
+  })
+  .refine((config) => !config.rateLimitSharedUrl || Boolean(config.rateLimitSharedToken), {
+    message: "RATE_LIMIT_SHARED_TOKEN is required when RATE_LIMIT_SHARED_URL is set.",
+    path: ["rateLimitSharedToken"]
+  })
+  .refine(
+    (config) =>
+      !config.rateLimitSharedUrl ||
+      config.nodeEnv !== "production" ||
+      config.rateLimitSharedUrl.startsWith("https://"),
+    {
+      message: "RATE_LIMIT_SHARED_URL must use HTTPS in production.",
+      path: ["rateLimitSharedUrl"]
+    }
+  );
 
 export function getAppConfig() {
   return appConfigSchema.parse({
@@ -65,6 +83,10 @@ export function getAppConfig() {
     receiptUploadDir: process.env.RECEIPT_UPLOAD_DIR,
     maxReceiptUploadMb: process.env.MAX_RECEIPT_UPLOAD_MB,
     trustProxyHeaders: process.env.SEDDLEUP_TRUST_PROXY_HEADERS,
+    rateLimitSharedUrl: process.env.RATE_LIMIT_SHARED_URL,
+    rateLimitSharedToken: process.env.RATE_LIMIT_SHARED_TOKEN,
+    rateLimitSharedFailureMode: process.env.RATE_LIMIT_SHARED_FAILURE_MODE,
+    rateLimitSharedTimeoutMs: process.env.RATE_LIMIT_SHARED_TIMEOUT_MS,
     itemLookupEnabled: process.env.ITEM_LOOKUP_ENABLED,
     itemLookupProvider: process.env.ITEM_LOOKUP_PROVIDER,
     itemLookupCacheTtlSeconds: process.env.ITEM_LOOKUP_CACHE_TTL_SECONDS,
