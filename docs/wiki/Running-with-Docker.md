@@ -179,6 +179,25 @@ removes that temporary storage after success or failure:
 npm run test:e2e:receipts
 ```
 
+## Validate Optional Profiles
+
+Before deploying Discord, nginx, or Cloudflare, validate the Compose, image, and
+template paths without real credentials:
+
+```bash
+docker build -t seddleup:ci .
+npm run test:docker:profiles
+```
+
+The probe expects Discord registration to stop on missing fake credentials,
+checks nginx with a temporary self-signed certificate, and validates the
+Cloudflare ingress example offline. External-service commands run with container
+networking disabled, so the probe never contacts Discord, Cloudflare, DNS, or a
+certificate authority.
+
+Use the [Production Deployment Checklist](Production-Deployment-Checklist)
+before the first public rollout.
+
 ## Rate Limiting
 
 The built-in limiter uses process-local memory. It provides basic throttling for

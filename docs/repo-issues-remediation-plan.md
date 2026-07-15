@@ -16,14 +16,20 @@ expense-entry coverage has been expanded, email branding has SeddleUp
 regression coverage, and CI/dependency documentation now covers Docker-based
 validation for environments without host Node/npm.
 
-The highest-priority remaining product/security risk is email MFA enablement
-when SMTP delivery is unavailable or unverified. Receipt-upload enabled-path E2E
-is now automated. Turbopack/WebKit chunk warnings reproduced only in the
-development HMR client; repeated production route checks remained clean and the
-bounded-CI and production-runner mitigation is documented.
+Email MFA enablement now checks delivery availability, and receipt-upload
+enabled-path E2E is automated. The highest-risk remaining work is atomic
+one-time credential consumption and explicit participant/account deletion
+policies. Turbopack/WebKit chunk warnings reproduced only in the development HMR
+client; repeated production route checks remained clean and the bounded-CI and
+production-runner mitigation is documented.
 
 Intentional TripTally compatibility names are preserved for now, including the
-package name, package lock name, and test fixtures.
+package name, package lock name, and test fixtures. Their ownership, migration,
+rollback, and test requirements are documented in the compatibility plan.
+
+Repository documentation now has deterministic Markdown/internal-link checks,
+credential-free Docker profile probes, authoritative deployment and release
+checklists, and a verified maintainability summary.
 
 ## Closeout Status
 
@@ -201,8 +207,8 @@ test coverage so users are not locked out by an undeliverable second factor.
   - Suggested fix: keep these names for now and document them as deferred.
   - Risk level: Low
   - Estimated effort: Small
-  - Status: Fixed in the email branding/docs PR with a deferred compatibility
-    name table.
+  - Status: Fixed with one authoritative compatibility migration plan covering
+    owners, release boundaries, migration and rollback procedures, and tests.
 
 - **README screenshot placeholder is stale**
   - Files: `README.md`
@@ -333,6 +339,8 @@ test coverage so users are not locked out by an undeliverable second factor.
   - Suggested fix: defer until a compatibility window is planned.
   - Risk level: Low
   - Estimated effort: Medium
+  - Status: Planned in `docs/wiki/Compatibility-Name-Migration-Plan.md`; no
+    compatibility rename is included in this documentation hardening batch.
 
 ## Command Results
 

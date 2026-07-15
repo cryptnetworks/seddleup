@@ -169,6 +169,9 @@ removing `$DB_PATH.before-restore`.
 
 ## Legacy TripTally Database Backups
 
+The long-term ownership and removal policy for legacy identifiers is in the
+[Compatibility Name Migration Plan](Compatibility-Name-Migration-Plan).
+
 The SQLite file contents are compatible regardless of the backup filename. For
 a normal restore, copy an older `triptally.db` backup to the current
 `/app/data/seddleup.db` destination using the runbook above.
