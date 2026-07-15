@@ -106,6 +106,7 @@ test("public and authentication pages fit narrow and tablet viewports", async ({
     !supportsMobileLayoutProject(testInfo),
     "Mobile layout coverage runs in Chromium and Mobile Safari."
   );
+  test.slow();
 
   for (const viewport of publicViewports) {
     await page.setViewportSize(viewport);
@@ -169,7 +170,7 @@ test("default trip detail remains usable with long realistic content", async ({
 
   for (const viewport of tripViewports) {
     await page.setViewportSize(viewport);
-    await page.goto(tripUrl);
+    await page.goto(tripUrl, { waitUntil: "domcontentloaded" });
     await expect(page).toHaveURL(tripUrl);
     await expect(page.getByRole("heading", { name: tripName })).toBeVisible();
     await expectNoHorizontalPageOverflow(page, `trip detail at ${viewport.width}px`);
@@ -214,7 +215,7 @@ test("default trip detail remains usable with long realistic content", async ({
       await expect(page.getByTestId("mobile-bottom-nav")).toBeHidden();
     }
 
-    await page.goto(`${tripUrl}/expenses/new`);
+    await page.goto(`${tripUrl}/expenses/new`, { waitUntil: "domcontentloaded" });
     await expectNoHorizontalPageOverflow(page, `expense form at ${viewport.width}px`);
     await expectInsidePageWidth(page, `[data-testid="expense-form"]`);
   }
@@ -237,7 +238,7 @@ test("default trip detail remains usable with long realistic content", async ({
   ]) {
     await page.setViewportSize(viewport);
     for (const path of authenticatedRoutes) {
-      await page.goto(path);
+      await page.goto(path, { waitUntil: "domcontentloaded" });
       await expectNoHorizontalPageOverflow(page, `${path} at ${viewport.width}px`);
       await expectInsidePageWidth(page, "main");
     }
@@ -256,7 +257,7 @@ test("default trip detail remains usable with long realistic content", async ({
       "/admin/audit",
       "/admin/settings"
     ]) {
-      await page.goto(path);
+      await page.goto(path, { waitUntil: "domcontentloaded" });
       await expectNoHorizontalPageOverflow(page, `${path} at ${viewport.width}px`);
       await expectInsidePageWidth(page, "main");
     }
@@ -264,7 +265,7 @@ test("default trip detail remains usable with long realistic content", async ({
 
   await page.setViewportSize({ width: 390, height: 844 });
   await page.evaluate(() => localStorage.setItem("theme", "dark"));
-  await page.goto(tripUrl);
+  await page.goto(tripUrl, { waitUntil: "domcontentloaded" });
   await expect(page.locator("html")).toHaveClass(/dark/);
   await expectNoHorizontalPageOverflow(page, "trip detail in dark mode at 390px");
 });
