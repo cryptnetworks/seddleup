@@ -54,6 +54,7 @@ Main entities:
 - `Expense`
 - `ExpenseShare`
 - `PaymentMethod`
+- `TripPayment`
 - `Receipt`
 - `ReceiptLineItem`
 - `RetailerLookupCache`
@@ -119,6 +120,26 @@ included in balances. Settled expenses are locked from normal edits and deletes.
 
 Trip, participant, and expense changes write trip-scoped audit log rows with
 before/after JSON where practical.
+
+`TripPayment` records a completed transfer between two participants in one trip.
+It is distinct from `PaymentMethod`, which is only a destination profile. The
+sender, recipient, and trip are protected by database foreign keys and same-trip
+triggers. The recipient's linked user is recorded as `confirmedByUserId`, and a
+database trigger rejects confirmations attributed to anyone else. Participant
+deletion is restricted while payment history references that participant;
+confirmer deletion uses `SET NULL` so surviving trip history does not require a
+deleted account.
+
+Confirmation transactions recalculate the current expense/payment ledger under
+SQLite's serializable isolation and advance a trip settlement revision before
+writing. Concurrent or stale submissions cannot confirm more than the current
+sender-to-recipient suggestion. Sender, recipient, amount, confirmer, and
+confirmation timestamp are immutable; corrections to those fields require
+deleting the confirmation and confirming a replacement.
+
+Authenticated balance calculation adds payments sent and subtracts payments
+received from the expense-only net. Anonymous trip sharing deliberately omits
+the `TripPayment` relation and continues to project expense-only totals.
 
 ## Expansion Services
 
