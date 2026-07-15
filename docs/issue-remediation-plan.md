@@ -171,6 +171,11 @@ requested taxonomy.
   `priority:low`, `size:m`, `blocked`, `ci`
 - Dependencies and notes: blocked on upstream compatibility and Node 26 LTS
   timing. Do not implement yet.
+- Planning status: the
+  [ESLint 10 and Node.js 26 upgrade plan](runtime-upgrade-plan.md) records the
+  2026-07-15 upstream status, independent entry criteria, complete validation
+  matrices, and rollback boundaries. The dependency and runtime pins remain
+  unchanged while those gates are unmet.
 
 ### #67 - Docs: add production deployment checklist
 
