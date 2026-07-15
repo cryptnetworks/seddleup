@@ -24,7 +24,7 @@
     "test:unit": "vitest run tests/unit",
     "test:integration": "vitest run tests/integration --no-file-parallelism",
     "test:e2e": "node scripts/run-development-e2e.mjs",
-    "test:e2e:ci": "node scripts/run-development-e2e.mjs tests/e2e/smoke.spec.ts tests/e2e/auth.spec.ts tests/e2e/accessibility.spec.ts tests/e2e/receipts.spec.ts tests/e2e/mobile-ios.spec.ts --project=Chromium --project='Mobile Safari'",
+    "test:e2e:ci": "node scripts/run-development-e2e.mjs tests/e2e/smoke.spec.ts tests/e2e/auth.spec.ts tests/e2e/accessibility.spec.ts tests/e2e/receipts.spec.ts tests/e2e/mobile-ios.spec.ts tests/e2e/mfa-url-security.spec.ts --project=Chromium --project='Mobile Safari'",
     "test:e2e:production": "node scripts/run-production-e2e.mjs",
     "test:e2e:receipts": "node scripts/run-receipt-e2e.mjs",
     "test:e2e:ui": "node scripts/run-development-e2e.mjs --ui",

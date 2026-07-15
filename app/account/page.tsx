@@ -373,13 +373,19 @@ export default async function AccountPage({
               <div className="mt-4 grid gap-4">
                 <div>
                   <p className="text-sm font-semibold text-ink">Manual setup key</p>
-                  <code className="mt-2 block break-all rounded-lg border border-line bg-brand-soft p-3 text-sm text-ink">
+                  <code
+                    className="mt-2 block break-all rounded-lg border border-line bg-brand-soft p-3 text-sm text-ink"
+                    data-testid="authenticator-setup-secret"
+                  >
                     {authenticatorSetup.secret}
                   </code>
                 </div>
                 <div>
                   <p className="text-sm font-semibold text-ink">Authenticator URI</p>
-                  <code className="mt-2 block break-all rounded-lg border border-line bg-brand-soft p-3 text-xs text-ink">
+                  <code
+                    className="mt-2 block break-all rounded-lg border border-line bg-brand-soft p-3 text-xs text-ink"
+                    data-testid="authenticator-setup-uri"
+                  >
                     {authenticatorSetup.uri}
                   </code>
                 </div>
