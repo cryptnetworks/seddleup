@@ -32,3 +32,9 @@ export function timingSafeEqualTokenDigest(opaqueRandomValue: string, expectedDi
 
   return crypto.timingSafeEqual(actual, expected);
 }
+
+export function timingSafeEqualOpaqueValues(actualValue: string, expectedValue: string) {
+  const actual = Buffer.from(actualValue);
+  const expected = Buffer.from(expectedValue);
+  return actual.length === expected.length && crypto.timingSafeEqual(actual, expected);
+}

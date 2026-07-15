@@ -5,9 +5,10 @@ import { Trash2 } from "lucide-react";
 type DeleteButtonProps = {
   action: () => Promise<void>;
   label: string;
+  confirmMessage?: string;
 };
 
-export function DeleteButton({ action, label }: DeleteButtonProps) {
+export function DeleteButton({ action, label, confirmMessage }: DeleteButtonProps) {
   return (
     <form action={action}>
       <button
@@ -15,7 +16,9 @@ export function DeleteButton({ action, label }: DeleteButtonProps) {
         type="submit"
         aria-label={label}
         onClick={(event) => {
-          if (!window.confirm("Delete this item? This action cannot be undone.")) {
+          if (
+            !window.confirm(confirmMessage || "Delete this item? This action cannot be undone.")
+          ) {
             event.preventDefault();
           }
         }}

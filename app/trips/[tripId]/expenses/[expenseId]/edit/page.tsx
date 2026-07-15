@@ -14,11 +14,14 @@ import {
 } from "@/lib/trip-permissions";
 
 export default async function EditExpensePage({
-  params
+  params,
+  searchParams
 }: {
   params: Promise<{ tripId: string; expenseId: string }>;
+  searchParams: Promise<{ error?: string; field?: string }>;
 }) {
   const { tripId, expenseId } = await params;
+  const query = await searchParams;
   const user = await requireUser();
   const resolved = await requireTripAccess(tripId, user.id);
   const trip = await prisma.trip.findFirst({
@@ -61,6 +64,11 @@ export default async function EditExpensePage({
           statusOptions={statusOptions}
           submitLabel="Save expense"
           expense={expense}
+          amountError={
+            query.error === "invalid" && query.field === "amount"
+              ? "Enter a valid USD amount with at most two decimal places."
+              : undefined
+          }
         />
       </section>
     </PageShell>

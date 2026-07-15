@@ -60,10 +60,21 @@ export async function verifyEmailTwoFactorCode(userId: string, code: string) {
     return false;
   }
 
-  await prisma.twoFactorChallenge.update({
-    where: { id: challenge.id },
+  const consumed = await prisma.twoFactorChallenge.updateMany({
+    where: {
+      id: challenge.id,
+      userId,
+      method: "email",
+      codeHash: challenge.codeHash,
+      usedAt: null,
+      expiresAt: { gt: now }
+    },
     data: { usedAt: now }
   });
+  if (consumed.count !== 1) {
+    logger.warn("auth.two_factor.email_challenge.invalid", { userId });
+    return false;
+  }
 
   logger.info("auth.two_factor.email_challenge.verified", { userId });
   return true;

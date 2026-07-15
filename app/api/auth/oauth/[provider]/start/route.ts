@@ -9,6 +9,7 @@ import {
   oauthCallbackUrl,
   pkceChallenge
 } from "@/lib/oauth-providers";
+import { createOAuthStateCredential } from "@/lib/oauth-state";
 import { isSameOriginRequest } from "@/lib/csrf";
 import { publicUrl } from "@/lib/url";
 
@@ -22,6 +23,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ prov
   const session = await getServerSession(authOptions);
   const state = generateOAuthState();
   const verifier = generatePkceVerifier();
+  await createOAuthStateCredential({ state, verifier, providerId: provider });
   const url = new URL(config.definition.authorizationUrl);
   url.searchParams.set("client_id", config.clientId);
   url.searchParams.set("redirect_uri", oauthCallbackUrl(provider, request));

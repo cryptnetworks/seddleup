@@ -27,3 +27,21 @@ test("accepts comma decimal amounts from mobile keyboards", async ({ page }, tes
   await addExpense(page, "Pastries", "9,75");
   await expect(page.getByText("$9.75").first()).toBeVisible();
 });
+
+test("rejects manipulated expense precision on the server", async ({ page }, testInfo) => {
+  await registerAndLogin(page, testInfo, "expense-precision");
+  await createTripWithParticipants(page, uniqueLabel(testInfo, "Precision Trip"));
+
+  await page.getByTestId("add-expense").click();
+  await page.getByTestId("expense-title").fill("Manipulated total");
+  await page.getByTestId("expense-amount").fill("10.001");
+  await page
+    .getByTestId("expense-amount")
+    .evaluate((element) => element.removeAttribute("pattern"));
+  await page.getByTestId("expense-submit").click();
+
+  await expect(page.getByTestId("expense-amount")).toHaveAttribute("aria-invalid", "true");
+  await expect(
+    page.getByText("Enter a valid USD amount with at most two decimal places.")
+  ).toBeVisible();
+});

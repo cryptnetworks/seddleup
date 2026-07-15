@@ -21,6 +21,7 @@ async function createUser(label: string) {
 
 afterAll(async () => {
   if (createdUserIds.length > 0) {
+    await prisma.trip.deleteMany({ where: { ownerId: { in: createdUserIds } } });
     await prisma.user.deleteMany({ where: { id: { in: createdUserIds } } });
   }
   await prisma.$disconnect();

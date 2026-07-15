@@ -20,9 +20,10 @@ export type PasswordResetStore = {
   updatePasswordAndMarkTokenUsed(input: {
     userId: string;
     tokenId: string;
+    tokenHash: string;
     passwordHash: string;
     usedAt: Date;
-  }): Promise<void>;
+  }): Promise<boolean>;
 };
 
 export function passwordResetExpirationMinutes() {
@@ -96,17 +97,28 @@ export function validatePasswordResetRecord(record: PasswordResetRecord | null, 
 export async function completePasswordReset(token: string, password: string) {
   return completePasswordResetWithStore(token, password, {
     findByTokenHash: (tokenHash) => prisma.passwordResetToken.findUnique({ where: { tokenHash } }),
-    updatePasswordAndMarkTokenUsed: async ({ userId, tokenId, passwordHash, usedAt }) => {
-      await prisma.$transaction([
-        prisma.user.update({
-          where: { id: userId },
-          data: { passwordHash }
-        }),
-        prisma.passwordResetToken.update({
-          where: { id: tokenId },
+    updatePasswordAndMarkTokenUsed: async ({
+      userId,
+      tokenId,
+      tokenHash,
+      passwordHash,
+      usedAt
+    }) => {
+      return prisma.$transaction(async (tx) => {
+        const consumed = await tx.passwordResetToken.updateMany({
+          where: {
+            id: tokenId,
+            tokenHash,
+            userId,
+            usedAt: null,
+            expiresAt: { gt: usedAt }
+          },
           data: { usedAt }
-        })
-      ]);
+        });
+        if (consumed.count !== 1) return false;
+        await tx.user.update({ where: { id: userId }, data: { passwordHash } });
+        return true;
+      });
     }
   });
 }
@@ -125,12 +137,17 @@ export async function completePasswordResetWithStore(
     return false;
   }
 
-  await store.updatePasswordAndMarkTokenUsed({
+  const consumed = await store.updatePasswordAndMarkTokenUsed({
     userId: record.userId,
     tokenId: record.id,
+    tokenHash,
     passwordHash: await bcrypt.hash(password, 12),
     usedAt: now
   });
+  if (!consumed) {
+    logger.warn("auth.password_reset.invalid_token");
+    return false;
+  }
 
   logger.info("auth.password_reset.completed", { userId: record.userId });
   return true;

@@ -10,6 +10,7 @@ import { writeAuditLog } from "@/lib/audit";
 import { getAppConfig } from "@/lib/config";
 import { logger } from "@/lib/logger";
 import { prisma } from "@/lib/prisma";
+import { cleanupStoredReceipts, withStoredReceiptCompensation } from "@/lib/receipts/cleanup";
 import { defaultReceiptParser } from "@/lib/receipts/parser";
 import {
   safeOriginalFilename,
@@ -18,12 +19,17 @@ import {
 } from "@/lib/receipts/storage";
 import { requireTripAccess } from "@/lib/trip-access";
 import { canCreateTripExpense, canEditExpense, isTripManager } from "@/lib/trip-permissions";
-import { formString, idSchema, parseDateInput } from "@/lib/validation";
+import {
+  formString,
+  idSchema,
+  optionalUsdMoneySchema,
+  parseDateInput,
+  receiptReviewSchema
+} from "@/lib/validation";
 
-function nullableDecimal(value: string) {
-  if (!value.trim()) return null;
-  const number = Number(value);
-  return Number.isFinite(number) ? new Prisma.Decimal(number) : null;
+function parsedReceiptDecimal(value: number | undefined) {
+  if (value === undefined) return null;
+  return new Prisma.Decimal(optionalUsdMoneySchema.parse(String(value))?.decimal ?? "0.00");
 }
 
 export async function uploadReceipt(tripId: string, formData: FormData) {
@@ -56,55 +62,60 @@ export async function uploadReceipt(tripId: string, formData: FormData) {
     file,
     extension: validation.extension
   });
-  const buffer = await readFile(stored.storedPath);
-  const parsed = await defaultReceiptParser.parse({
-    buffer,
-    mimeType: file.type,
-    filename: file.name
-  });
+  const receipt = await withStoredReceiptCompensation(
+    { id: receiptId, storedPath: stored.storedPath },
+    async () => {
+      const buffer = await readFile(stored.storedPath);
+      const parsed = await defaultReceiptParser.parse({
+        buffer,
+        mimeType: file.type,
+        filename: file.name
+      });
 
-  const participants = await prisma.participant.findMany({
-    where: { tripId },
-    select: { id: true }
-  });
-  const receipt = await prisma.receipt.create({
-    data: {
-      id: receiptId,
-      tripId,
-      expenseId,
-      uploaderUserId: userId,
-      originalFilename: safeOriginalFilename(file.name),
-      storedFilename: stored.storedFilename,
-      storedPath: stored.storedPath,
-      mimeType: file.type,
-      fileSize: file.size,
-      merchant: parsed.merchant || null,
-      receiptDate: parsed.receiptDate || null,
-      subtotal: parsed.subtotal === undefined ? null : new Prisma.Decimal(parsed.subtotal),
-      tax: parsed.tax === undefined ? null : new Prisma.Decimal(parsed.tax),
-      tip: parsed.tip === undefined ? null : new Prisma.Decimal(parsed.tip),
-      total: parsed.total === undefined ? null : new Prisma.Decimal(parsed.total),
-      parserProvider: parsed.provider,
-      parserConfidence: parsed.confidence,
-      rawText: parsed.rawText || null,
-      parsedJson: JSON.stringify(parsed),
-      status: "needs_review",
-      lineItems: {
-        create: parsed.lineItems.map((item) => ({
-          name: item.name,
-          quantity: new Prisma.Decimal(item.quantity),
-          unitPrice: item.unitPrice === undefined ? null : new Prisma.Decimal(item.unitPrice),
-          totalPrice: new Prisma.Decimal(item.totalPrice),
-          participants: {
-            create: participants.map((participant) => ({
-              participantId: participant.id,
-              role: "assigned"
+      const participants = await prisma.participant.findMany({
+        where: { tripId },
+        select: { id: true }
+      });
+      return prisma.receipt.create({
+        data: {
+          id: receiptId,
+          tripId,
+          expenseId,
+          uploaderUserId: userId,
+          originalFilename: safeOriginalFilename(file.name),
+          storedFilename: stored.storedFilename,
+          storedPath: stored.storedPath,
+          mimeType: file.type,
+          fileSize: file.size,
+          merchant: parsed.merchant || null,
+          receiptDate: parsed.receiptDate || null,
+          subtotal: parsedReceiptDecimal(parsed.subtotal),
+          tax: parsedReceiptDecimal(parsed.tax),
+          tip: parsedReceiptDecimal(parsed.tip),
+          total: parsedReceiptDecimal(parsed.total),
+          parserProvider: parsed.provider,
+          parserConfidence: parsed.confidence,
+          rawText: parsed.rawText || null,
+          parsedJson: JSON.stringify(parsed),
+          status: "needs_review",
+          lineItems: {
+            create: parsed.lineItems.map((item) => ({
+              name: item.name,
+              quantity: new Prisma.Decimal(item.quantity),
+              unitPrice: item.unitPrice === undefined ? null : new Prisma.Decimal(item.unitPrice),
+              totalPrice: new Prisma.Decimal(item.totalPrice),
+              participants: {
+                create: participants.map((participant) => ({
+                  participantId: participant.id,
+                  role: "assigned"
+                }))
+              }
             }))
           }
-        }))
-      }
+        }
+      });
     }
-  });
+  );
 
   await writeAuditLog({
     actorUserId: userId,
@@ -138,20 +149,34 @@ export async function saveReceiptReview(tripId: string, receiptId: string, formD
     redirect(`/trips/${tripId}?error=forbidden`);
   }
 
-  const merchant = formString(formData, "merchant") || null;
-  const receiptDate = parseDateInput(formString(formData, "receiptDate"));
-  const status = formString(formData, "status") === "ready" ? "ready" : "needs_review";
-  const splitMode = formString(formData, "splitMode") === "itemized" ? "itemized" : "simple";
+  const parsed = receiptReviewSchema.safeParse({
+    merchant: formString(formData, "merchant"),
+    receiptDate: formString(formData, "receiptDate"),
+    subtotal: formString(formData, "subtotal"),
+    tax: formString(formData, "tax"),
+    tip: formString(formData, "tip"),
+    total: formString(formData, "total"),
+    status: formString(formData, "status"),
+    splitMode: formString(formData, "splitMode")
+  });
+  if (!parsed.success) {
+    const field = String(parsed.error.issues[0]?.path[0] || "amount");
+    logger.warn("receipt.review.validation_failed", { userId, tripId, receiptId, field });
+    redirect(`/trips/${tripId}/receipts/${receiptId}?error=invalid&field=${field}`);
+  }
+
+  const { merchant, status, splitMode } = parsed.data;
+  const receiptDate = parseDateInput(parsed.data.receiptDate);
 
   await prisma.receipt.update({
     where: { id: receiptId },
     data: {
       merchant,
       receiptDate,
-      subtotal: nullableDecimal(formString(formData, "subtotal")),
-      tax: nullableDecimal(formString(formData, "tax")),
-      tip: nullableDecimal(formString(formData, "tip")),
-      total: nullableDecimal(formString(formData, "total")),
+      subtotal: parsed.data.subtotal ? new Prisma.Decimal(parsed.data.subtotal.decimal) : null,
+      tax: parsed.data.tax ? new Prisma.Decimal(parsed.data.tax.decimal) : null,
+      tip: parsed.data.tip ? new Prisma.Decimal(parsed.data.tip.decimal) : null,
+      total: parsed.data.total ? new Prisma.Decimal(parsed.data.total.decimal) : null,
       status,
       splitMode
     }
@@ -168,4 +193,37 @@ export async function saveReceiptReview(tripId: string, receiptId: string, formD
   });
   revalidatePath(`/trips/${tripId}/receipts/${receiptId}`);
   redirect(`/trips/${tripId}/receipts/${receiptId}?saved=1`);
+}
+
+export async function deleteReceipt(tripId: string, receiptId: string) {
+  if (!getAppConfig().receiptUploadEnabled) redirect(`/trips/${tripId}?error=receipts_disabled`);
+
+  const userId = await requireCurrentUserId();
+  const parsedTripId = idSchema.safeParse(tripId);
+  const parsedReceiptId = idSchema.safeParse(receiptId);
+  if (!parsedTripId.success || !parsedReceiptId.success) redirect("/dashboard");
+
+  const resolved = await requireTripAccess(tripId, userId);
+  const receipt = await prisma.receipt.findFirst({ where: { id: receiptId, tripId } });
+  if (!receipt) redirect(`/trips/${tripId}`);
+  if (receipt.uploaderUserId !== userId && !isTripManager(resolved.access.role)) {
+    redirect(`/trips/${tripId}?error=forbidden`);
+  }
+
+  await prisma.receipt.delete({ where: { id: receiptId } });
+  try {
+    await writeAuditLog({
+      actorUserId: userId,
+      tripId,
+      action: "receipt.delete",
+      targetType: "receipt",
+      targetId: receiptId,
+      before: { mimeType: receipt.mimeType, fileSize: receipt.fileSize }
+    });
+  } finally {
+    await cleanupStoredReceipts([receipt], "receipt.delete");
+  }
+  logger.info("receipt.delete.success", { userId, tripId, receiptId });
+  revalidatePath(`/trips/${tripId}`);
+  redirect(`/trips/${tripId}`);
 }

@@ -73,6 +73,20 @@ model AuthProviderConfig {
   @@map("auth_provider_configs")
 }
 
+model OAuthStateCredential {
+  id           String    @id @default(cuid())
+  stateHash    String    @unique
+  verifierHash String
+  providerId   String
+  expiresAt    DateTime
+  usedAt       DateTime?
+  createdAt    DateTime  @default(now())
+
+  @@index([providerId, expiresAt])
+  @@index([usedAt])
+  @@map("oauth_state_credentials")
+}
+
 model AuditLog {
   id           String   @id @default(cuid())
   actorUserId  String?
@@ -186,7 +200,7 @@ model Trip {
   createdAt    DateTime       @default(now())
   updatedAt    DateTime       @updatedAt
   ownerId      String
-  owner        User           @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  owner        User           @relation(fields: [ownerId], references: [id], onDelete: Restrict)
   members      TripMember[]
   participants Participant[]
   expenses     Expense[]
@@ -268,7 +282,7 @@ model Expense {
   createdByUserId String?
   paidByUserId    String?
   updatedByUserId String?
-  payer           Participant    @relation("ExpensePayer", fields: [payerId], references: [id], onDelete: Cascade)
+  payer           Participant    @relation("ExpensePayer", fields: [payerId], references: [id], onDelete: Restrict)
   trip            Trip           @relation(fields: [tripId], references: [id], onDelete: Cascade)
   createdBy       User?          @relation("ExpenseCreator", fields: [createdByUserId], references: [id], onDelete: SetNull)
   paidByUser      User?          @relation("ExpensePaidByUser", fields: [paidByUserId], references: [id], onDelete: SetNull)
@@ -365,7 +379,7 @@ model ReceiptLineItemParticipant {
   lineItemId    String
   participantId String
   lineItem      ReceiptLineItem @relation(fields: [lineItemId], references: [id], onDelete: Cascade)
-  participant   Participant     @relation(fields: [participantId], references: [id], onDelete: Cascade)
+  participant   Participant     @relation(fields: [participantId], references: [id], onDelete: Restrict)
 
   @@unique([lineItemId, participantId, role])
   @@index([participantId])
@@ -423,7 +437,7 @@ model ExpenseShare {
   expenseId     String
   participantId String
   expense       Expense     @relation(fields: [expenseId], references: [id], onDelete: Cascade)
-  participant   Participant @relation(fields: [participantId], references: [id], onDelete: Cascade)
+  participant   Participant @relation(fields: [participantId], references: [id], onDelete: Restrict)
 
   @@unique([expenseId, participantId])
   @@index([participantId])

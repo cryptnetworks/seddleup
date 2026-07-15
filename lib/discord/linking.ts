@@ -27,10 +27,21 @@ export async function createDiscordLinkToken({
 export async function consumeDiscordLinkToken(token: string, userId: string) {
   const tokenHash = digestLookupToken(token);
   const linkToken = await prisma.discordLinkToken.findUnique({ where: { tokenHash } });
-  if (!linkToken || linkToken.usedAt || linkToken.expiresAt < new Date()) return false;
+  const now = new Date();
+  if (!linkToken || linkToken.usedAt || linkToken.expiresAt <= now) return false;
 
-  await prisma.$transaction([
-    prisma.discordAccount.upsert({
+  return prisma.$transaction(async (tx) => {
+    const consumed = await tx.discordLinkToken.updateMany({
+      where: {
+        id: linkToken.id,
+        tokenHash,
+        usedAt: null,
+        expiresAt: { gt: now }
+      },
+      data: { usedAt: now, userId }
+    });
+    if (consumed.count !== 1) return false;
+    await tx.discordAccount.upsert({
       where: { userId },
       update: {
         discordUserId: linkToken.discordUserId,
@@ -41,11 +52,7 @@ export async function consumeDiscordLinkToken(token: string, userId: string) {
         discordUserId: linkToken.discordUserId,
         discordUsername: linkToken.discordUsername
       }
-    }),
-    prisma.discordLinkToken.update({
-      where: { id: linkToken.id },
-      data: { usedAt: new Date(), userId }
-    })
-  ]);
-  return true;
+    });
+    return true;
+  });
 }

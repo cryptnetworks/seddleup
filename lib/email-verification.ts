@@ -53,16 +53,25 @@ export async function verifyEmailToken(token: string) {
     return false;
   }
 
-  await prisma.$transaction([
-    prisma.user.update({
-      where: { id: record.userId },
-      data: { emailVerifiedAt: now }
-    }),
-    prisma.emailVerificationToken.update({
-      where: { id: record.id },
+  const consumed = await prisma.$transaction(async (tx) => {
+    const result = await tx.emailVerificationToken.updateMany({
+      where: {
+        id: record.id,
+        tokenHash: record.tokenHash,
+        userId: record.userId,
+        usedAt: null,
+        expiresAt: { gt: now }
+      },
       data: { usedAt: now }
-    })
-  ]);
+    });
+    if (result.count !== 1) return false;
+    await tx.user.update({ where: { id: record.userId }, data: { emailVerifiedAt: now } });
+    return true;
+  });
+  if (!consumed) {
+    logger.warn("auth.email_verification.invalid_token");
+    return false;
+  }
 
   logger.info("auth.email_verification.completed", { userId: record.userId });
   return true;

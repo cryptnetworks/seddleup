@@ -184,9 +184,10 @@ test("default trip detail remains usable with long realistic content", async ({
     await expect(participant).toBeVisible();
     await expectInsidePageWidth(page, `[data-testid="participant-card"]`);
     await expect(participant.getByTestId("participant-edit")).toBeVisible();
+    await expect(participant.getByText("Financial history retained")).toBeVisible();
     await expect(
       participant.getByRole("button", { name: `Delete ${longParticipant}` })
-    ).toBeVisible();
+    ).toHaveCount(0);
 
     const filters = page.locator('a[href*="?filter="]').first().locator("..");
     await expect(filters).toBeVisible();

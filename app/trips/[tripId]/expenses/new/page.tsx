@@ -12,8 +12,15 @@ import {
   isTripManager
 } from "@/lib/trip-permissions";
 
-export default async function NewExpensePage({ params }: { params: Promise<{ tripId: string }> }) {
+export default async function NewExpensePage({
+  params,
+  searchParams
+}: {
+  params: Promise<{ tripId: string }>;
+  searchParams: Promise<{ error?: string; field?: string }>;
+}) {
   const { tripId } = await params;
+  const query = await searchParams;
   const user = await requireUser();
   const resolved = await requireTripAccess(tripId, user.id);
   if (!canCreateTripExpense(resolved.access.role)) notFound();
@@ -48,6 +55,11 @@ export default async function NewExpensePage({ params }: { params: Promise<{ tri
           payerOptions={payerOptions}
           statusOptions={statusOptions}
           submitLabel="Record expense"
+          amountError={
+            query.error === "invalid" && query.field === "amount"
+              ? "Enter a valid USD amount with at most two decimal places."
+              : undefined
+          }
         />
       </section>
     </PageShell>

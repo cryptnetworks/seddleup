@@ -5,8 +5,8 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { requireCurrentUserId } from "@/lib/actions/session";
 import { writeAuditLog } from "@/lib/audit";
-import { calculateEqualShares } from "@/lib/calculations";
 import { logger } from "@/lib/logger";
+import { equalShareCents, usdDecimalFromCents } from "@/lib/money";
 import { prisma } from "@/lib/prisma";
 import { requireTripAccess } from "@/lib/trip-access";
 import {
@@ -27,7 +27,7 @@ import {
 function parseExpenseForm(formData: FormData) {
   return expenseSchema.safeParse({
     title: formString(formData, "title"),
-    amount: formString(formData, "amount").replace(",", "."),
+    amount: formString(formData, "amount"),
     category: formString(formData, "category"),
     payerId: formString(formData, "payerId"),
     date: formString(formData, "date"),
@@ -79,11 +79,11 @@ function expenseSnapshot(expense: {
   };
 }
 
-function expenseShareData(amount: number, participants: Participant[]) {
-  const shares = calculateEqualShares(amount, participants.length);
+function expenseShareData(amountCents: number, participants: Participant[]) {
+  const shares = equalShareCents(amountCents, participants.length);
   return participants.map((participant, index) => ({
     participantId: participant.id,
-    shareAmount: shares[index]
+    shareAmount: usdDecimalFromCents(shares[index])
   }));
 }
 
@@ -96,7 +96,7 @@ function expenseDataFromInput(
 ) {
   return {
     title: input.title,
-    amount: input.amount,
+    amount: input.amount.decimal,
     category: input.category,
     payerId: input.payerId,
     paidByUserId: payer.userId || null,
@@ -105,7 +105,7 @@ function expenseDataFromInput(
     date: parseDateInput(input.date) ?? new Date(),
     notes: input.notes || null,
     shares: {
-      create: expenseShareData(input.amount, selectedParticipants)
+      create: expenseShareData(input.amount.cents, selectedParticipants)
     }
   };
 }
@@ -121,8 +121,9 @@ export async function createExpense(tripId: string, formData: FormData) {
 
   const parsed = parseExpenseForm(formData);
   if (!parsed.success) {
-    logger.warn("expense.create.validation_failed", { userId, tripId });
-    redirect(`/trips/${tripId}/expenses/new?error=invalid`);
+    const field = String(parsed.error.issues[0]?.path[0] || "form");
+    logger.warn("expense.create.validation_failed", { userId, tripId, field });
+    redirect(`/trips/${tripId}/expenses/new?error=invalid&field=${field}`);
   }
 
   const resolved = await requireTripAccess(tripId, userId);
@@ -190,8 +191,9 @@ export async function updateExpense(tripId: string, expenseId: string, formData:
 
   const parsed = parseExpenseForm(formData);
   if (!parsed.success) {
-    logger.warn("expense.update.validation_failed", { userId, tripId, expenseId });
-    redirect(`/trips/${tripId}/expenses/${expenseId}/edit?error=invalid`);
+    const field = String(parsed.error.issues[0]?.path[0] || "form");
+    logger.warn("expense.update.validation_failed", { userId, tripId, expenseId, field });
+    redirect(`/trips/${tripId}/expenses/${expenseId}/edit?error=invalid&field=${field}`);
   }
 
   const resolved = await requireTripAccess(tripId, userId);

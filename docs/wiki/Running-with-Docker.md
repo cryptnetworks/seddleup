@@ -127,6 +127,28 @@ SQLite lives at:
 
 Always mount `/app/data` to a persistent Docker volume.
 
+Receipt uploads use `RECEIPT_UPLOAD_DIR`, which defaults to
+`/app/data/receipts` in the production image. Keeping that directory inside the
+same persistent volume makes database rows and private receipt files available
+after a container recreate. Receipt files are not public assets and must not be
+mounted into a web server's static directory.
+
+Failed uploads remove the directory created for that upload. Deleting an
+individual receipt or its parent trip removes the matching receipt directory
+after the database change commits. Deleting an expense keeps its attached
+receipt as a trip record and detaches it from the expense. Account deletion
+removes receipt rows owned by that uploader and then performs the same scoped
+filesystem cleanup. Cleanup never recursively removes a directory until the
+receipt ID and stored file both resolve to that exact directory inside the
+configured upload root.
+
+SQLite and the filesystem do not share a transaction. If a committed deletion
+is followed by a filesystem error, SeddleUp emits the redacted
+`receipt.storage.cleanup_failed` operator event with the operation and receipt
+ID, but never the stored path or filename. Resolve the storage permission or
+mount problem, compare the affected ID with a verified backup, and remove only
+the confirmed orphan directory. Do not recursively clear the upload root.
+
 On every startup, the entrypoint checks that the data directory is writable and
 validates any existing current or legacy SQLite file before Prisma migrations
 run. A missing database on an empty volume is expected and Prisma creates it.
@@ -148,6 +170,14 @@ preservation, legacy-path migration, invalid and inaccessible files, and a
 recorded failed Prisma migration. Success ends with `All Docker runtime probes
 passed`. A failure prints the affected temporary container logs, exits nonzero,
 and still removes probe resources.
+
+The enabled receipt browser probe uses its own temporary SQLite database and
+upload directory. It verifies individual-receipt and parent-trip cleanup and
+removes that temporary storage after success or failure:
+
+```bash
+npm run test:e2e:receipts
+```
 
 ## Validate Optional Profiles
 

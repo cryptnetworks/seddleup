@@ -30,10 +30,20 @@ export async function consumeSessionLoginToken(token: string) {
 
   if (!record) return null;
 
-  await prisma.twoFactorChallenge.update({
-    where: { id: record.id },
-    data: { usedAt: new Date() }
+  const now = new Date();
+  return prisma.$transaction(async (tx) => {
+    const consumed = await tx.twoFactorChallenge.updateMany({
+      where: {
+        id: record.id,
+        codeHash: record.codeHash,
+        method: SESSION_LOGIN_METHOD,
+        userId: record.userId,
+        usedAt: null,
+        expiresAt: { gt: now }
+      },
+      data: { usedAt: now }
+    });
+    if (consumed.count !== 1) return null;
+    return tx.user.update({ where: { id: record.userId }, data: { lastLoginAt: now } });
   });
-
-  return record.user;
 }

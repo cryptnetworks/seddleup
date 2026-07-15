@@ -6,6 +6,7 @@ import { requireCurrentUserId } from "@/lib/actions/session";
 import { writeAuditLog } from "@/lib/audit";
 import { logger } from "@/lib/logger";
 import { prisma } from "@/lib/prisma";
+import { cleanupStoredReceipts } from "@/lib/receipts/cleanup";
 import { ensureOwnerMembership, requireTripManager } from "@/lib/trip-access";
 import { formString, idSchema, parseDateInput, tripSchema } from "@/lib/validation";
 
@@ -109,6 +110,10 @@ export async function deleteTrip(tripId: string) {
   if (!parsedTripId.success) redirect("/dashboard");
 
   await requireTripManager(tripId, userId);
+  const receipts = await prisma.receipt.findMany({
+    where: { tripId },
+    select: { id: true, storedPath: true }
+  });
   await writeAuditLog({
     actorUserId: userId,
     tripId,
@@ -117,6 +122,7 @@ export async function deleteTrip(tripId: string) {
     targetId: tripId
   });
   await prisma.trip.delete({ where: { id: tripId } });
+  await cleanupStoredReceipts(receipts, "trip.delete");
   logger.info("trip.delete.success", { userId, tripId });
   revalidatePath("/dashboard");
   redirect("/dashboard");

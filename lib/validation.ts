@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { categories } from "@/lib/format";
+import { parseUsdMoney, type UsdMoney } from "@/lib/money";
 import { expenseStatuses } from "@/lib/trip-permissions";
 
 export const idSchema = z.string().trim().min(1).max(128);
@@ -146,15 +147,55 @@ export const participantSchema = z.object({
     .transform((value) => value || undefined)
 });
 
+export function usdMoneyInputSchema(options: { allowZero?: boolean } = {}) {
+  return z.string().transform((value, context): UsdMoney => {
+    const parsed = parseUsdMoney(value, options);
+    if (!parsed.ok) {
+      context.addIssue({
+        code: "custom",
+        message: parsed.message,
+        params: { reason: parsed.error }
+      });
+      return z.NEVER;
+    }
+    return parsed.value;
+  });
+}
+
+export const positiveUsdMoneySchema = usdMoneyInputSchema();
+export const optionalUsdMoneySchema = z
+  .string()
+  .transform((value) => value.trim())
+  .pipe(z.union([z.literal(""), usdMoneyInputSchema({ allowZero: true })]))
+  .transform((value) => (value === "" ? null : value));
+
 export const expenseSchema = z.object({
   title: z.string().trim().min(1).max(140),
-  amount: z.coerce.number().positive().max(1_000_000),
+  amount: positiveUsdMoneySchema,
   category: z.enum(categories),
   payerId: idSchema,
   date: dateStringSchema,
   status: z.enum(expenseStatuses).optional().default("submitted"),
   notes: optionalText(500),
   sharedParticipantIds: z.array(idSchema).optional().default([])
+});
+
+export const receiptReviewSchema = z.object({
+  merchant: z
+    .string()
+    .trim()
+    .max(120)
+    .transform((value) => value || null),
+  receiptDate: dateStringSchema
+    .optional()
+    .or(z.literal(""))
+    .transform((value) => value || undefined),
+  subtotal: optionalUsdMoneySchema,
+  tax: optionalUsdMoneySchema,
+  tip: optionalUsdMoneySchema,
+  total: optionalUsdMoneySchema,
+  status: z.enum(["needs_review", "ready"]),
+  splitMode: z.enum(["simple", "itemized"])
 });
 
 export type ExpenseFormData = z.infer<typeof expenseSchema>;

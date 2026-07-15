@@ -12,7 +12,10 @@ const testRun = Date.now();
 let createdUserId: string | null = null;
 
 afterAll(async () => {
-  if (createdUserId) await prisma.user.delete({ where: { id: createdUserId } });
+  if (createdUserId) {
+    await prisma.trip.deleteMany({ where: { ownerId: createdUserId } });
+    await prisma.user.delete({ where: { id: createdUserId } });
+  }
   await prisma.$disconnect();
 });
 

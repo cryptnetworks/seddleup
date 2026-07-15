@@ -21,7 +21,7 @@ function record(overrides: Partial<PasswordResetRecord> = {}): PasswordResetReco
   };
 }
 
-function fakeStore(initialRecord: PasswordResetRecord | null) {
+function fakeStore(initialRecord: PasswordResetRecord | null, consume = true) {
   const state = {
     passwordHash: "",
     usedAt: null as Date | null,
@@ -37,10 +37,12 @@ function fakeStore(initialRecord: PasswordResetRecord | null) {
       return initialRecord;
     },
     async updatePasswordAndMarkTokenUsed(input) {
+      if (!consume) return false;
       state.passwordHash = input.passwordHash;
       state.usedAt = input.usedAt;
       state.tokenId = input.tokenId;
       state.userId = input.userId;
+      return true;
     }
   };
 
@@ -91,6 +93,20 @@ describe("password reset tokens", () => {
     const { store, state } = fakeStore(record());
     const success = await completePasswordResetWithStore(
       "wrong-token",
+      "NewPass123",
+      store,
+      new Date("2026-05-27T12:15:00Z")
+    );
+
+    expect(success).toBe(false);
+    expect(state.passwordHash).toBe("");
+    expect(state.usedAt).toBeNull();
+  });
+
+  it("fails generically when another request consumes the token first", async () => {
+    const { store, state } = fakeStore(record(), false);
+    const success = await completePasswordResetWithStore(
+      "valid-token",
       "NewPass123",
       store,
       new Date("2026-05-27T12:15:00Z")
