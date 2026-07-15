@@ -31,6 +31,7 @@
     "test:e2e:headed": "node scripts/run-development-e2e.mjs --headed",
     "test:e2e:ios": "node scripts/run-development-e2e.mjs --project='Mobile Safari'",
     "test:docker": "bash scripts/probe-docker-runtime.sh seddleup:ci",
+    "test:docker:profiles": "bash scripts/probe-docker-profiles.sh seddleup:ci",
     "test:all": "npm run lint && npm run typecheck && npm test && npm run test:e2e",
     "security:audit": "npm audit --audit-level=high",
     "security:scan": "npm run security:audit",
