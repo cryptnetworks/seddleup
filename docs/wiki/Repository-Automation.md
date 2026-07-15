@@ -31,13 +31,13 @@ propose changes to workflow YAML, configure GitHub to require approval for all
 outside-collaborator workflow runs and inspect workflow changes before approval.
 Where organization runner groups are available, restrict this runner group to
 the selected SeddleUp workflows as an additional control. Only trusted
-maintainers should have permission to push same-repository branches because
-those pull requests are intentionally eligible for the self-hosted runner.
+maintainers should have permission to push branches because trusted push, tag,
+and scheduled workflows may use the persistent self-hosted runner.
 
-SeddleUp is public and can receive pull requests from forks. Fork pull requests
-are always routed to `ubuntu-latest`; their code never executes on the
-self-hosted runner. Pushes, tags, scheduled runs, and same-repository pull
-requests use the self-hosted runner only when the repository variable
+SeddleUp is public and can receive pull requests from forks. Every pull request,
+including same-repository pull requests, is routed to `ubuntu-latest`; proposed
+code never executes on the self-hosted runner. Pushes, tags, and scheduled runs
+use the self-hosted runner only when the repository variable
 `USE_SELF_HOSTED_X64` is exactly `true`. An absent variable or any other value
 selects GitHub-hosted runners. The workflows do not use
 `pull_request_target` to execute pull-request code.
@@ -159,8 +159,9 @@ by branch, SHA, and `latest` where applicable.
 Manifest publication waits for both runtime/migration probes and a dedicated
 high/critical dependency and image scan. Package-write permission is limited to
 the build and manifest jobs. Pull-request workflows are checked by
-`npm run workflows:check`, which rejects self-hosted runner references and
-`pull_request_target`; untrusted pull-request code must remain GitHub-hosted.
+`npm run workflows:check`, which requires every self-hosted runner selection to
+exclude `pull_request` events and rejects `pull_request_target`; proposed
+pull-request code must remain GitHub-hosted.
 
 Docker-relevant changes also run an amd64 runtime-probe job. The job builds a
 local `seddleup:ci` image without publishing it, then runs:

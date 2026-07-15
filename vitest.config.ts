@@ -10,9 +10,6 @@ export default defineConfig({
   test: {
     environment: "node",
     include: ["tests/unit/**/*.test.ts", "tests/integration/**/*.test.ts"],
-    // Integration tests share one SQLite file. Serialize test files so persistent
-    // security stores and business transactions cannot contend for its write lock.
-    fileParallelism: false,
     coverage: {
       reporter: ["text", "lcov"]
     }

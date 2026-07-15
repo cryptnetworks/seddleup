@@ -30,19 +30,17 @@ permissions:
 
 jobs:
   audit:
-    # Fork pull requests and the operator fallback stay on GitHub-hosted runners.
-    runs-on: ${{ fromJSON(vars.USE_SELF_HOSTED_X64 == 'true' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && '["self-hosted","linux","x64"]' || '"ubuntu-latest"') }}
+    # All pull requests and the operator fallback stay on GitHub-hosted runners.
+    runs-on: ${{ fromJSON(vars.USE_SELF_HOSTED_X64 == 'true' && github.event_name != 'pull_request' && '["self-hosted","linux","x64"]' || '"ubuntu-latest"') }}
     steps:
       - name: Verify trusted self-hosted source
         if: runner.environment == 'self-hosted'
         shell: bash
-        env:
-          HEAD_REPOSITORY: ${{ github.event.pull_request.head.repo.full_name }}
         run: |
           set -euo pipefail
 
-          if [[ "${GITHUB_EVENT_NAME}" == "pull_request" && "${HEAD_REPOSITORY}" != "${GITHUB_REPOSITORY}" ]]; then
-            echo "Refusing to run fork pull-request code on a self-hosted runner."
+          if [[ "${GITHUB_EVENT_NAME}" == "pull_request" ]]; then
+            echo "Refusing to run pull-request code on a self-hosted runner."
             exit 1
           fi
 
@@ -75,19 +73,17 @@ jobs:
           fi
 
   trivy-filesystem:
-    # Fork pull requests and the operator fallback stay on GitHub-hosted runners.
-    runs-on: ${{ fromJSON(vars.USE_SELF_HOSTED_X64 == 'true' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && '["self-hosted","linux","x64"]' || '"ubuntu-latest"') }}
+    # All pull requests and the operator fallback stay on GitHub-hosted runners.
+    runs-on: ${{ fromJSON(vars.USE_SELF_HOSTED_X64 == 'true' && github.event_name != 'pull_request' && '["self-hosted","linux","x64"]' || '"ubuntu-latest"') }}
     steps:
       - name: Verify trusted self-hosted source
         if: runner.environment == 'self-hosted'
         shell: bash
-        env:
-          HEAD_REPOSITORY: ${{ github.event.pull_request.head.repo.full_name }}
         run: |
           set -euo pipefail
 
-          if [[ "${GITHUB_EVENT_NAME}" == "pull_request" && "${HEAD_REPOSITORY}" != "${GITHUB_REPOSITORY}" ]]; then
-            echo "Refusing to run fork pull-request code on a self-hosted runner."
+          if [[ "${GITHUB_EVENT_NAME}" == "pull_request" ]]; then
+            echo "Refusing to run pull-request code on a self-hosted runner."
             exit 1
           fi
 
@@ -117,21 +113,19 @@ jobs:
           fi
 
   trivy-image:
-    # Fork pull requests and the operator fallback stay on GitHub-hosted runners.
-    runs-on: ${{ fromJSON(vars.USE_SELF_HOSTED_X64 == 'true' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && '["self-hosted","linux","x64"]' || '"ubuntu-latest"') }}
+    # All pull requests and the operator fallback stay on GitHub-hosted runners.
+    runs-on: ${{ fromJSON(vars.USE_SELF_HOSTED_X64 == 'true' && github.event_name != 'pull_request' && '["self-hosted","linux","x64"]' || '"ubuntu-latest"') }}
     env:
       SCAN_IMAGE: seddleup:security-${{ github.run_id }}-${{ github.run_attempt }}
     steps:
       - name: Verify trusted self-hosted source
         if: runner.environment == 'self-hosted'
         shell: bash
-        env:
-          HEAD_REPOSITORY: ${{ github.event.pull_request.head.repo.full_name }}
         run: |
           set -euo pipefail
 
-          if [[ "${GITHUB_EVENT_NAME}" == "pull_request" && "${HEAD_REPOSITORY}" != "${GITHUB_REPOSITORY}" ]]; then
-            echo "Refusing to run fork pull-request code on a self-hosted runner."
+          if [[ "${GITHUB_EVENT_NAME}" == "pull_request" ]]; then
+            echo "Refusing to run pull-request code on a self-hosted runner."
             exit 1
           fi
 

@@ -142,10 +142,9 @@ Configured globally:
 
 ## GitHub Actions Runner Trust
 
-SeddleUp is public, so fork pull-request code is routed to GitHub-hosted runners
+SeddleUp is public, so all pull-request code is routed to GitHub-hosted runners
 and must never execute on the persistent self-hosted runner. Trusted pushes,
-tags, schedules, and same-repository pull requests may use the Linux x64 runner.
-The workflows verify the pull-request source before checkout and do not use
+tags, and schedules may use the Linux x64 runner. The workflows do not use
 `pull_request_target` to execute proposed code. Outside-collaborator workflow
 runs require maintainer approval, including review of any workflow-file changes.
 Runner labels, prerequisites, scoped cleanup, group restrictions, and the outage
