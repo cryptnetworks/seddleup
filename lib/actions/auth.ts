@@ -142,7 +142,7 @@ export async function resetPassword(formData: FormData) {
 
   if (!parsed.success) {
     logger.warn("auth.password_reset.validation_failed");
-    redirect(`/reset-password?token=${encodeURIComponent(token)}&error=invalid`);
+    redirect("/reset-password?error=invalid");
   }
 
   const success = await completePasswordReset(parsed.data.token, parsed.data.password);

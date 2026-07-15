@@ -95,6 +95,22 @@ describe("invitation server action protections", () => {
     expect(mocks.createAndSendInvitation).not.toHaveBeenCalled();
   });
 
+  it("does not transfer trip ownership when admin authorization fails", async () => {
+    mocks.requireAdminAction.mockImplementationOnce(() => {
+      throw new Error("redirect:/dashboard?error=forbidden");
+    });
+    const { transferTripOwnership } = await import("@/lib/actions/admin");
+    const formData = new FormData();
+    formData.set("tripId", "trip-1");
+    formData.set("replacementOwnerId", "user-2");
+    formData.set("expectedOwnerId", "user-1");
+
+    await expect(transferTripOwnership(formData)).rejects.toThrow(
+      "redirect:/dashboard?error=forbidden"
+    );
+    expect(mocks.writeAuditLog).not.toHaveBeenCalled();
+  });
+
   it("does not create a trip invitation before trip-manager permission succeeds", async () => {
     mocks.requireCurrentUserId.mockResolvedValueOnce("user-1");
     mocks.requireTripManager.mockImplementationOnce(() => {

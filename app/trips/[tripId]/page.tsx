@@ -55,6 +55,15 @@ export default async function TripDetailPage({
                 orderBy: { createdAt: "asc" }
               }
             }
+          },
+          _count: {
+            select: {
+              expensesPaid: true,
+              shares: true,
+              receiptSplits: true,
+              paymentsSent: true,
+              paymentsReceived: true
+            }
           }
         }
       },
@@ -258,6 +267,12 @@ export default async function TripDetailPage({
               <div className="grid gap-3">
                 {trip.participants.map((participant) => {
                   const removeParticipant = deleteParticipant.bind(null, trip.id, participant.id);
+                  const deletionBlocked =
+                    participant._count.expensesPaid > 0 ||
+                    participant._count.shares > 0 ||
+                    participant._count.receiptSplits > 0 ||
+                    participant._count.paymentsSent > 0 ||
+                    participant._count.paymentsReceived > 0;
                   return (
                     <div
                       key={participant.id}
@@ -280,10 +295,17 @@ export default async function TripDetailPage({
                           >
                             Edit
                           </Link>
-                          <DeleteButton
-                            action={removeParticipant}
-                            label={`Delete ${participant.name}`}
-                          />
+                          {deletionBlocked ? (
+                            <span className="px-2 text-xs text-muted">
+                              Financial history retained
+                            </span>
+                          ) : (
+                            <DeleteButton
+                              action={removeParticipant}
+                              label={`Delete ${participant.name}`}
+                              confirmMessage="Delete this participant? This is allowed only when no financial history references them."
+                            />
+                          )}
                         </div>
                       ) : null}
                     </div>

@@ -1,8 +1,9 @@
 # Backups and Updates
 
-SeddleUp stores its production data in one SQLite database. Back up the database
-before every image update or migration, keep the backup outside the application
-volume, and rehearse these restore steps before relying on them in production.
+SeddleUp stores its production ledger in SQLite and private receipt files under
+the configured receipt upload directory. Back up both before every image update
+or migration, keep the backup outside the application volume, and rehearse these
+restore steps before relying on them in production.
 
 ## Before You Begin
 
@@ -44,6 +45,13 @@ docker start seddleup
 Record the checksum, SeddleUp image tag or digest, and backup timestamp together.
 Store another copy outside the Docker host according to the deployment's
 retention policy.
+
+If receipt uploads are enabled, also archive `/app/data/receipts` while the
+application is stopped. Restore the database and receipt directory from the same
+backup point so rows do not reference missing files and removed receipts are not
+unexpectedly reintroduced. Treat original receipt filenames and contents as
+private data; encrypt and retain receipt backups under the same policy as the
+database.
 
 ## Validate a Backup Before Restore
 
@@ -160,6 +168,9 @@ Verify `http://localhost:3000/api/health` and inspect existing trip data before
 removing `$DB_PATH.before-restore`.
 
 ## Legacy TripTally Database Backups
+
+The long-term ownership and removal policy for legacy identifiers is in the
+[Compatibility Name Migration Plan](Compatibility-Name-Migration-Plan).
 
 The SQLite file contents are compatible regardless of the backup filename. For
 a normal restore, copy an older `triptally.db` backup to the current

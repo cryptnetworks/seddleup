@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { CloudflareWebAnalytics } from "@/components/CloudflareWebAnalytics";
 import { ServiceWorkerRegister } from "@/components/ServiceWorkerRegister";
 import { ThemeScript } from "@/components/ThemeScript";
 import { buildRootMetadata } from "@/lib/seo";
@@ -26,6 +27,7 @@ export default function RootLayout({
       <body>
         {children}
         <ServiceWorkerRegister />
+        <CloudflareWebAnalytics />
       </body>
     </html>
   );

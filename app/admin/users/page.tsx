@@ -7,6 +7,7 @@ import {
   resetUserPassword,
   revokeUserInvitation,
   setUserDisabled,
+  transferTripOwnership,
   updateUserRole
 } from "@/lib/actions";
 import { requireAdmin } from "@/lib/authorization";
@@ -27,6 +28,18 @@ function isInviteSuccess(status?: string) {
   return status === "sent" || status === "resent" || status === "revoked";
 }
 
+function transferStatusMessage(status?: string) {
+  if (!status) return "";
+  if (status === "success") return "Trip ownership transferred.";
+  if (status === "replacement-disabled") return "Choose an active replacement owner.";
+  if (status === "replacement-readonly") return "A readonly account cannot own a trip.";
+  if (status === "same-owner") return "Choose a different replacement owner.";
+  if (status === "ownership-changed") {
+    return "Trip ownership changed while this form was open. Refresh and try again.";
+  }
+  return `Ownership transfer blocked: ${status}.`;
+}
+
 export default async function AdminUsersPage({
   searchParams
 }: {
@@ -37,6 +50,8 @@ export default async function AdminUsersPage({
     page?: string;
     error?: string;
     invite?: string;
+    transfer?: string;
+    count?: string;
   }>;
 }) {
   await requireAdmin();
@@ -51,13 +66,16 @@ export default async function AdminUsersPage({
       ? [{ email: { contains: query.q } }, { username: { contains: query.q } }]
       : undefined
   };
-  const [users, total, pendingInvites] = await Promise.all([
+  const [users, total, pendingInvites, replacementOwners] = await Promise.all([
     prisma.user.findMany({
       where,
       orderBy: { createdAt: "desc" },
       skip: (page - 1) * pageSize,
       take: pageSize,
-      include: { authAccounts: true }
+      include: {
+        authAccounts: true,
+        trips: { select: { id: true, name: true }, orderBy: { createdAt: "asc" } }
+      }
     }),
     prisma.user.count({ where }),
     prisma.invitation.findMany({
@@ -68,9 +86,15 @@ export default async function AdminUsersPage({
         invitedBy: { select: { email: true, username: true } },
         trip: { select: { name: true } }
       }
+    }),
+    prisma.user.findMany({
+      where: { disabledAt: null, role: { in: ["owner", "admin", "user"] } },
+      select: { id: true, username: true, email: true },
+      orderBy: { username: "asc" }
     })
   ]);
   const inviteMessage = inviteStatusMessage(query.invite);
+  const transferMessage = transferStatusMessage(query.transfer);
 
   return (
     <AdminShell>
@@ -81,7 +105,18 @@ export default async function AdminUsersPage({
       />
       {query.error ? (
         <p className="mb-4 rounded-lg border border-line bg-surface p-3 text-sm text-coral">
-          Action blocked: {query.error}.
+          {query.error === "owned-trips"
+            ? `Account deletion blocked: transfer ${query.count || "the"} owned trip(s) first.`
+            : `Action blocked: ${query.error}.`}
+        </p>
+      ) : null}
+      {transferMessage ? (
+        <p
+          className={`mb-4 rounded-lg border border-line p-3 text-sm ${
+            query.transfer === "success" ? "bg-teal-50 text-ocean" : "bg-surface text-coral"
+          }`}
+        >
+          {transferMessage}
         </p>
       ) : null}
       {inviteMessage ? (
@@ -192,7 +227,7 @@ export default async function AdminUsersPage({
 
       <div className="grid gap-3">
         {users.map((user) => (
-          <article key={user.id} className="card p-4">
+          <article key={user.id} className="card p-4" data-testid="admin-user-card">
             <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
               <div className="min-w-0">
                 <h2 className="break-all font-semibold text-ink">{user.email}</h2>
@@ -250,12 +285,49 @@ export default async function AdminUsersPage({
                 </form>
                 <form action={deleteUser}>
                   <input name="userId" type="hidden" value={user.id} />
-                  <button className="btn-danger w-full" type="submit">
+                  <button
+                    className="btn-danger w-full"
+                    disabled={user.trips.length > 0}
+                    type="submit"
+                  >
                     Delete
                   </button>
                 </form>
               </div>
             </div>
+            {user.trips.length > 0 ? (
+              <div className="mt-4 grid gap-3 border-t border-line pt-4">
+                <p className="text-sm text-coral">
+                  Transfer {user.trips.length} owned trip(s) before deleting this account.
+                </p>
+                {user.trips.map((trip) => (
+                  <form
+                    action={transferTripOwnership}
+                    className="grid gap-2 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto]"
+                    key={trip.id}
+                  >
+                    <input name="tripId" type="hidden" value={trip.id} />
+                    <input name="expectedOwnerId" type="hidden" value={user.id} />
+                    <p className="self-center break-words text-sm font-semibold text-ink">
+                      {trip.name}
+                    </p>
+                    <select className="field" name="replacementOwnerId" required>
+                      <option value="">Choose replacement owner</option>
+                      {replacementOwners
+                        .filter((replacement) => replacement.id !== user.id)
+                        .map((replacement) => (
+                          <option key={replacement.id} value={replacement.id}>
+                            {replacement.username} ({replacement.email})
+                          </option>
+                        ))}
+                    </select>
+                    <button className="btn-secondary" type="submit">
+                      Transfer ownership
+                    </button>
+                  </form>
+                ))}
+              </div>
+            ) : null}
           </article>
         ))}
       </div>

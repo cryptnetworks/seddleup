@@ -38,6 +38,10 @@ SeddleUp currently supports SQLite only. `DATABASE_URL` must use a `file:` URL.
 Postgres URLs are rejected until a future schema and migration plan explicitly
 adds Postgres support.
 
+Local browser tests intentionally do not use this container path. Their
+disposable paths and production-server test mode are documented in
+[Testing and Production Readiness](Testing-and-Production-Readiness).
+
 ## Run a Single Container
 
 ```bash
@@ -123,6 +127,28 @@ SQLite lives at:
 
 Always mount `/app/data` to a persistent Docker volume.
 
+Receipt uploads use `RECEIPT_UPLOAD_DIR`, which defaults to
+`/app/data/receipts` in the production image. Keeping that directory inside the
+same persistent volume makes database rows and private receipt files available
+after a container recreate. Receipt files are not public assets and must not be
+mounted into a web server's static directory.
+
+Failed uploads remove the directory created for that upload. Deleting an
+individual receipt or its parent trip removes the matching receipt directory
+after the database change commits. Deleting an expense keeps its attached
+receipt as a trip record and detaches it from the expense. Account deletion
+removes receipt rows owned by that uploader and then performs the same scoped
+filesystem cleanup. Cleanup never recursively removes a directory until the
+receipt ID and stored file both resolve to that exact directory inside the
+configured upload root.
+
+SQLite and the filesystem do not share a transaction. If a committed deletion
+is followed by a filesystem error, SeddleUp emits the redacted
+`receipt.storage.cleanup_failed` operator event with the operation and receipt
+ID, but never the stored path or filename. Resolve the storage permission or
+mount problem, compare the affected ID with a verified backup, and remove only
+the confirmed orphan directory. Do not recursively clear the upload root.
+
 On every startup, the entrypoint checks that the data directory is writable and
 validates any existing current or legacy SQLite file before Prisma migrations
 run. A missing database on an empty volume is expected and Prisma creates it.
@@ -144,6 +170,33 @@ preservation, legacy-path migration, invalid and inaccessible files, and a
 recorded failed Prisma migration. Success ends with `All Docker runtime probes
 passed`. A failure prints the affected temporary container logs, exits nonzero,
 and still removes probe resources.
+
+The enabled receipt browser probe uses its own temporary SQLite database and
+upload directory. It verifies individual-receipt and parent-trip cleanup and
+removes that temporary storage after success or failure:
+
+```bash
+npm run test:e2e:receipts
+```
+
+## Validate Optional Profiles
+
+Before deploying Discord, nginx, or Cloudflare, validate the Compose, image, and
+template paths without real credentials:
+
+```bash
+docker build -t seddleup:ci .
+npm run test:docker:profiles
+```
+
+The probe expects Discord registration to stop on missing fake credentials,
+checks nginx with a temporary self-signed certificate, and validates the
+Cloudflare ingress example offline. External-service commands run with container
+networking disabled, so the probe never contacts Discord, Cloudflare, DNS, or a
+certificate authority.
+
+Use the [Production Deployment Checklist](Production-Deployment-Checklist)
+before the first public rollout.
 
 ## Rate Limiting
 

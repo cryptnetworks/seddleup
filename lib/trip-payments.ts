@@ -112,7 +112,7 @@ export async function confirmTripPaymentForUser(
           (settlement) =>
             settlement.debtorId === sender.id && settlement.creditorId === recipient.id
         );
-        const submittedCents = amountInCents(input.amount);
+        const submittedCents = input.amount.cents;
         if (
           !currentSettlement ||
           submittedCents <= 0 ||
@@ -133,7 +133,7 @@ export async function confirmTripPaymentForUser(
             tripId,
             senderParticipantId: sender.id,
             recipientParticipantId: recipient.id,
-            amount: new Prisma.Decimal((submittedCents / 100).toFixed(2)),
+            amount: new Prisma.Decimal(input.amount.decimal),
             date: new Date(`${input.date}T00:00:00`),
             note: input.note || null,
             confirmedByUserId: userId,

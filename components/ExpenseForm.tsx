@@ -18,6 +18,7 @@ type ExpenseFormProps = {
   statusOptions: string[];
   submitLabel: string;
   expense?: ExpenseFormExpense;
+  amountError?: string;
 };
 
 export function ExpenseForm({
@@ -26,7 +27,8 @@ export function ExpenseForm({
   payerOptions,
   statusOptions,
   submitLabel,
-  expense
+  expense,
+  amountError
 }: ExpenseFormProps) {
   const sharedIds = new Set(expense?.shares.map((share) => share.participantId));
 
@@ -62,9 +64,16 @@ export function ExpenseForm({
             pattern="[0-9]*[.,]?[0-9]*"
             min="0.01"
             step="0.01"
+            aria-describedby={amountError ? "amount-error" : undefined}
+            aria-invalid={amountError ? true : undefined}
             defaultValue={expense ? Number(expense.amount).toFixed(2) : undefined}
             required
           />
+          {amountError ? (
+            <p className="mt-1 text-sm text-coral" id="amount-error">
+              {amountError}
+            </p>
+          ) : null}
         </div>
         <div className="min-w-0">
           <label className="label" htmlFor="category">

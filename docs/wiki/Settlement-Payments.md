@@ -65,11 +65,14 @@ Application logs and audit snapshots exclude private payment notes.
 
 ## Migration And Rollback
 
-Deployments must apply the bundled `trip_payments` Prisma migration before the
-new application version starts. Docker startup runs `prisma migrate deploy`
-automatically. Trip deletion cascades to its private ledger, while participant
-deletion is restricted when a confirmation references that participant. User
-attribution uses `SET NULL` when an account is deleted.
+Deployments must apply the bundled Prisma migrations before the new application
+version starts. Docker startup runs `prisma migrate deploy` automatically. A
+forward reconciliation migration preserves the merged trip schema after the
+settlement and owner-protection histories meet; it resets only the internal
+settlement concurrency revision while preserving trip fields and ledger rows.
+Trip deletion cascades to its private ledger, while participant deletion is
+restricted when a confirmation references that participant as sender or
+recipient. User attribution uses `SET NULL` when an account is deleted.
 
 Before rollback, create and validate a SQLite backup. Reverting only application
 code leaves the additive table unused and preserves its data. Dropping the table

@@ -1,10 +1,15 @@
 "use server";
 
+import { Prisma } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { requireCurrentUserId } from "@/lib/actions/session";
 import { writeAuditLog } from "@/lib/audit";
 import { logger } from "@/lib/logger";
+import {
+  hasParticipantFinancialDependencies,
+  participantFinancialDependencies
+} from "@/lib/participant-integrity";
 import { prisma } from "@/lib/prisma";
 import { requireTripManager } from "@/lib/trip-access";
 import { formString, idSchema, participantSchema } from "@/lib/validation";
@@ -176,8 +181,44 @@ export async function deleteParticipant(tripId: string, participantId: string) {
   if (!parsedTripId.success || !parsedParticipantId.success) redirect("/dashboard");
 
   await requireTripManager(tripId, userId);
-  const participant = await prisma.participant.findFirst({ where: { id: participantId, tripId } });
-  if (!participant) redirect(`/trips/${tripId}`);
+  let result;
+  try {
+    result = await prisma.$transaction(async (tx) => {
+      const participant = await tx.participant.findFirst({ where: { id: participantId, tripId } });
+      if (!participant) return { status: "missing" as const };
+
+      const dependencies = await participantFinancialDependencies(tx, participantId);
+      if (hasParticipantFinancialDependencies(dependencies)) {
+        return { status: "blocked" as const, dependencies };
+      }
+
+      await tx.participant.delete({ where: { id: participantId } });
+      return { status: "deleted" as const, participant };
+    });
+  } catch (error) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2003") {
+      logger.warn("participant.delete.blocked_database_constraint", {
+        userId,
+        tripId,
+        participantId
+      });
+      redirect(`/trips/${tripId}/participants/${participantId}/edit?error=financial-history`);
+    }
+    throw error;
+  }
+
+  if (result.status === "missing") redirect(`/trips/${tripId}`);
+  if (result.status === "blocked") {
+    logger.warn("participant.delete.blocked_financial_history", {
+      userId,
+      tripId,
+      participantId,
+      ...result.dependencies
+    });
+    redirect(`/trips/${tripId}/participants/${participantId}/edit?error=financial-history`);
+  }
+
+  const participant = result.participant;
   await writeAuditLog({
     actorUserId: userId,
     tripId,
@@ -190,7 +231,6 @@ export async function deleteParticipant(tripId: string, participantId: string) {
       userId: participant.userId
     }
   });
-  await prisma.participant.delete({ where: { id: participantId } });
   logger.info("participant.delete.success", { userId, tripId, participantId });
   revalidatePath(`/trips/${tripId}`);
   redirect(`/trips/${tripId}`);

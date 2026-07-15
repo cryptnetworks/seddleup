@@ -11,8 +11,14 @@ const valid = {
 
 describe("trip payment validation", () => {
   it("accepts a positive USD amount with two decimal places", () => {
-    expect(tripPaymentConfirmationSchema.parse(valid).amount).toBe(20);
-    expect(tripPaymentConfirmationSchema.parse({ ...valid, amount: "20,25" }).amount).toBe(20.25);
+    expect(tripPaymentConfirmationSchema.parse(valid).amount).toEqual({
+      cents: 2000,
+      decimal: "20.00"
+    });
+    expect(tripPaymentConfirmationSchema.parse({ ...valid, amount: "20,25" }).amount).toEqual({
+      cents: 2025,
+      decimal: "20.25"
+    });
   });
 
   it.each(["", "0", "-1", "NaN", "Infinity", "1.001", "1000000.01"])(

@@ -102,11 +102,6 @@ export const authOptions: NextAuthOptions = {
             return null;
           }
 
-          await prisma.user.update({
-            where: { id: loginUser.id },
-            data: { lastLoginAt: new Date() }
-          });
-
           logger.info("auth.login_token.success", { userId: loginUser.id });
           return {
             id: loginUser.id,

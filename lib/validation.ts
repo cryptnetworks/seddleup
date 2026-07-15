@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { categories } from "@/lib/format";
+import { parseUsdMoney, type UsdMoney } from "@/lib/money";
 import { expenseStatuses } from "@/lib/trip-permissions";
 
 export const idSchema = z.string().trim().min(1).max(128);
@@ -155,9 +156,31 @@ export const participantSchema = z.object({
     .transform((value) => value || undefined)
 });
 
+export function usdMoneyInputSchema(options: { allowZero?: boolean } = {}) {
+  return z.string().transform((value, context): UsdMoney => {
+    const parsed = parseUsdMoney(value, options);
+    if (!parsed.ok) {
+      context.addIssue({
+        code: "custom",
+        message: parsed.message,
+        params: { reason: parsed.error }
+      });
+      return z.NEVER;
+    }
+    return parsed.value;
+  });
+}
+
+export const positiveUsdMoneySchema = usdMoneyInputSchema();
+export const optionalUsdMoneySchema = z
+  .string()
+  .transform((value) => value.trim())
+  .pipe(z.union([z.literal(""), usdMoneyInputSchema({ allowZero: true })]))
+  .transform((value) => (value === "" ? null : value));
+
 export const expenseSchema = z.object({
   title: z.string().trim().min(1).max(140),
-  amount: z.coerce.number().positive().max(1_000_000),
+  amount: positiveUsdMoneySchema,
   category: z.enum(categories),
   payerId: idSchema,
   date: dateStringSchema,
@@ -166,24 +189,31 @@ export const expenseSchema = z.object({
   sharedParticipantIds: z.array(idSchema).optional().default([])
 });
 
-export type ExpenseFormData = z.infer<typeof expenseSchema>;
+export const receiptReviewSchema = z.object({
+  merchant: z
+    .string()
+    .trim()
+    .max(120)
+    .transform((value) => value || null),
+  receiptDate: dateStringSchema
+    .optional()
+    .or(z.literal(""))
+    .transform((value) => value || undefined),
+  subtotal: optionalUsdMoneySchema,
+  tax: optionalUsdMoneySchema,
+  tip: optionalUsdMoneySchema,
+  total: optionalUsdMoneySchema,
+  status: z.enum(["needs_review", "ready"]),
+  splitMode: z.enum(["simple", "itemized"])
+});
 
-const tripPaymentAmountSchema = z
-  .string()
-  .trim()
-  .regex(/^\d{1,7}(?:[.,]\d{1,2})?$/, {
-    message: "Enter an amount with no more than two decimal places."
-  })
-  .transform((value) => Number(value.replace(",", ".")))
-  .refine((value) => Number.isFinite(value) && value > 0 && value <= 1_000_000, {
-    message: "Amount must be between 0.01 and 1,000,000.00."
-  });
+export type ExpenseFormData = z.infer<typeof expenseSchema>;
 
 export const tripPaymentConfirmationSchema = z
   .object({
     senderParticipantId: idSchema,
     recipientParticipantId: idSchema,
-    amount: tripPaymentAmountSchema,
+    amount: positiveUsdMoneySchema,
     date: dateStringSchema,
     note: optionalText(500)
   })

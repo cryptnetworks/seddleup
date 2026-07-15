@@ -32,6 +32,17 @@ Database startup failures are explicit:
 The entrypoint never logs database rows or credentials. Redact secrets if other
 application logs are included in a support request.
 
+## Local E2E Reports `/app/data` or Uses the Wrong Server
+
+Use `npm run test:e2e`, not a bare Playwright command. The supported launcher
+selects a free port, forces a disposable local SQLite file and uploads
+directory, and refuses to reuse a server already running on port 3000. Docker
+continues to use `file:/app/data/seddleup.db`; local browser tests never should.
+
+If direct external-server testing is intentional, configure the
+`PLAYWRIGHT_*` inputs described in [Testing and Production Readiness](Testing-and-Production-Readiness).
+Never point them at an operator database or receipt directory.
+
 ## OAuth Redirects to localhost or 0.0.0.0
 
 Set all public URL values to the public HTTPS URL:
@@ -87,6 +98,19 @@ and moves it to the current path. A validation failure leaves the legacy file in
 place and exits. If both names exist, SeddleUp uses `seddleup.db` and leaves
 `triptally.db` untouched.
 
+## Receipt Cleanup Reports an Operator Error
+
+`receipt.storage.cleanup_failed` means the database deletion committed but the
+matching private receipt directory could not be removed. The event includes a
+receipt ID and operation only; it intentionally omits the filename and storage
+path.
+
+Check that `RECEIPT_UPLOAD_DIR` is mounted, writable by the non-root container
+user, and has available space. Use a verified database/receipt backup to confirm
+the exact receipt ID before removing an orphan. Never run a recursive deletion
+against the upload root or an unverified path. A missing directory is already a
+successful, idempotent cleanup and does not need repair.
+
 ## Readiness Check Fails
 
 Compare liveness and readiness, then inspect the structured startup/readiness
@@ -126,4 +150,4 @@ layout is unstyled or image assets are missing, check:
 
 ---
 
-[Wiki Home](Home) | [Running with Docker](Running-with-Docker) | [Configuration](Configuration) | [Troubleshooting](Troubleshooting)
+[Wiki Home](Home) | [Testing and Production Readiness](Testing-and-Production-Readiness) | [Running with Docker](Running-with-Docker) | [Configuration](Configuration) | [Troubleshooting](Troubleshooting)

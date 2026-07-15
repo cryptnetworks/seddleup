@@ -67,6 +67,31 @@ function linkParticipantToUser(tripId: string, participantName: string, userEmai
   }
 }
 
+function insertConfirmedPayment(tripId: string, senderName: string, recipientName: string) {
+  const db = new DatabaseSync(sqliteDatabasePath(), { timeout: 5000 });
+  try {
+    db.exec("PRAGMA foreign_keys = ON");
+    const sender = db
+      .prepare("SELECT id FROM participants WHERE tripId = ? AND name = ?")
+      .get(tripId, senderName) as { id: string } | undefined;
+    const recipient = db
+      .prepare("SELECT id, userId FROM participants WHERE tripId = ? AND name = ?")
+      .get(tripId, recipientName) as { id: string; userId: string | null } | undefined;
+    if (!sender || !recipient?.userId) {
+      throw new Error("Expected linked E2E payment participants to exist");
+    }
+    const now = new Date().toISOString();
+    db.prepare(
+      `INSERT INTO trip_payments
+       (id, amount, date, createdAt, updatedAt, tripId, senderParticipantId,
+        recipientParticipantId, confirmedByUserId, confirmedAt)
+       VALUES (?, '1.00', ?, ?, ?, ?, ?, ?, ?, ?)`
+    ).run(randomUUID(), now, now, now, tripId, sender.id, recipient.id, recipient.userId, now);
+  } finally {
+    db.close();
+  }
+}
+
 test("lets only the linked creditor confirm and manage a suggested settlement", async ({
   page
 }, testInfo) => {
@@ -126,4 +151,26 @@ test("lets only the linked creditor confirm and manage a suggested settlement", 
     () => document.documentElement.scrollWidth <= window.innerWidth
   );
   expect(noHorizontalOverflow).toBe(true);
+});
+
+test("retains participants referenced only by confirmed payments", async ({ page }, testInfo) => {
+  const owner = await registerAndLogin(page, testInfo, "trip-payment-integrity");
+  await createTripWithParticipants(page, uniqueLabel(testInfo, "Payment Integrity Trip"));
+  const tripId = new URL(page.url()).pathname.split("/")[2];
+  linkParticipantToUser(tripId, "Alice", owner.email);
+  insertConfirmedPayment(tripId, "Bob", "Alice");
+
+  await page.reload();
+  const alice = page.getByTestId("participant-card").filter({ hasText: "Alice" });
+  const bob = page.getByTestId("participant-card").filter({ hasText: "Bob" });
+  await expect(alice).toContainText("Financial history retained");
+  await expect(bob).toContainText("Financial history retained");
+  await expect(page.getByRole("button", { name: "Delete Alice" })).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "Delete Bob" })).toHaveCount(0);
+
+  await alice.getByRole("link", { name: "Edit" }).click();
+  await expect(page.getByText("1 payment received")).toBeVisible();
+  await page.goto(`/trips/${tripId}`);
+  await bob.getByRole("link", { name: "Edit" }).click();
+  await expect(page.getByText("1 payment sent")).toBeVisible();
 });

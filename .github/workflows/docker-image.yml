@@ -9,6 +9,9 @@ on:
       - ".dockerignore"
       - "docker-compose.yml"
       - "docker-entrypoint.sh"
+      - ".env.docker.example"
+      - "cloudflare/**"
+      - "nginx/**"
       - "package.json"
       - "package-lock.json"
       - "next.config.mjs"
@@ -30,6 +33,9 @@ on:
       - ".dockerignore"
       - "docker-compose.yml"
       - "docker-entrypoint.sh"
+      - ".env.docker.example"
+      - "cloudflare/**"
+      - "nginx/**"
       - "package.json"
       - "package-lock.json"
       - "next.config.mjs"
@@ -167,6 +173,9 @@ jobs:
 
       - name: Run runtime probes
         run: npm run test:docker
+
+      - name: Run optional profile probes
+        run: npm run test:docker:profiles
 
   docker-manifest:
     if: github.event_name != 'pull_request'

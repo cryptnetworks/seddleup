@@ -8,8 +8,8 @@ const cspDirectives = [
   "img-src 'self' data: blob:",
   "font-src 'self'",
   "style-src 'self' 'unsafe-inline'",
-  `script-src 'self' 'unsafe-inline'${isProduction ? "" : " 'unsafe-eval'"}`,
-  "connect-src 'self'"
+  `script-src 'self' 'unsafe-inline' https://static.cloudflareinsights.com/beacon.min.js${isProduction ? "" : " 'unsafe-eval'"}`,
+  "connect-src 'self' https://cloudflareinsights.com"
 ];
 
 if (isProduction) {

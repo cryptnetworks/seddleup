@@ -1,20 +1,33 @@
 # SeddleUp Issue Remediation Plan
 
-Last audited: June 28, 2026
+Last audited: July 15, 2026
 
 Source: open GitHub issues in `cryptnetworks/seddleup`, issues #59 through #81.
 No GitHub issues or labels were modified during this audit.
 
-## Additional Feature Work
+Current batch: issues #74, #64, #79, #60, #77, and #93 are implemented on
+`agent/production-e2e-readiness`. #64 reproduced twice in a full Mobile Safari
+development run and was classified as Turbopack development HMR invalidation;
+repeated production route checks stayed clean. A separate local-HTTP production
+WebKit action timeout remains documented. The acceptance mapping and commands
+are in `docs/wiki/Testing-and-Production-Readiness.md`.
 
-- Settlement payments: implementation in progress on
-  `feature/trip-settlement-payments`. This adds a dedicated `TripPayment` ledger,
-  creditor-linked confirmation permissions for non-viewer trip members, adjusted
-  balance calculations, authenticated history and management routes, migration
-  coverage, and private audit events. Viewers remain read-only, and role alone
-  never permits a user to confirm receipt on another participant's behalf. It
-  remains separate from external `PaymentMethod` profiles and anonymous trip
-  sharing.
+Data-integrity batch: #98, #99, #100, and #102 are implemented on
+`agent/data-integrity-hardening`; the acceptance mapping, migrations, rollback
+boundary, and focused verification are recorded in
+[`docs/data-integrity-hardening.md`](data-integrity-hardening.md). The current
+financial relations for #97 are protected. The settlement integration adds the
+remaining sender and recipient restrictions and coverage, completing the
+participant-deletion policy without reassigning or deleting financial history.
+Issue #101 remains deliberately deferred until this receipt-lifecycle,
+money-validation, and settlement base is merged.
+
+Settlement payments add a dedicated `TripPayment` ledger, creditor-linked
+confirmation permissions for non-viewer trip members, adjusted balance
+calculations, authenticated history and management routes, migration coverage,
+and private audit events. Viewers remain read-only, and role alone never permits
+a user to confirm receipt on another participant's behalf. The ledger remains
+separate from external `PaymentMethod` profiles and anonymous trip sharing.
 
 ## Label Cleanup
 
@@ -67,6 +80,9 @@ requested taxonomy.
   `receipts`, `frontend`
 - Dependencies and notes: should follow core release blockers. Depends on stable
   receipt upload fixtures and test environment setup.
+- Implementation status: enabled upload, parse/review, owner download,
+  unauthenticated/cross-user denial, disabled-state, and temporary-file cleanup
+  are covered by an isolated Chromium runner and CI step.
 
 ### #61 - CI: add Docker build and runtime migration probes
 
@@ -95,6 +111,10 @@ requested taxonomy.
   `size:m`, `ready`, `docker`, `ci`, `discord`
 - Dependencies and notes: can build on #61. External-service profiles must stay
   credential-free in CI.
+- Implementation status: `test:docker:profiles` validates all Compose profiles,
+  proves Discord registration is callable without npm, syntax-checks rendered
+  nginx, and validates Cloudflare ingress with fake inputs and disabled external
+  networking. The existing Docker workflow runs it after runtime probes.
 
 ### #63 - Security: add shared-store rate limiting for multi-replica deployments
 
@@ -119,6 +139,14 @@ requested taxonomy.
   `size:s`, `needs-discussion`, `mobile`
 - Dependencies and notes: needs reproduction before code. Complements #74. Not
   stale, but intentionally observational.
+- Implementation status: a full development matrix reproduced the non-failing
+  warning twice in the Turbopack HMR client; repeated production WebKit route
+  checks stayed clean. Two CI repetitions later reproduced HMR invalidation and
+  stalled layout navigation. CI now uses a bounded development-server matrix;
+  the full matrix remains available locally. Production checks fail on chunk
+  errors, no browser errors are globally suppressed, and the development-only
+  classification and narrow mitigation are documented. A distinct local-HTTP
+  production action timeout remains recorded separately.
 
 ### #65 - Database: design Postgres support before accepting Postgres URLs
 
@@ -155,6 +183,8 @@ requested taxonomy.
   `priority:medium`, `size:s`, `ready`, `docs`
 - Dependencies and notes: related to #68 and #76. Low code risk; avoid
   duplicating existing docs.
+- Implementation status: the wiki owns one concise production checklist linking
+  configuration, backup/restore, auth, proxy, SEO, smoke, and rollback runbooks.
 
 ### #68 - Docs: add release checklist
 
@@ -167,6 +197,9 @@ requested taxonomy.
   `priority:medium`, `size:s`, `ready`, `docs`, `ci`
 - Dependencies and notes: pairs naturally with #67 but should remain a separate
   PR.
+- Implementation status: the wiki owns one maintainer release checklist covering
+  candidate validation, GitHub gates, multi-architecture publication,
+  post-release smoke, rollback, and housekeeping.
 
 ### #69 - Branding: plan safe migration for deferred TripTally compatibility names
 
@@ -180,6 +213,10 @@ requested taxonomy.
   `priority:low`, `size:m`, `ready`, `docs`
 - Dependencies and notes: related to #80. Planning only unless a migration
   proposal is accepted.
+- Implementation status: the authoritative compatibility plan inventories
+  package, Docker, database, environment, email, cookie, internal, fixture, and
+  historical names with owners, release boundaries, migrations, rollback, and
+  required tests. No risky compatibility rename is performed.
 
 ### #70 - MFA: add browser-level regression for setup secrets not appearing in URLs
 
@@ -226,6 +263,9 @@ requested taxonomy.
 - Missing standardized labels: `documentation`, `technical-debt`,
   `priority:medium`, `size:xs`, `ready`, `docs`
 - Dependencies and notes: low-risk docs gap. Could be a quick standalone PR.
+- Implementation status: `docs/refactor-summary.md` records verified architecture
+  boundaries, current hardening, superseded mechanisms, intentional
+  compatibility names, open debt, and validation expectations.
 
 ### #74 - Testing: add production-server E2E mode
 
@@ -238,6 +278,9 @@ requested taxonomy.
   `priority:medium`, `size:l`, `ready`, `ci`
 - Dependencies and notes: complements #64 and #61. Split local script from CI
   rollout if scope grows.
+- Implementation status: an isolated `next build`/`next start` runner applies
+  migrations, waits for readiness, covers the requested smoke paths, cleans up,
+  and runs in CI without removing development-server E2E.
 
 ### #75 - MFA: add recovery codes or admin reset for locked MFA accounts
 
@@ -279,6 +322,10 @@ requested taxonomy.
   `size:m`, `ready`, `auth`, `backend`
 - Dependencies and notes: related to #70. Avoid overbroad denylists that make
   tests noisy.
+- Implementation status: a recursive final logging boundary and regression
+  suite cover structured and rendered passwords, token/secret families, OAuth,
+  MFA/TOTP/recovery, SMTP/Discord, receipt paths, database URLs, bearer values,
+  query values, and emails while preserving operational IDs and timestamps.
 
 ### #78 - Docs: add markdown and link checking to documentation validation
 
@@ -291,6 +338,9 @@ requested taxonomy.
   `priority:medium`, `size:m`, `ready`, `docs`, `ci`
 - Dependencies and notes: consider splitting markdown lint and external link
   checking if noisy. Avoid unnecessary dependencies.
+- Implementation status: `docs:check` combines `markdownlint-cli2` with an
+  offline repository link/heading validator and a docs-only workflow. External
+  URL availability remains deliberately outside routine CI.
 
 ### #79 - Testing: add accessibility smoke tests for auth and expense forms
 
@@ -303,6 +353,9 @@ requested taxonomy.
   `size:m`, `ready`, `auth`, `frontend`
 - Dependencies and notes: new dependency should be justified. Start with
   Playwright role/focus assertions if possible.
+- Implementation status: Chromium and Mobile Safari smoke tests cover auth,
+  registration validation, trip creation, expense create/edit, keyboard/focus,
+  labels, and mobile overflow without adding an accessibility dependency.
 
 ### #80 - Deployment: test restore from legacy TripTally database path
 
@@ -336,6 +389,21 @@ requested taxonomy.
   dependency-free liveness endpoint, safe public readiness states for config,
   SQLite, and bundled Prisma migrations, focused unit/E2E coverage, and stable
   Docker healthcheck behavior. No authenticated detail endpoint was needed.
+
+### #93 - SEO: complete production browser QA and investigate local SQLite path
+
+- Category: Testing, Bug, UX/UI
+- Priority: Medium
+- Size: M
+- Dependencies and notes: follows the production SEO implementation and Docker
+  runtime probes.
+- Implementation status: production Chromium checks cover common viewports,
+  overflow, canonical/social metadata, JSON-LD, sitemap, robots, manifest,
+  semantics, private-page robots, and response headers with an HTTPS public
+  origin. The local warning root cause was Playwright inheriting Docker paths
+  and silently reusing a server; supported launchers now force disposable local
+  paths and free ports. Docker validation and existing-file failure behavior are
+  unchanged. The in-app visual backend was unavailable during this batch.
 
 ## Suggested Implementation Order
 

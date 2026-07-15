@@ -97,7 +97,7 @@ function confirmationInput(scenario: Awaited<ReturnType<typeof createScenario>>,
   return {
     senderParticipantId: scenario.debtorParticipant.id,
     recipientParticipantId: scenario.creditorParticipant.id,
-    amount,
+    amount: { cents: Math.round(amount * 100), decimal: amount.toFixed(2) },
     date: "2026-07-02",
     note: "private confirmation note"
   };
@@ -112,7 +112,10 @@ async function ledgerFor(tripId: string) {
 }
 
 afterAll(async () => {
-  if (userIds.length) await prisma.user.deleteMany({ where: { id: { in: userIds } } });
+  if (userIds.length) {
+    await prisma.trip.deleteMany({ where: { ownerId: { in: userIds } } });
+    await prisma.user.deleteMany({ where: { id: { in: userIds } } });
+  }
   await prisma.$disconnect();
 });
 

@@ -8,6 +8,8 @@ describe("security headers", () => {
     expect(config).toContain("Content-Security-Policy");
     expect(config).toContain("default-src 'self'");
     expect(config).toContain("frame-ancestors 'none'");
+    expect(config).toContain("https://static.cloudflareinsights.com/beacon.min.js");
+    expect(config).toContain("connect-src 'self' https://cloudflareinsights.com");
     expect(config).toContain("Strict-Transport-Security");
     expect(config).toContain("max-age=31536000");
     expect(config).toContain("X-Frame-Options");

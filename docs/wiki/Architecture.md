@@ -121,6 +121,36 @@ included in balances. Settled expenses are locked from normal edits and deletes.
 Trip, participant, and expense changes write trip-scoped audit log rows with
 before/after JSON where practical.
 
+Participant records are removable only while no financial history references
+them. Paid expenses, allocated expense shares, and receipt line-item assignments
+all block deletion in both the server action and SQLite foreign-key policy.
+Settlement payments sent or received enforce the same restriction. The
+application does not silently cascade, reassign, or archive those records.
+
+User deletion follows a separate explicit ownership policy. A required trip
+owner can never be deleted by database cascade. Administrators must transfer
+each owned trip to a different active, non-readonly user first. The transfer
+atomically updates `Trip.ownerId`, promotes the replacement's membership to
+`owner`, demotes the previous owner membership to `admin`, and writes the audit
+record. Expenses, participants, receipts, invitations, and other trip records
+remain attached to the trip. Disabling an account remains reversible and does
+not transfer or delete ownership.
+
+### Currency boundary
+
+SeddleUp is USD-only until per-trip currency support is designed. Every
+user-supplied expense and receipt amount crosses the same server-side boundary:
+ordinary decimal notation, at most two fractional digits, and a maximum of
+`$1,000,000.00`. A comma may be used as the sole decimal separator. Exponent
+notation, thousands separators, negative values, non-finite values, and excess
+precision are rejected rather than rounded.
+
+The parser converts accepted input directly to integer cents and a canonical
+decimal string without passing through binary floating point. Expense shares are
+allocated from those integer cents, including any one-cent remainder, so stored
+shares reconcile exactly to the stored expense. Optional receipt totals preserve
+blank values as `null` and allow an explicit zero.
+
 `TripPayment` records a completed transfer between two participants in one trip.
 It is distinct from `PaymentMethod`, which is only a destination profile. The
 sender, recipient, and trip are protected by database foreign keys and same-trip

@@ -2,9 +2,11 @@ import { NextResponse } from "next/server";
 import { encode } from "next-auth/jwt";
 import { prisma } from "@/lib/prisma";
 import { getProviderRuntimeConfig, oauthCallbackUrl } from "@/lib/oauth-providers";
+import { consumeOAuthStateCredential } from "@/lib/oauth-state";
 import { bootstrapRole } from "@/lib/roles";
 import { emailDomainAllowed, getAuthSettings } from "@/lib/settings";
 import { writeSystemAuditLog } from "@/lib/audit";
+import { timingSafeEqualOpaqueValues } from "@/lib/token-digest";
 import { publicUrl } from "@/lib/url";
 
 type ProviderProfile = {
@@ -150,7 +152,11 @@ export async function GET(request: Request, { params }: { params: Promise<{ prov
     return response;
   };
 
-  if (!code || !state || !stateCookie || state !== stateCookie || !verifier) {
+  const validState =
+    code && state && stateCookie && verifier && timingSafeEqualOpaqueValues(state, stateCookie)
+      ? await consumeOAuthStateCredential({ state, verifier, providerId: provider })
+      : false;
+  if (!code || !state || !verifier || !validState) {
     await writeSystemAuditLog({
       action: "auth.oauth_callback.invalid_state",
       targetType: "auth_provider",

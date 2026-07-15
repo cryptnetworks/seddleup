@@ -162,6 +162,26 @@ describe("invitations integration", () => {
     ).resolves.toMatchObject({ userId: existing.id });
   });
 
+  it("allows exactly one concurrent acceptance of the same invitation", async () => {
+    const admin = await createUser("admin-concurrent", "admin");
+    const user = await createUser("concurrent-user");
+    const token = `concurrent-token-${testRun}`;
+    await createInvitation({
+      email: user.email,
+      invitedByUserId: admin.id,
+      token
+    });
+
+    const attempts = await Promise.all([
+      acceptInvitationForExistingUser(token, user),
+      acceptInvitationForExistingUser(token, user)
+    ]);
+    expect(attempts.filter((attempt) => attempt.ok)).toHaveLength(1);
+    expect(attempts.filter((attempt) => !attempt.ok)).toEqual([
+      expect.objectContaining({ reason: "accepted" })
+    ]);
+  });
+
   it("rejects expired, invalid, revoked, accepted, and mismatched invites", async () => {
     const admin = await createUser("admin-invalid", "admin");
     const user = await createUser("invalid-user");

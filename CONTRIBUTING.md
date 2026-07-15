@@ -42,6 +42,7 @@ Run these before opening a pull request:
 
 ```bash
 npm run format:check
+npm run docs:check
 npm run lint
 npm run typecheck
 npm test
@@ -50,18 +51,33 @@ npm run build
 npm run security:audit
 ```
 
-Playwright forces local callback URLs when it starts its own dev server, so local e2e tests do not inherit production `NEXTAUTH_URL` or `PUBLIC_APP_URL` values from `.env`.
+The E2E launcher uses a free port plus disposable SQLite and upload paths; it
+does not inherit Docker paths or reuse a developer server. Run the focused
+CI development matrix, production build/server smoke, and enabled receipt paths
+with:
+
+```bash
+npm run test:e2e:ci
+npm run test:e2e:production
+npm run test:e2e:receipts
+```
+
+See [Testing and Production Readiness](docs/wiki/Testing-and-Production-Readiness.md)
+for the browser matrix, temporary-storage rules, WebKit investigation commands,
+and SEO QA procedure.
 
 For Docker-impacting changes:
 
 ```bash
 docker build -t seddleup:ci .
 npm run test:docker
+npm run test:docker:profiles
 ```
 
 `test:docker` uses only temporary labeled volumes and containers. It must never
 be pointed at an operator or production volume. The probe image is local and is
-not published.
+not published. `test:docker:profiles` uses only fake configuration, isolated
+certificates, and disabled container networking for external-service commands.
 
 ## Prisma Changes
 

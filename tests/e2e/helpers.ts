@@ -1,4 +1,4 @@
-import { expect, type Page, type TestInfo } from "@playwright/test";
+import { expect, type Locator, type Page, type TestInfo } from "@playwright/test";
 import { DatabaseSync } from "node:sqlite";
 import path from "node:path";
 
@@ -37,7 +37,31 @@ export function uniqueLabel(testInfo: TestInfo, prefix: string) {
   return `${prefix}-${testInfo.project.name.replaceAll(/\W+/g, "-").toLowerCase()}-${Date.now()}-${testInfo.retry}`;
 }
 
-export async function registerAndLogin(page: Page, testInfo: TestInfo, prefix = "e2e") {
+type E2eFlowOptions = { followServerActionResponse?: boolean };
+
+async function submitServerAction(page: Page, button: Locator, followResponse = false) {
+  if (!followResponse) {
+    await button.click();
+    return;
+  }
+
+  const actionUrl = page.url();
+  const responsePromise = page.waitForResponse(
+    (response) => response.request().method() === "POST" && response.url() === actionUrl
+  );
+  await button.click();
+  const response = await responsePromise;
+  const redirectHeader = response.headers()["x-action-redirect"];
+  const redirectPath = redirectHeader?.split(";")[0];
+  await page.goto(redirectPath || actionUrl);
+}
+
+export async function registerAndLogin(
+  page: Page,
+  testInfo: TestInfo,
+  prefix = "e2e",
+  options: E2eFlowOptions = {}
+) {
   const label = uniqueLabel(testInfo, prefix);
   const user = {
     username: label.slice(0, 70),
@@ -50,7 +74,11 @@ export async function registerAndLogin(page: Page, testInfo: TestInfo, prefix = 
   await page.getByLabel("Email").fill(user.email);
   await page.getByLabel("Password", { exact: true }).fill(user.password);
   await page.getByLabel("Confirm password").fill(user.password);
-  await page.getByRole("button", { name: "Create account" }).click();
+  await submitServerAction(
+    page,
+    page.getByRole("button", { name: "Create account" }),
+    options.followServerActionResponse
+  );
 
   await expect(page).toHaveURL(/\/login/);
   await login(page, user.email, user.password);
@@ -65,32 +93,58 @@ export async function login(page: Page, email: string, password: string) {
   await expect(page).toHaveURL(/\/dashboard/);
 }
 
-export async function createTripWithParticipants(page: Page, name: string) {
+export async function createTripWithParticipants(
+  page: Page,
+  name: string,
+  options: E2eFlowOptions = {}
+) {
   await page.getByRole("link", { name: "Create Trip" }).click();
   await page.getByLabel("Trip name").fill(name);
   await page.getByLabel("Destination").fill("Portland");
   await page.getByLabel("Start date").fill("2026-07-01");
   await page.getByLabel("End date").fill("2026-07-04");
-  await page.getByRole("button", { name: "Save trip" }).click();
+  await submitServerAction(
+    page,
+    page.getByRole("button", { name: "Save trip" }),
+    options.followServerActionResponse
+  );
   await expect(page.getByRole("heading", { name })).toBeVisible();
 
   for (const participant of ["Alice", "Bob"]) {
-    await addParticipant(page, participant, `${participant.toLowerCase()}@example.com`);
+    await addParticipant(page, participant, `${participant.toLowerCase()}@example.com`, options);
   }
 }
 
-export async function addParticipant(page: Page, name: string, email: string) {
+export async function addParticipant(
+  page: Page,
+  name: string,
+  email: string,
+  options: E2eFlowOptions = {}
+) {
   await page.getByTestId("participant-name").fill(name);
   await page.getByTestId("participant-email").fill(email);
-  await page.getByTestId("participant-submit").click();
+  await submitServerAction(
+    page,
+    page.getByTestId("participant-submit"),
+    options.followServerActionResponse
+  );
   await expect(page.getByTestId("participant-card").filter({ hasText: name })).toBeVisible();
 }
 
-export async function addExpense(page: Page, title: string, amount: string) {
+export async function addExpense(
+  page: Page,
+  title: string,
+  amount: string,
+  options: E2eFlowOptions = {}
+) {
   await page.getByRole("link", { name: "Add Expense" }).first().click();
   await page.getByLabel("Title").fill(title);
   await page.getByLabel("Amount").fill(amount);
   await page.getByLabel("Date").fill("2026-07-02");
-  await page.getByRole("button", { name: "Record expense" }).click();
+  await submitServerAction(
+    page,
+    page.getByRole("button", { name: "Record expense" }),
+    options.followServerActionResponse
+  );
   await expect(page.getByText(title)).toBeVisible();
 }

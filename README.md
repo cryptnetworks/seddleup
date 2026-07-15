@@ -104,6 +104,8 @@ Follow the wiki installation guide for Docker setup, required environment
 variables, persistent storage, health checks, and update steps:
 
 - [Running with Docker](https://github.com/cryptnetworks/seddleup/wiki/Running-with-Docker)
+- [Production Deployment Checklist](https://github.com/cryptnetworks/seddleup/wiki/Production-Deployment-Checklist)
+- [Release Checklist](https://github.com/cryptnetworks/seddleup/wiki/Release-Checklist)
 - [Configuration](https://github.com/cryptnetworks/seddleup/wiki/Configuration)
 - [Cloudflare Tunnel Deployment](https://github.com/cryptnetworks/seddleup/wiki/Cloudflare-Tunnel-Deployment)
 - [Nginx and Let's Encrypt Deployment](https://github.com/cryptnetworks/seddleup/wiki/Nginx-and-Lets-Encrypt-Deployment)
@@ -165,11 +167,14 @@ Common local checks:
 ```bash
 npm run validate:config
 npx prisma validate
+npm run docs:check
 npm run format:check
 npm run lint
 npm run typecheck
 npm test
 npm run test:e2e
+npm run test:e2e:production
+npm run test:e2e:receipts
 npm run build
 npm run security:audit
 ```
@@ -180,6 +185,7 @@ isolated runtime probes:
 ```bash
 docker build -t seddleup:ci .
 npm run test:docker
+npm run test:docker:profiles
 ```
 
 The probe creates temporary labeled Docker volumes and verifies fresh SQLite
@@ -188,12 +194,21 @@ migrations, health, restart idempotency, data preservation, legacy
 startup errors. It removes its containers and volumes when it exits and never
 uses an existing deployment volume.
 
+The optional-profile probe validates Discord, nginx, and Cloudflare Compose
+configuration without live credentials or external service calls. Deployment
+and release preparation are maintained in the wiki checklists; retained legacy
+identifiers are governed by the
+[Compatibility Name Migration Plan](https://github.com/cryptnetworks/seddleup/wiki/Compatibility-Name-Migration-Plan).
+
 See the wiki for more detail:
 
 - [Architecture](https://github.com/cryptnetworks/seddleup/wiki/Architecture)
 - [Settlement Payments](https://github.com/cryptnetworks/seddleup/wiki/Settlement-Payments)
 - [Security Model](https://github.com/cryptnetworks/seddleup/wiki/Security-Model)
 - [Repository Automation](https://github.com/cryptnetworks/seddleup/wiki/Repository-Automation)
+- [Testing and Production Readiness](https://github.com/cryptnetworks/seddleup/wiki/Testing-and-Production-Readiness)
+- [Data Integrity Hardening](docs/data-integrity-hardening.md)
+- [Maintainability and Refactor Summary](docs/refactor-summary.md)
 - [Contributing](https://github.com/cryptnetworks/seddleup/wiki/Contributing)
 
 Report vulnerabilities privately. See [SECURITY.md](SECURITY.md).
