@@ -26,7 +26,13 @@ export default async function RegisterPage({
           Create an account to keep your trips private and synced.
         </p>
         {errorMessage ? (
-          <p className="mt-4 rounded-lg bg-red-50 p-3 text-sm text-coral">{errorMessage}</p>
+          <p
+            className="mt-4 rounded-lg bg-red-50 p-3 text-sm text-coral"
+            id="register-error"
+            role="alert"
+          >
+            {errorMessage}
+          </p>
         ) : null}
         <form className="mt-6 grid gap-4" action={registerUser} data-testid="register-form">
           <div>
@@ -35,6 +41,8 @@ export default async function RegisterPage({
             </label>
             <input
               className="field"
+              aria-describedby={errorMessage ? "register-error" : undefined}
+              aria-invalid={errorMessage ? true : undefined}
               data-testid="register-username"
               id="username"
               name="username"
@@ -49,6 +57,8 @@ export default async function RegisterPage({
             </label>
             <input
               className="field"
+              aria-describedby={errorMessage ? "register-error" : undefined}
+              aria-invalid={errorMessage ? true : undefined}
               data-testid="register-email"
               id="email"
               name="email"
@@ -63,6 +73,8 @@ export default async function RegisterPage({
             </label>
             <input
               className="field"
+              aria-describedby={errorMessage ? "register-error" : undefined}
+              aria-invalid={errorMessage ? true : undefined}
               data-testid="register-password"
               id="password"
               name="password"
@@ -78,6 +90,8 @@ export default async function RegisterPage({
             </label>
             <input
               className="field"
+              aria-describedby={errorMessage ? "register-error" : undefined}
+              aria-invalid={errorMessage ? true : undefined}
               data-testid="register-confirm-password"
               id="confirmPassword"
               name="confirmPassword"

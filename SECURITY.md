@@ -39,6 +39,10 @@ Maintainers will acknowledge valid reports, investigate, and coordinate a fix be
 - State-changing requests include same-origin CSRF checks.
 - Anonymous trip summaries are read-only and exclude emails, account data,
   drafts, notes, receipts, payment details, invitations, and audit logs.
+- Structured application logging applies a final recursive redaction boundary
+  for secret/token/credential key families, sensitive URL query values, bearer
+  values, email addresses, database URLs, and sensitive receipt paths while
+  preserving event names, timestamps, and non-sensitive record IDs.
 - Production security headers include CSP, HSTS, frame denial, content-type protection, referrer policy, permissions policy, and cross-origin opener policy.
 
 ## Automated Security Checks
@@ -53,3 +57,8 @@ Node 26 Docker images are deferred while that release is Current rather than
 LTS for this stack. The app uses Node.js 24.18.0 LTS with bundled npm 11.16.0,
 uses EmailJS for SMTP delivery, and does not keep a direct Nodemailer
 dependency.
+
+Redaction is defense in depth. Application code must still avoid sending raw
+request bodies, authentication objects, cookies, receipt contents, or secret
+values to the logger. The regression matrix and current limitations are in
+[Testing and Production Readiness](docs/wiki/Testing-and-Production-Readiness.md).

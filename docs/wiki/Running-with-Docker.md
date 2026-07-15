@@ -38,6 +38,10 @@ SeddleUp currently supports SQLite only. `DATABASE_URL` must use a `file:` URL.
 Postgres URLs are rejected until a future schema and migration plan explicitly
 adds Postgres support.
 
+Local browser tests intentionally do not use this container path. Their
+disposable paths and production-server test mode are documented in
+[Testing and Production Readiness](Testing-and-Production-Readiness).
+
 ## Run a Single Container
 
 ```bash
