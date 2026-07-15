@@ -17,39 +17,44 @@ export class OwnershipTransferError extends Error {
 
 export async function transferTripOwnershipInTransaction(
   client: Prisma.TransactionClient,
-  input: { tripId: string; replacementOwnerId: string; expectedOwnerId?: string }
+  input: { tripId: string; replacementOwnerId: string; expectedOwnerId: string }
 ) {
-  const [trip, replacement] = await Promise.all([
-    client.trip.findUnique({ where: { id: input.tripId }, select: { id: true, ownerId: true } }),
-    client.user.findUnique({
-      where: { id: input.replacementOwnerId },
-      select: { id: true, role: true, disabledAt: true }
-    })
-  ]);
+  // Make the first SQLite operation a conditional write. This claims the
+  // expected owner snapshot before any reads and avoids a deferred transaction
+  // failing when it later tries to upgrade from reader to writer.
+  const claimed = await client.trip.updateMany({
+    where: { id: input.tripId, ownerId: input.expectedOwnerId },
+    data: { ownerId: input.expectedOwnerId }
+  });
+  if (claimed.count !== 1) throw new OwnershipTransferError("ownership-changed");
 
-  if (!trip) throw new OwnershipTransferError("trip-not-found");
+  const replacement = await client.user.findUnique({
+    where: { id: input.replacementOwnerId },
+    select: { id: true, role: true, disabledAt: true }
+  });
   if (!replacement) throw new OwnershipTransferError("replacement-not-found");
   if (replacement.disabledAt) throw new OwnershipTransferError("replacement-disabled");
   if (replacement.role === "readonly") throw new OwnershipTransferError("replacement-readonly");
-  if (input.expectedOwnerId && trip.ownerId !== input.expectedOwnerId) {
-    throw new OwnershipTransferError("ownership-changed");
-  }
-  if (trip.ownerId === replacement.id) throw new OwnershipTransferError("same-owner");
+  if (input.expectedOwnerId === replacement.id) throw new OwnershipTransferError("same-owner");
 
   const transferred = await client.trip.updateMany({
-    where: { id: trip.id, ownerId: trip.ownerId },
+    where: { id: input.tripId, ownerId: input.expectedOwnerId },
     data: { ownerId: replacement.id }
   });
   if (transferred.count !== 1) throw new OwnershipTransferError("ownership-changed");
 
   await client.tripMember.upsert({
-    where: { tripId_userId: { tripId: trip.id, userId: replacement.id } },
+    where: { tripId_userId: { tripId: input.tripId, userId: replacement.id } },
     update: { role: "owner" },
-    create: { tripId: trip.id, userId: replacement.id, role: "owner" }
+    create: { tripId: input.tripId, userId: replacement.id, role: "owner" }
   });
   await client.tripMember.updateMany({
-    where: { tripId: trip.id, userId: trip.ownerId, role: "owner" },
+    where: { tripId: input.tripId, userId: input.expectedOwnerId, role: "owner" },
     data: { role: "admin" }
   });
-  return { tripId: trip.id, previousOwnerId: trip.ownerId, replacementOwnerId: replacement.id };
+  return {
+    tripId: input.tripId,
+    previousOwnerId: input.expectedOwnerId,
+    replacementOwnerId: replacement.id
+  };
 }

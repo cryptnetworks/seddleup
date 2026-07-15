@@ -7,7 +7,10 @@ const testRun = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
 let userId: string | undefined;
 
 afterAll(async () => {
-  if (userId) await prisma.user.deleteMany({ where: { id: userId } });
+  if (userId) {
+    await prisma.trip.deleteMany({ where: { ownerId: userId } });
+    await prisma.user.deleteMany({ where: { id: userId } });
+  }
   await prisma.$disconnect();
 });
 

@@ -31,6 +31,7 @@ async function createTripFixture(label: string) {
 }
 
 afterAll(async () => {
+  await prisma.trip.deleteMany({ where: { ownerId: { in: createdUserIds } } });
   await prisma.user.deleteMany({ where: { id: { in: createdUserIds } } });
   await prisma.$disconnect();
 });

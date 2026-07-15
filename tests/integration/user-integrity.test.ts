@@ -73,7 +73,8 @@ describe("owned-trip account integrity", () => {
     const result = await prisma.$transaction((tx) =>
       transferTripOwnershipInTransaction(tx, {
         tripId: trip.id,
-        replacementOwnerId: replacement.id
+        replacementOwnerId: replacement.id,
+        expectedOwnerId: previousOwner.id
       })
     );
 
@@ -111,7 +112,8 @@ describe("owned-trip account integrity", () => {
       prisma.$transaction((tx) =>
         transferTripOwnershipInTransaction(tx, {
           tripId: trip.id,
-          replacementOwnerId: replacement.id
+          replacementOwnerId: replacement.id,
+          expectedOwnerId: owner.id
         })
       )
     ).rejects.toMatchObject({
