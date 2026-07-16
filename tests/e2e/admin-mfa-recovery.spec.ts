@@ -50,7 +50,7 @@ test("an administrator explicitly confirms an MFA reset and revokes the target s
   card = userCard(page, target.email);
   await card.getByLabel(`Enter ${target.username} to confirm MFA reset`).fill(target.username);
   await card.getByRole("button", { name: "Reset MFA" }).click();
-  await expect(page.getByText(/MFA reset and active sessions revoked/i)).toBeVisible();
+  await expect(page.getByText(/authentication reset and active sessions revoked/i)).toBeVisible();
   await expect(userCard(page, target.email).getByText("MFA: Not configured")).toBeVisible();
 
   await targetPage.goto("/account");
