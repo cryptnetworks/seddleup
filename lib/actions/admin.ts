@@ -270,7 +270,7 @@ export async function inviteUser(formData: FormData) {
     redirect("/admin/users?invite=invalid");
   }
 
-  const rateLimit = checkRateLimit(`admin-invite:${actor.id}`, {
+  const rateLimit = await checkRateLimit(`admin-invite:${actor.id}`, {
     limit: 10,
     windowMs: 60 * 60 * 1000
   });
@@ -306,7 +306,7 @@ export async function inviteUser(formData: FormData) {
 export async function resendUserInvitation(formData: FormData) {
   const actor = await requireAdminAction();
   const invitationId = formString(formData, "invitationId");
-  const rateLimit = checkRateLimit(`admin-invite-resend:${actor.id}`, {
+  const rateLimit = await checkRateLimit(`admin-invite-resend:${actor.id}`, {
     limit: 10,
     windowMs: 60 * 60 * 1000
   });

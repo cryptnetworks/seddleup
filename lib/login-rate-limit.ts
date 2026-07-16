@@ -1,16 +1,14 @@
 import { isIP } from "node:net";
 import { digestLookupToken } from "@/lib/token-digest";
 import { prisma } from "@/lib/prisma";
-import type { RateLimitOptions, RateLimitResult } from "@/lib/rate-limit";
+import {
+  configuredSharedRateLimitStore,
+  type AsyncRateLimitStore,
+  type RateLimitOptions,
+  type RateLimitResult
+} from "@/lib/rate-limit";
 
 const LOGIN_WINDOW_MS = 15 * 60 * 1000;
-
-export interface AsyncRateLimitStore {
-  check(
-    buckets: Array<{ key: string; options: RateLimitOptions }>,
-    now: Date
-  ): Promise<RateLimitResult[]>;
-}
 
 export class PrismaRateLimitStore implements AsyncRateLimitStore {
   async check(buckets: Array<{ key: string; options: RateLimitOptions }>, now: Date) {
@@ -73,7 +71,7 @@ export async function checkLoginRateLimit(input: {
   now?: Date;
   trustProxyHeaders?: boolean;
 }): Promise<LoginRateLimitDecision> {
-  const store = input.store ?? new PrismaRateLimitStore();
+  const store = input.store ?? configuredSharedRateLimitStore() ?? new PrismaRateLimitStore();
   const now = input.now ?? new Date();
   const trustProxyHeaders =
     input.trustProxyHeaders ?? process.env.SEDDLEUP_TRUST_PROXY_HEADERS === "true";

@@ -63,11 +63,17 @@ describe("trip sharing security primitives", () => {
     ]);
   });
 
-  it("limits repeated anonymous lookups without using the bearer token", () => {
+  it("limits repeated anonymous lookups without using the bearer token", async () => {
     for (let request = 0; request < 60; request += 1) {
-      expect(checkTripShareLookupRateLimit("hashed-requester").allowed).toBe(true);
+      await expect(checkTripShareLookupRateLimit("hashed-requester")).resolves.toMatchObject({
+        allowed: true
+      });
     }
-    expect(checkTripShareLookupRateLimit("hashed-requester").allowed).toBe(false);
-    expect(checkTripShareLookupRateLimit("different-requester").allowed).toBe(true);
+    await expect(checkTripShareLookupRateLimit("hashed-requester")).resolves.toMatchObject({
+      allowed: false
+    });
+    await expect(checkTripShareLookupRateLimit("different-requester")).resolves.toMatchObject({
+      allowed: true
+    });
   });
 });

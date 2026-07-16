@@ -45,7 +45,7 @@ export default async function SharedTripPage({ params }: { params: Promise<{ tok
     requestHeaders.get("x-real-ip") ||
     "unknown";
   const requestKey = digestLookupToken(requester).slice(0, 24);
-  const rateLimit = checkTripShareLookupRateLimit(requestKey);
+  const rateLimit = await checkTripShareLookupRateLimit(requestKey);
   if (!rateLimit.allowed) return <SharedTripUnavailable />;
 
   const summary = await resolveTripShareSummary(token);

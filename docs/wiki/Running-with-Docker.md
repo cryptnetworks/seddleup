@@ -236,6 +236,13 @@ to `false` if you publish the app container directly or use a proxy that does no
 establish that trust boundary. Other action limiters remain process-local, and
 multi-replica SQLite deployment remains unsupported.
 
+An operator-provided service implementing the
+[shared rate-limit contract](../shared-rate-limit-store.md) can coordinate all
+limiter buckets. Leave `RATE_LIMIT_SHARED_URL` unset for the supported default
+Compose topology. If it is enabled, production requires HTTPS and a dedicated
+token; the default `deny` outage policy makes service availability operationally
+critical. This does not change SQLite's single-deployment constraint.
+
 ---
 
 [Wiki Home](Home) | [Running with Docker](Running-with-Docker) | [Configuration](Configuration) | [Troubleshooting](Troubleshooting)

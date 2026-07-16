@@ -65,6 +65,14 @@ const smtpPort = Number(stripQuotes(process.env.SMTP_PORT || "587"));
 const smtpSecure = stripQuotes(process.env.SMTP_SECURE || "false") === "true";
 const resetMinutes = Number(stripQuotes(process.env.PASSWORD_RESET_TOKEN_MINUTES || "45"));
 const discordEnabled = stripQuotes(process.env.DISCORD_ENABLED || "false") === "true";
+const rateLimitSharedUrl = stripQuotes(process.env.RATE_LIMIT_SHARED_URL || "");
+const rateLimitSharedToken = stripQuotes(process.env.RATE_LIMIT_SHARED_TOKEN || "");
+const rateLimitSharedFailureMode = stripQuotes(
+  process.env.RATE_LIMIT_SHARED_FAILURE_MODE || "deny"
+);
+const rateLimitSharedTimeoutMs = Number(
+  stripQuotes(process.env.RATE_LIMIT_SHARED_TIMEOUT_MS || "1500")
+);
 
 if (!["development", "test", "production"].includes(nodeEnv)) {
   fail("NODE_ENV must be development, test, or production.");
@@ -76,6 +84,40 @@ if (!databaseUrl) {
 
 if (!databaseUrl.startsWith("file:")) {
   fail("DATABASE_URL must start with file:. SQLite is the only supported database engine.");
+}
+
+if (rateLimitSharedUrl) {
+  let parsedRateLimitUrl;
+  try {
+    parsedRateLimitUrl = new URL(rateLimitSharedUrl);
+  } catch {
+    fail("RATE_LIMIT_SHARED_URL must be a valid HTTP(S) URL.");
+  }
+  if (
+    !["http:", "https:"].includes(parsedRateLimitUrl.protocol) ||
+    parsedRateLimitUrl.username ||
+    parsedRateLimitUrl.password
+  ) {
+    fail("RATE_LIMIT_SHARED_URL must be an HTTP(S) URL without embedded credentials.");
+  }
+  if (nodeEnv === "production" && parsedRateLimitUrl.protocol !== "https:") {
+    fail("RATE_LIMIT_SHARED_URL must use HTTPS in production.");
+  }
+  if (rateLimitSharedToken.length < 24) {
+    fail("RATE_LIMIT_SHARED_TOKEN must contain at least 24 characters.");
+  }
+}
+
+if (!["deny", "local"].includes(rateLimitSharedFailureMode)) {
+  fail("RATE_LIMIT_SHARED_FAILURE_MODE must be deny or local.");
+}
+
+if (
+  !Number.isInteger(rateLimitSharedTimeoutMs) ||
+  rateLimitSharedTimeoutMs < 100 ||
+  rateLimitSharedTimeoutMs > 10_000
+) {
+  fail("RATE_LIMIT_SHARED_TIMEOUT_MS must be an integer from 100 to 10000.");
 }
 
 if (!nextAuthUrl) {
