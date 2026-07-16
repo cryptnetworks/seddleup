@@ -151,12 +151,22 @@ It checks:
 - use of the configured HTTPS public origin instead of a localhost canonical.
 
 Enabled receipt coverage also edits itemized receipt data, assigns a trip
-participant, and verifies the calculated split preview before saving review
-state. Line-item totals plus tax and tip are allocated in integer cents with any
-rounding remainder assigned deterministically in participant order. Empty
-assignments are rejected when saving. Receipt review never creates or updates an
-expense automatically; attachment to an existing expense remains an explicit
-upload choice, preventing duplicate charges.
+participant, verifies the calculated split preview, and saves the receipt into
+the expense ledger. Line-item totals plus tax, tip, and non-negative adjustments
+are allocated in integer cents with any one-cent remainder assigned
+deterministically in participant order. Every item must have at least one
+same-trip participant; unselected participants are excluded from that item.
+
+Saving a receipt as `Ready` creates one linked expense. Repeated submissions
+update that expense and replace its reconciled shares atomically instead of
+creating duplicate charges. A stale review is rejected after any intervening
+line-item mutation. For itemized review, changed totals must first be saved as
+`Needs review`; this refreshes the server-derived preview before the user can
+promote the receipt to `Ready`. Needs-review saves do not affect the ledger. The
+existing simple split remains available and
+allocates the reviewed total equally across all trip participants. The enabled
+browser suite exercises creation, retry idempotency, private file access,
+unrelated-user rejection, and 320-pixel overflow behavior with disposable data.
 
 Playwright keeps screenshots and video only for failed attempts. Do not commit
 generated `test-results/` artifacts. A manual in-app visual pass is useful when

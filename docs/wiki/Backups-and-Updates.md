@@ -53,6 +53,12 @@ unexpectedly reintroduced. Treat original receipt filenames and contents as
 private data; encrypt and retain receipt backups under the same policy as the
 database.
 
+The itemized-review migration adds a nullable `adjustments` amount to existing
+receipt rows. Existing rows remain valid and require no backfill. Deploy the
+migration before starting the updated application. Rollback requires restoring
+the pre-deployment database and receipt directory from the same stopped-service
+backup; do not edit migration history or remove the column in place.
+
 ## Validate a Backup Before Restore
 
 The production image already contains the same SQLite library used by SeddleUp.

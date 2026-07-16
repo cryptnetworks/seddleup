@@ -19,8 +19,9 @@ boundary, and focused verification are recorded in
 financial relations for #97 are protected. The settlement integration adds the
 remaining sender and recipient restrictions and coverage, completing the
 participant-deletion policy without reassigning or deleting financial history.
-Issue #101 remains deliberately deferred until this receipt-lifecycle,
-money-validation, and settlement base is merged.
+Issue #101 builds on this merged receipt-lifecycle and money-validation base in
+its own focused branch. It adds editable item assignment, cent-exact review
+reconciliation, and atomic, idempotent expense synchronization.
 
 Settlement payments add a dedicated `TripPayment` ledger, creditor-linked
 confirmation permissions for non-viewer trip members, adjusted balance

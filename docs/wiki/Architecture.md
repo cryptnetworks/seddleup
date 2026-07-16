@@ -151,6 +151,16 @@ allocated from those integer cents, including any one-cent remainder, so stored
 shares reconcile exactly to the stored expense. Optional receipt totals preserve
 blank values as `null` and allow an explicit zero.
 
+Receipt parser output is always editable. Itemized review derives shares on the
+server from persisted line items and same-trip assignments; client preview
+values are never trusted. Subtotal, tax, tip, non-negative adjustments, and final
+total must reconcile before a receipt can become ready. The serializable review
+transaction creates or updates the receipt's single linked expense, replaces all
+expense shares, and records receipt and expense audit events together. Repeated
+submissions therefore update the same charge, while an `updatedAt` review token
+rejects stale forms after line-item changes. Audit metadata records identifiers
+and counts only, not receipt text, image content, or parser payloads.
+
 `TripPayment` records a completed transfer between two participants in one trip.
 It is distinct from `PaymentMethod`, which is only a destination profile. The
 sender, recipient, and trip are protected by database foreign keys and same-trip

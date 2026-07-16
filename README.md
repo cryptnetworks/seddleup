@@ -22,8 +22,8 @@ the balance, and the simplest reimbursement suggestions for settling up.
   settlement history separate from expenses, and adjusts remaining balances.
 - Stores receipt uploads locally, keeps receipt files outside public assets, and
   serves them only after trip membership checks.
-- Provides a receipt parser and itemized receipt line item storage for review
-  and correction.
+- Provides editable receipt line items, participant assignment, reconciled split
+  previews, and an idempotent reviewed-receipt link to the expense ledger.
 - Includes an optional server-side retail item lookup abstraction with a mock
   provider for development and tests.
 - Supports credentials login, email verification, password reset, invitations,

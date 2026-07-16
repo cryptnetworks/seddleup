@@ -10,7 +10,7 @@ import {
   updateReceiptLineItem
 } from "@/lib/actions";
 import { getAppConfig } from "@/lib/config";
-import { dateInputValue, formatCurrency } from "@/lib/format";
+import { categories, dateInputValue, formatCurrency } from "@/lib/format";
 import { prisma } from "@/lib/prisma";
 import { calculateReceiptItemizedShares } from "@/lib/receipts/splitting";
 import { requireUser } from "@/lib/session";
@@ -41,6 +41,7 @@ export default async function ReceiptReviewPage({
     where: { id: receiptId, tripId },
     include: {
       trip: { include: { participants: { orderBy: { name: "asc" } } } },
+      expense: true,
       lineItems: {
         include: {
           participants: { include: { participant: true } }
@@ -64,7 +65,8 @@ export default async function ReceiptReviewPage({
     lineItems: assignedLineItems,
     participantIds: receipt.trip.participants.map((participant) => participant.id),
     tax: Number(receipt.tax || 0),
-    tip: Number(receipt.tip || 0)
+    tip: Number(receipt.tip || 0),
+    adjustments: Number(receipt.adjustments || 0)
   });
   const allocatedTotal = Object.values(itemizedShares).reduce((sum, share) => sum + share, 0);
 
@@ -79,10 +81,31 @@ export default async function ReceiptReviewPage({
         <section className="card p-4 sm:p-5">
           {query.saved ? (
             <p className="mb-4 rounded-lg bg-brand-soft p-3 text-sm text-ocean">
-              Receipt review saved.
+              {receipt.status === "ready"
+                ? "Receipt review and linked expense saved."
+                : "Receipt review saved. Confirm the refreshed split preview before marking it ready."}
+            </p>
+          ) : null}
+          {query.error && query.error !== "invalid" ? (
+            <p className="mb-4 rounded-lg bg-surface p-3 text-sm text-coral" role="alert">
+              {query.error === "stale"
+                ? "This receipt changed in another request. Review the latest values and try again."
+                : query.error === "preview"
+                  ? "Save these values as Needs review, confirm the refreshed split preview, then mark the receipt ready."
+                  : query.error === "reconciliation"
+                    ? "Item totals, tax, tip, and adjustments must equal the reviewed total."
+                    : query.error === "assignments"
+                      ? "Every item needs at least one traveler before itemized review can be completed."
+                      : "Choose a valid payer and complete the required expense fields."}
             </p>
           ) : null}
           <form className="grid min-w-0 gap-4" action={action}>
+            <input name="expectedUpdatedAt" type="hidden" value={receipt.updatedAt.toISOString()} />
+            <input
+              name="expectedExpenseUpdatedAt"
+              type="hidden"
+              value={receipt.expense?.updatedAt.toISOString() || ""}
+            />
             <div className="grid min-w-0 gap-4 sm:grid-cols-2">
               <div>
                 <label className="label" htmlFor="merchant">
@@ -111,8 +134,8 @@ export default async function ReceiptReviewPage({
                 />
               </div>
             </div>
-            <div className="grid min-w-0 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-              {(["subtotal", "tax", "tip", "total"] as const).map((field) => (
+            <div className="grid min-w-0 gap-4 sm:grid-cols-2 lg:grid-cols-5">
+              {(["subtotal", "tax", "tip", "adjustments", "total"] as const).map((field) => (
                 <div key={field}>
                   <label className="label capitalize" htmlFor={field}>
                     {field}
@@ -140,6 +163,53 @@ export default async function ReceiptReviewPage({
                   ) : null}
                 </div>
               ))}
+            </div>
+            <div className="grid min-w-0 gap-4 sm:grid-cols-2">
+              <div>
+                <label className="label" htmlFor="payerId">
+                  Paid by
+                </label>
+                <select
+                  className="field"
+                  disabled={!canEditReceipt}
+                  id="payerId"
+                  name="payerId"
+                  defaultValue={
+                    receipt.expense?.payerId ||
+                    receipt.trip.participants.find((participant) => participant.userId === user.id)
+                      ?.id ||
+                    receipt.trip.participants[0]?.id ||
+                    ""
+                  }
+                >
+                  <option disabled value="">
+                    Select a payer
+                  </option>
+                  {receipt.trip.participants.map((participant) => (
+                    <option key={participant.id} value={participant.id}>
+                      {participant.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="label" htmlFor="category">
+                  Expense category
+                </label>
+                <select
+                  className="field"
+                  disabled={!canEditReceipt}
+                  id="category"
+                  name="category"
+                  defaultValue={receipt.expense?.category || "Other"}
+                >
+                  {categories.map((category) => (
+                    <option key={category} value={category}>
+                      {category}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
             <div className="grid min-w-0 gap-4 sm:grid-cols-2">
               <div>
@@ -177,6 +247,11 @@ export default async function ReceiptReviewPage({
               <button className="btn-primary" type="submit">
                 Save review
               </button>
+            ) : null}
+            {receipt.expense ? (
+              <Link className="text-sm font-medium text-ocean underline" href={`/trips/${tripId}`}>
+                View linked expense
+              </Link>
             ) : null}
           </form>
         </section>
@@ -389,8 +464,9 @@ export default async function ReceiptReviewPage({
               ))}
             </div>
             <p className="mt-3 border-t border-line pt-2 text-sm text-muted">
-              Allocated {formatCurrency(allocatedTotal)} from item totals plus tax and tip. This
-              preview does not create or update an expense.
+              Allocated {formatCurrency(allocatedTotal)} from item totals plus tax, tip, and
+              adjustments. Saving as Ready creates one linked expense or updates that same expense
+              on later saves. Unselected travelers receive no share of that item.
             </p>
           </div>
         ) : null}

@@ -373,6 +373,7 @@ model Receipt {
   subtotal         Decimal?
   tax              Decimal?
   tip              Decimal?
+  adjustments      Decimal?
   total            Decimal?
   parserProvider   String            @default("local-heuristic")
   parserConfidence Float             @default(0)

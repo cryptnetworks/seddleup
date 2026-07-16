@@ -202,7 +202,10 @@ export const receiptReviewSchema = z.object({
   subtotal: optionalUsdMoneySchema,
   tax: optionalUsdMoneySchema,
   tip: optionalUsdMoneySchema,
+  adjustments: optionalUsdMoneySchema.optional().transform((value) => value ?? null),
   total: optionalUsdMoneySchema,
+  category: z.enum(categories).optional().default("Other"),
+  payerId: idSchema.optional(),
   status: z.enum(["needs_review", "ready"]),
   splitMode: z.enum(["simple", "itemized"])
 });
