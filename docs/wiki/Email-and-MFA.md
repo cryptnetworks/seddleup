@@ -71,6 +71,25 @@ factor. Authenticator-app MFA remains available without SMTP.
 
 Authenticator secrets are encrypted at rest.
 
+## MFA Account Recovery
+
+An active application administrator can reset MFA for an account from **Admin →
+Users**. The administrator must enter the target account's exact username before
+the reset is accepted. Successful recovery removes the encrypted authenticator
+secret, disables the configured second factor, revokes every active session and
+pending authentication challenge for that account, and records a secret-free
+audit event.
+
+The reset is rate-limited per administrator and target account. It does not email
+or display the old authenticator secret, and it never bypasses password or OAuth
+authentication. After signing in again, the user can enroll a new second factor
+from account settings.
+
+Private installations should retain at least two active administrators so one can
+recover the other. A sole administrator who is signed out and cannot complete MFA
+must restore a known-good database backup or obtain operator assistance; direct
+database edits are not a supported recovery procedure.
+
 ---
 
 [Wiki Home](Home) | [Running with Docker](Running-with-Docker) | [Configuration](Configuration) | [Troubleshooting](Troubleshooting)

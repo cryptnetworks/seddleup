@@ -17,6 +17,7 @@ export {
   deleteUser,
   inviteUser,
   resendUserInvitation,
+  resetUserMfa,
   resetUserPassword,
   revokeUserInvitation,
   setUserDisabled,

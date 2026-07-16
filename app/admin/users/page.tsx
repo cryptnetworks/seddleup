@@ -4,6 +4,7 @@ import {
   deleteUser,
   inviteUser,
   resendUserInvitation,
+  resetUserMfa,
   resetUserPassword,
   revokeUserInvitation,
   setUserDisabled,
@@ -40,6 +41,15 @@ function transferStatusMessage(status?: string) {
   return `Ownership transfer blocked: ${status}.`;
 }
 
+function mfaStatusMessage(status?: string) {
+  if (!status) return "";
+  if (status === "reset") return "Multi-factor authentication reset and active sessions revoked.";
+  if (status === "confirmation") return "MFA reset blocked: enter the exact username to confirm.";
+  if (status === "rate-limit") return "Too many MFA reset attempts. Try again later.";
+  if (status === "not-configured") return "That account does not have MFA configured.";
+  return "MFA reset blocked: invalid account.";
+}
+
 export default async function AdminUsersPage({
   searchParams
 }: {
@@ -51,6 +61,7 @@ export default async function AdminUsersPage({
     error?: string;
     invite?: string;
     transfer?: string;
+    mfa?: string;
     count?: string;
   }>;
 }) {
@@ -95,6 +106,7 @@ export default async function AdminUsersPage({
   ]);
   const inviteMessage = inviteStatusMessage(query.invite);
   const transferMessage = transferStatusMessage(query.transfer);
+  const mfaMessage = mfaStatusMessage(query.mfa);
 
   return (
     <AdminShell>
@@ -126,6 +138,16 @@ export default async function AdminUsersPage({
           }`}
         >
           {inviteMessage}
+        </p>
+      ) : null}
+      {mfaMessage ? (
+        <p
+          className={`mb-4 rounded-lg border border-line p-3 text-sm ${
+            query.mfa === "reset" ? "bg-teal-50 text-ocean" : "bg-surface text-coral"
+          }`}
+          role={query.mfa === "reset" ? "status" : "alert"}
+        >
+          {mfaMessage}
         </p>
       ) : null}
       <section className="card mb-4 grid gap-4 p-4">
@@ -239,6 +261,9 @@ export default async function AdminUsersPage({
                   {user.lastLoginAt?.toLocaleString() || "Never"} · Providers{" "}
                   {user.authAccounts.map((account) => account.providerId).join(", ") || "local"}
                 </p>
+                <p className="mt-1 text-xs text-muted">
+                  MFA: {user.twoFactorMethod === "none" ? "Not configured" : user.twoFactorMethod}
+                </p>
               </div>
               <div className="grid gap-2 sm:grid-cols-2 lg:min-w-[520px]">
                 <form
@@ -259,6 +284,28 @@ export default async function AdminUsersPage({
                     Save
                   </button>
                 </form>
+                {user.twoFactorMethod !== "none" || user.authenticatorEnabled ? (
+                  <form
+                    className="grid min-w-0 grid-cols-[minmax(0,1fr)_auto] gap-2 sm:col-span-2"
+                    action={resetUserMfa}
+                  >
+                    <input name="userId" type="hidden" value={user.id} />
+                    <label className="sr-only" htmlFor={`mfa-confirmation-${user.id}`}>
+                      Enter {user.username} to confirm MFA reset
+                    </label>
+                    <input
+                      autoComplete="off"
+                      className="field min-h-11 py-2 text-sm"
+                      id={`mfa-confirmation-${user.id}`}
+                      name="confirmation"
+                      placeholder={`Enter ${user.username} to confirm`}
+                      required
+                    />
+                    <button className="btn-danger" type="submit">
+                      Reset MFA
+                    </button>
+                  </form>
+                ) : null}
                 <form action={setUserDisabled}>
                   <input name="userId" type="hidden" value={user.id} />
                   <input name="disabled" type="hidden" value={user.disabledAt ? "false" : "true"} />

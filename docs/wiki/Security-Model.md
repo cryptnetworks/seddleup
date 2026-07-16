@@ -81,8 +81,10 @@ in its final redirect.
 Authenticator-app TOTP is not a stored one-time credential: it follows the
 standard short time-window verification model. It remains encrypted at rest and
 is never logged, but a valid TOTP value can be accepted more than once during
-its standards-defined window. Recovery credentials remain deferred to SeddleUp
-issue #75.
+its standards-defined window. MFA recovery uses an authorized, explicitly
+confirmed admin reset that removes the encrypted secret and revokes all target
+sessions and pending authentication challenges in the same transaction. The
+audit event records identities and the former method, never secret material.
 
 ## CSRF
 
