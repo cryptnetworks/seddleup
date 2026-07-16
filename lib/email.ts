@@ -36,7 +36,7 @@ type EmailMessage = {
   html: string;
 };
 
-const BRAND = {
+export const EMAIL_BRAND = {
   appName: "SeddleUp",
   tagline: "Travel together. Settle up easily.",
   primary: "#0F172A",
@@ -49,6 +49,8 @@ const BRAND = {
   border: "#E2E8F0",
   brandSoft: "#DBEAFE"
 } as const;
+
+const BRAND = EMAIL_BRAND;
 
 const legacyAppNamePattern = /^(triptally|trip tally|trip-tally)$/i;
 
