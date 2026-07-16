@@ -196,6 +196,68 @@ export async function resetUserPassword(formData: FormData) {
   revalidatePath("/admin/users");
 }
 
+export async function resetUserMfa(formData: FormData) {
+  const actor = await requireAdminAction();
+  const parsedUserId = idSchema.safeParse(formString(formData, "userId"));
+  if (!parsedUserId.success) {
+    redirect("/admin/users?mfa=invalid-user");
+  }
+
+  const target = await prisma.user.findUnique({
+    where: { id: parsedUserId.data },
+    select: {
+      id: true,
+      username: true,
+      twoFactorMethod: true,
+      authenticatorEnabled: true
+    }
+  });
+  if (!target) {
+    redirect("/admin/users?mfa=invalid-user");
+  }
+
+  if (formString(formData, "confirmation") !== target.username) {
+    redirect("/admin/users?mfa=confirmation");
+  }
+
+  const rateLimit = checkRateLimit(`admin-mfa-reset:${actor.id}:${target.id}`, {
+    limit: 5,
+    windowMs: 60 * 60 * 1000
+  });
+  if (!rateLimit.allowed) {
+    redirect("/admin/users?mfa=rate-limit");
+  }
+
+  if (target.twoFactorMethod === "none" && !target.authenticatorEnabled) {
+    redirect("/admin/users?mfa=not-configured");
+  }
+
+  await prisma.$transaction(async (tx) => {
+    await tx.user.update({
+      where: { id: target.id },
+      data: {
+        twoFactorMethod: "none",
+        authenticatorEnabled: false,
+        authenticatorSecretEncrypted: null
+      }
+    });
+    await revokeUserSessionsInTransaction(tx, target.id);
+    await writeAuditLog(
+      {
+        actorUserId: actor.id,
+        action: "user.mfa_reset_by_admin",
+        targetType: "user",
+        targetId: target.id,
+        metadata: { previousMethod: target.twoFactorMethod }
+      },
+      tx
+    );
+  });
+
+  revalidatePath("/admin/users");
+  redirect("/admin/users?mfa=reset");
+}
+
 export async function inviteUser(formData: FormData) {
   const actor = await requireAdminAction();
   const parsed = adminInvitationSchema.safeParse({
