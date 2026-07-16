@@ -256,6 +256,11 @@ Current major-version deferrals and update plan:
 - `@types/node` 26 should wait until the runtime target moves beyond Node 24, so
   type definitions do not get ahead of deployed APIs.
 
+The dated compatibility status, independent entry gates, clean-install matrix,
+and rollback criteria are maintained in the
+[ESLint 10 and Node.js 26 upgrade plan](../runtime-upgrade-plan.md). Do not use
+peer-dependency overrides to advance either window.
+
 SeddleUp sends SMTP mail through EmailJS. Do not reintroduce a direct Nodemailer dependency unless NextAuth and the app email layer are reviewed together for peer compatibility.
 
 ## Release Workflow

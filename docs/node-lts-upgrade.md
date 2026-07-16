@@ -61,7 +61,9 @@ eslint        9.39.4   9.39.4  10.5.0
 ```
 
 The regenerated lockfile uses `@types/node@24.13.2` for the Node 24 runtime
-target. ESLint 10, Node 26, and `@types/node` 26 remain intentionally deferred.
+target. ESLint 10, Node 26, and `@types/node` 26 remain intentionally deferred;
+their current blockers and objective entry criteria are maintained in the
+[ESLint 10 and Node.js 26 upgrade plan](runtime-upgrade-plan.md).
 
 ## Compatibility Review
 
