@@ -10,6 +10,15 @@ docker pull ghcr.io/cryptnetworks/seddleup:latest
 
 The `latest` image is published for `linux/amd64` and `linux/arm64/v8` (aarch64).
 
+Release images are published with equivalent manifests to GHCR and Docker Hub
+once the Docker Hub repository and repository credentials are configured. GHCR
+remains the default. Select a registry without editing Compose:
+
+```bash
+SEDDLEUP_IMAGE=ghcr.io/cryptnetworks/seddleup:latest docker compose up -d
+SEDDLEUP_IMAGE=cryptnetworks/seddleup:latest docker compose up -d
+```
+
 The Compose deployment uses that image by default. Set `SEDDLEUP_IMAGE` in the
 shell or Compose interpolation environment to deploy an exact tag, digest, or
 alternate registry without editing `docker-compose.yml`. The application and

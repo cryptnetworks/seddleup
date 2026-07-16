@@ -63,6 +63,7 @@ npm run test:docker:profiles
       Local single-architecture builds do not replace this check.
 - [ ] Review the generated image metadata and ensure publication will target
       `ghcr.io/cryptnetworks/seddleup`.
+      Confirm equivalent tags target the configured Docker Hub `seddleup` repository.
 
 ## Publish
 
