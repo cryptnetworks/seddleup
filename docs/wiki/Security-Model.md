@@ -61,6 +61,12 @@
 - Password and sensitive authentication changes increment a per-user session
   version. JWTs with a missing or older version are rejected.
 
+The complete initiation, callback, account-linking, session-cookie, rejection,
+and compatibility-cookie sequence is documented in
+[Admin and OAuth Providers](Admin-and-OAuth-Providers#supported-callback-flow).
+OAuth callbacks create the NextAuth cookie directly on the server. The removed
+client-visible OAuth app-login-token handoff must not be reintroduced.
+
 ## One-Time Credential Concurrency
 
 Password-reset tokens, email-verification tokens, email MFA challenges, session
