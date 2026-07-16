@@ -61,6 +61,7 @@ concurrency:
 
 env:
   IMAGE_NAME: ghcr.io/${{ github.repository_owner }}/seddleup
+  DOCKERHUB_IMAGE: ${{ vars.DOCKERHUB_NAMESPACE }}/seddleup
 
 jobs:
   docker:
@@ -106,6 +107,9 @@ jobs:
         with:
           clean: true
 
+      - name: Validate Docker publication policy
+        run: npm run docker:publication:check
+
       - name: Verify Docker
         run: docker version
 
@@ -127,11 +131,37 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Validate Docker Hub publication configuration
+        if: github.event_name != 'pull_request'
+        env:
+          DOCKERHUB_NAMESPACE: ${{ vars.DOCKERHUB_NAMESPACE }}
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+          DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ -n "${DOCKERHUB_NAMESPACE}" ]] || { echo "Missing DOCKERHUB_NAMESPACE repository variable."; exit 1; }
+          [[ -n "${DOCKERHUB_USERNAME}" ]] || { echo "Missing DOCKERHUB_USERNAME Actions secret."; exit 1; }
+          [[ -n "${DOCKERHUB_TOKEN}" ]] || { echo "Missing DOCKERHUB_TOKEN Actions secret."; exit 1; }
+
+      - name: Log in to Docker Hub
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@v4
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
       - name: Docker metadata
         id: meta
         uses: docker/metadata-action@v6
         with:
           images: ${{ env.IMAGE_NAME }}
+          labels: |
+            org.opencontainers.image.title=SeddleUp
+            org.opencontainers.image.description=Self-hosted group travel expense tracking
+            org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
+            org.opencontainers.image.revision=${{ github.sha }}
+            org.opencontainers.image.licenses=MIT
 
       - name: Build image
         if: github.event_name == 'pull_request'
@@ -153,7 +183,7 @@ jobs:
           context: .
           file: ./Dockerfile
           platforms: ${{ matrix.platform }}
-          outputs: type=image,name=${{ env.IMAGE_NAME }},push-by-digest=true,name-canonical=true,push=true
+          outputs: type=image,name=${{ env.IMAGE_NAME }},${{ env.DOCKERHUB_IMAGE }},push-by-digest=true,name-canonical=true,push=true
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha,scope=${{ matrix.artifact }}
           cache-to: type=gha,mode=max,scope=${{ matrix.artifact }}
@@ -163,23 +193,24 @@ jobs:
         if: github.event_name != 'pull_request'
         run: |
           mkdir -p "${RUNNER_TEMP}/digests"
-          echo "${{ steps.build.outputs.digest }}" > "${RUNNER_TEMP}/digests/${{ matrix.artifact }}"
+          printf '%s\n' "${{ steps.build.outputs.digest }}" > "${RUNNER_TEMP}/digests/ghcr-${{ matrix.artifact }}"
+          printf '%s\n' "${{ steps.build.outputs.digest }}" > "${RUNNER_TEMP}/digests/dockerhub-${{ matrix.artifact }}"
 
-      - name: Upload image digest
-        if: github.event_name != 'pull_request'
-        uses: actions/upload-artifact@v7
-        with:
-          name: digest-${{ matrix.artifact }}
-          path: ${{ runner.temp }}/digests/${{ matrix.artifact }}
-          if-no-files-found: error
-          retention-days: 1
-
-      - name: Upload manifest digest
+      - name: Upload GHCR manifest digest
         if: github.event_name != 'pull_request' && matrix.manifest
         uses: actions/upload-artifact@v7
         with:
-          name: digest-manifest-${{ matrix.artifact }}
-          path: ${{ runner.temp }}/digests/${{ matrix.artifact }}
+          name: digest-manifest-ghcr-${{ matrix.artifact }}-${{ github.sha }}
+          path: ${{ runner.temp }}/digests/ghcr-${{ matrix.artifact }}
+          if-no-files-found: error
+          retention-days: 1
+
+      - name: Upload Docker Hub manifest digest
+        if: github.event_name != 'pull_request' && matrix.manifest
+        uses: actions/upload-artifact@v7
+        with:
+          name: digest-manifest-dockerhub-${{ matrix.artifact }}-${{ github.sha }}
+          path: ${{ runner.temp }}/digests/dockerhub-${{ matrix.artifact }}
           if-no-files-found: error
           retention-days: 1
 
@@ -305,32 +336,102 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Docker metadata
-        id: meta
+      - name: Validate Docker Hub publication configuration
+        env:
+          DOCKERHUB_NAMESPACE: ${{ vars.DOCKERHUB_NAMESPACE }}
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+          DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ -n "${DOCKERHUB_NAMESPACE}" ]] || { echo "Missing DOCKERHUB_NAMESPACE repository variable."; exit 1; }
+          [[ -n "${DOCKERHUB_USERNAME}" ]] || { echo "Missing DOCKERHUB_USERNAME Actions secret."; exit 1; }
+          [[ -n "${DOCKERHUB_TOKEN}" ]] || { echo "Missing DOCKERHUB_TOKEN Actions secret."; exit 1; }
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v4
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: GHCR metadata
+        id: meta-ghcr
         uses: docker/metadata-action@v6
         with:
           images: ${{ env.IMAGE_NAME }}
           tags: |
             type=raw,value=latest,enable={{is_default_branch}}
-            type=ref,event=branch
-            type=ref,event=tag
+            type=raw,value=main,enable={{is_default_branch}}
+            type=raw,value=${{ github.ref_name }},enable=${{ startsWith(github.ref, 'refs/tags/v') }}
+            type=semver,pattern={{version}},enable=${{ startsWith(github.ref, 'refs/tags/v') }}
+            type=semver,pattern={{major}}.{{minor}},enable=${{ startsWith(github.ref, 'refs/tags/v') && !contains(github.ref_name, '-') }}
+            type=semver,pattern={{major}},enable=${{ startsWith(github.ref, 'refs/tags/v') && !contains(github.ref_name, '-') }}
             type=sha,prefix=sha-
 
-      - name: Create multi-platform manifest
+      - name: Docker Hub metadata
+        id: meta-dockerhub
+        uses: docker/metadata-action@v6
+        with:
+          images: ${{ env.DOCKERHUB_IMAGE }}
+          tags: |
+            type=raw,value=latest,enable={{is_default_branch}}
+            type=raw,value=main,enable={{is_default_branch}}
+            type=raw,value=${{ github.ref_name }},enable=${{ startsWith(github.ref, 'refs/tags/v') }}
+            type=semver,pattern={{version}},enable=${{ startsWith(github.ref, 'refs/tags/v') }}
+            type=semver,pattern={{major}}.{{minor}},enable=${{ startsWith(github.ref, 'refs/tags/v') && !contains(github.ref_name, '-') }}
+            type=semver,pattern={{major}},enable=${{ startsWith(github.ref, 'refs/tags/v') && !contains(github.ref_name, '-') }}
+            type=sha,prefix=sha-
+
+      - name: Create GHCR multi-platform manifest
         env:
-          METADATA_JSON: ${{ steps.meta.outputs.json }}
+          METADATA_JSON: ${{ steps.meta-ghcr.outputs.json }}
+        shell: bash
         run: |
           set -euo pipefail
-
+          digest_files=("${RUNNER_TEMP}"/digests/ghcr-*)
+          [[ ${#digest_files[@]} -eq 2 ]] || { echo "Expected two GHCR platform digests."; exit 1; }
           refs=()
-          for digest_file in "${RUNNER_TEMP}"/digests/*; do
+          for digest_file in "${digest_files[@]}"; do
             digest="$(cat "$digest_file")"
             refs+=("${IMAGE_NAME}@${digest}")
           done
-
           tags=()
-          while IFS= read -r tag; do
-            tags+=("-t" "$tag")
-          done < <(jq -r '.tags[]' <<< "$METADATA_JSON")
-
+          while IFS= read -r tag; do tags+=("-t" "$tag"); done < <(jq -r '.tags[]' <<< "$METADATA_JSON")
           docker buildx imagetools create "${tags[@]}" "${refs[@]}"
+
+      - name: Create Docker Hub multi-platform manifest
+        env:
+          METADATA_JSON: ${{ steps.meta-dockerhub.outputs.json }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          digest_files=("${RUNNER_TEMP}"/digests/dockerhub-*)
+          [[ ${#digest_files[@]} -eq 2 ]] || { echo "Expected two Docker Hub platform digests."; exit 1; }
+          refs=()
+          for digest_file in "${digest_files[@]}"; do
+            digest="$(cat "$digest_file")"
+            refs+=("${DOCKERHUB_IMAGE}@${digest}")
+          done
+          tags=()
+          while IFS= read -r tag; do tags+=("-t" "$tag"); done < <(jq -r '.tags[]' <<< "$METADATA_JSON")
+          docker buildx imagetools create "${tags[@]}" "${refs[@]}"
+
+      - name: Verify both registry manifests
+        env:
+          GHCR_METADATA_JSON: ${{ steps.meta-ghcr.outputs.json }}
+          DOCKERHUB_METADATA_JSON: ${{ steps.meta-dockerhub.outputs.json }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          verify_manifest() {
+            local image="$1"
+            local raw platforms
+            raw="$(docker buildx imagetools inspect "$image" --raw)"
+            platforms="$(jq -r '[.manifests[].platform | "\(.os)/\(.architecture)"] | sort | join(",")' <<< "$raw")"
+            [[ "$platforms" == "linux/amd64,linux/arm64" ]] || {
+              echo "Unexpected platform set for ${image}: ${platforms}"
+              exit 1
+            }
+          }
+          verify_manifest "$(jq -r '.tags[0]' <<< "$GHCR_METADATA_JSON")"
+          verify_manifest "$(jq -r '.tags[0]' <<< "$DOCKERHUB_METADATA_JSON")"
