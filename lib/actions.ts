@@ -33,7 +33,14 @@ export {
 } from "@/lib/actions/participants";
 export { createExpense, deleteExpense, updateExpense } from "@/lib/actions/expenses";
 export { deletePaymentMethod, savePaymentMethod } from "@/lib/actions/payments";
-export { deleteReceipt, saveReceiptReview, uploadReceipt } from "@/lib/actions/receipts";
+export {
+  createReceiptLineItem,
+  deleteReceipt,
+  deleteReceiptLineItem,
+  saveReceiptReview,
+  updateReceiptLineItem,
+  uploadReceipt
+} from "@/lib/actions/receipts";
 export {
   createTripPayment,
   deleteTripPayment,

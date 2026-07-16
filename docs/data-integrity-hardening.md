@@ -92,6 +92,10 @@ changes by deleting migration rows or editing an existing migration. See
   explicit ownership transfer.
 - `tests/unit/receipt-storage.test.ts` and the enabled receipt browser suite use
   temporary upload roots for compensation and scoped deletion.
+- `tests/unit/receipt-splitting.test.ts` validates cent-exact itemized and simple
+  plans, assignment boundaries, adjustments, and reconciliation. The enabled
+  receipt browser suite proves that repeated ready-state saves retain one linked
+  expense and its server-derived shares.
 - `tests/integration/one-time-credentials.test.ts` and invitation integration
   tests issue bounded concurrent attempts and require exactly one success.
 

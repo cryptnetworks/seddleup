@@ -4,6 +4,7 @@ import { expect, test } from "@playwright/test";
 import {
   configureTestAuthSettings,
   createTripWithParticipants,
+  login,
   registerAndLogin,
   uniqueLabel
 } from "./helpers";
@@ -33,7 +34,7 @@ test("enabled receipt upload, review, file authorization, and cleanup path work"
 }, testInfo) => {
   test.skip(!receiptsEnabled, "Enabled receipt coverage uses the isolated receipt runner.");
 
-  await registerAndLogin(page, testInfo, "receipt-owner");
+  const owner = await registerAndLogin(page, testInfo, "receipt-owner");
   await createTripWithParticipants(page, uniqueLabel(testInfo, "Enabled Receipt Trip"));
   const tripPath = new URL(page.url()).pathname;
 
@@ -41,6 +42,12 @@ test("enabled receipt upload, review, file authorization, and cleanup path work"
   await page.getByLabel("Receipt file").setInputFiles("tests/fixtures/receipt-sample.pdf");
   await page.getByRole("button", { name: "Upload and parse" }).click();
   await expect(page.getByRole("heading", { name: "Review receipt" })).toBeVisible();
+  await page.setViewportSize({ width: 320, height: 800 });
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth > document.documentElement.clientWidth
+    )
+  ).toBe(false);
   const receiptPath = new URL(page.url()).pathname;
   const receiptId = receiptPath.split("/").at(-1) ?? "";
   const uploadRoot = process.env.PLAYWRIGHT_RECEIPT_UPLOAD_DIR ?? "";
@@ -49,11 +56,55 @@ test("enabled receipt upload, review, file authorization, and cleanup path work"
 
   await expect(page.getByLabel("Merchant")).toHaveValue("SeddleUp Test Market");
   await expect(page.locator("#total")).toHaveValue("13.50");
+  while ((await page.getByRole("button", { name: "Delete item" }).count()) > 0) {
+    await page.getByRole("button", { name: "Delete item" }).first().click();
+    await expect(page.getByText("Line items saved.")).toBeVisible();
+  }
+  await page.getByPlaceholder("Item name").fill("Shared snack");
+  await page.getByPlaceholder("Total").fill("13.50");
+  await page.locator('form:has-text("Add line item") input[name="participantIds"]').first().check();
+  await page.getByRole("button", { name: "Add item" }).click();
+  await expect(page.getByText("Line items saved.")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Itemized split preview" })).toBeVisible();
+
+  const staleReviewContext = await browser.newContext();
+  const staleReviewPage = await staleReviewContext.newPage();
+  await login(staleReviewPage, owner.email, owner.password);
+  await staleReviewPage.goto(receiptPath);
+  await expect(staleReviewPage.getByRole("heading", { name: "Review receipt" })).toBeVisible();
+  await page.getByRole("button", { name: "Save item" }).click();
+  await expect(page.getByText("Line items saved.")).toBeVisible();
+  await staleReviewPage.getByRole("button", { name: "Save review" }).click();
+  await expect(
+    staleReviewPage.getByText("changed in another request", { exact: false })
+  ).toBeVisible();
+  await staleReviewContext.close();
+
+  await page.getByLabel("Split mode").selectOption("itemized");
   await page.getByLabel("Merchant").fill("SeddleUp Test Market");
+  await page.getByLabel("Date").fill("2026-07-02");
+  await page.locator("#subtotal").fill("13.50");
+  await page.locator("#tax").fill("0.00");
+  await page.locator("#tip").fill("0.00");
+  await page.locator("#adjustments").fill("0.00");
   await page.locator("#total").fill("13.50");
+  await page.getByLabel("Paid by").selectOption({ label: "Alice" });
+  await page.getByRole("button", { name: "Save review" }).click();
+  await expect(page.getByText(/Confirm the refreshed split preview/)).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Itemized split preview" })).toBeVisible();
+  await expect(page.getByText("Allocated $13.50", { exact: false })).toBeVisible();
   await page.getByLabel("Review status").selectOption("ready");
   await page.getByRole("button", { name: "Save review" }).click();
-  await expect(page.getByText("Receipt review saved.")).toBeVisible();
+  await expect(page.getByText("Receipt review and linked expense saved.")).toBeVisible();
+
+  // A repeated review updates the linked expense instead of duplicating the charge.
+  await page.getByRole("button", { name: "Save review" }).click();
+  await expect(page.getByText("Receipt review and linked expense saved.")).toBeVisible();
+  await page.goto(tripPath);
+  await expect(
+    page.getByTestId("expense-card").filter({ hasText: "SeddleUp Test Market" })
+  ).toHaveCount(1);
+  await page.goto(receiptPath);
 
   await page.locator("#total").fill("-1.00");
   await page.locator("#total").evaluate((element) => element.removeAttribute("pattern"));

@@ -78,8 +78,10 @@ historical [issue remediation plan](issue-remediation-plan.md).
   MFA secret regression coverage and recovery/admin reset.
 - [#93](https://github.com/cryptnetworks/seddleup/issues/93): final real-origin
   post-deployment SEO verification remains environment-dependent.
-- [#101](https://github.com/cryptnetworks/seddleup/issues/101): complete
-  itemized receipt-review workflows.
+- [#101](https://github.com/cryptnetworks/seddleup/issues/101): itemized receipt
+  review, assignment, reconciliation, and linked-expense synchronization are
+  implemented in a focused change; operational migration remains subject to its
+  pull-request review.
 
 ## Validation expectations for future cleanup
 
