@@ -207,6 +207,18 @@ export const receiptReviewSchema = z.object({
   splitMode: z.enum(["simple", "itemized"])
 });
 
+export const receiptLineItemSchema = z.object({
+  name: z.string().trim().min(1).max(140),
+  quantity: z
+    .string()
+    .trim()
+    .regex(/^\d{1,3}(?:\.\d{1,3})?$/)
+    .refine((value) => Number(value) > 0, "Quantity must be positive."),
+  unitPrice: optionalUsdMoneySchema,
+  totalPrice: positiveUsdMoneySchema,
+  participantIds: z.array(idSchema).min(1).max(250)
+});
+
 export type ExpenseFormData = z.infer<typeof expenseSchema>;
 
 export const tripPaymentConfirmationSchema = z

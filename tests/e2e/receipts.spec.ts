@@ -49,6 +49,13 @@ test("enabled receipt upload, review, file authorization, and cleanup path work"
 
   await expect(page.getByLabel("Merchant")).toHaveValue("SeddleUp Test Market");
   await expect(page.locator("#total")).toHaveValue("13.50");
+  await page.getByPlaceholder("Item name").fill("Shared snack");
+  await page.getByPlaceholder("Total").fill("4.25");
+  await page.locator('form:has-text("Add line item") input[name="participantIds"]').first().check();
+  await page.getByRole("button", { name: "Add item" }).click();
+  await expect(page.getByText("Line items saved.")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Itemized split preview" })).toBeVisible();
+  await page.getByLabel("Split mode").selectOption("itemized");
   await page.getByLabel("Merchant").fill("SeddleUp Test Market");
   await page.locator("#total").fill("13.50");
   await page.getByLabel("Review status").selectOption("ready");

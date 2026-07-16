@@ -2,10 +2,17 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { PageHeader } from "@/components/PageHeader";
 import { PageShell } from "@/components/PageShell";
-import { deleteReceipt, saveReceiptReview } from "@/lib/actions";
+import {
+  createReceiptLineItem,
+  deleteReceipt,
+  deleteReceiptLineItem,
+  saveReceiptReview,
+  updateReceiptLineItem
+} from "@/lib/actions";
 import { getAppConfig } from "@/lib/config";
 import { dateInputValue, formatCurrency } from "@/lib/format";
 import { prisma } from "@/lib/prisma";
+import { calculateReceiptItemizedShares } from "@/lib/receipts/splitting";
 import { requireUser } from "@/lib/session";
 import { requireTripAccess } from "@/lib/trip-access";
 import { isTripManager } from "@/lib/trip-permissions";
@@ -15,7 +22,13 @@ export default async function ReceiptReviewPage({
   searchParams
 }: {
   params: Promise<{ tripId: string; receiptId: string }>;
-  searchParams: Promise<{ saved?: string; error?: string; field?: string }>;
+  searchParams: Promise<{
+    saved?: string;
+    itemsSaved?: string;
+    itemError?: string;
+    error?: string;
+    field?: string;
+  }>;
 }) {
   const { tripId, receiptId } = await params;
   const query = await searchParams;
@@ -27,7 +40,7 @@ export default async function ReceiptReviewPage({
   const receipt = await prisma.receipt.findFirst({
     where: { id: receiptId, tripId },
     include: {
-      trip: true,
+      trip: { include: { participants: { orderBy: { name: "asc" } } } },
       lineItems: {
         include: {
           participants: { include: { participant: true } }
@@ -40,6 +53,20 @@ export default async function ReceiptReviewPage({
   const canEditReceipt = receipt.uploaderUserId === user.id || isTripManager(resolved.access.role);
   const action = saveReceiptReview.bind(null, tripId, receipt.id);
   const removeReceipt = deleteReceipt.bind(null, tripId, receipt.id);
+  const assignedLineItems = receipt.lineItems.map((item) => ({
+    id: item.id,
+    totalPrice: Number(item.totalPrice),
+    assignedParticipantIds: item.participants
+      .filter((assignment) => assignment.role === "assigned")
+      .map((assignment) => assignment.participantId)
+  }));
+  const itemizedShares = calculateReceiptItemizedShares({
+    lineItems: assignedLineItems,
+    participantIds: receipt.trip.participants.map((participant) => participant.id),
+    tax: Number(receipt.tax || 0),
+    tip: Number(receipt.tip || 0)
+  });
+  const allocatedTotal = Object.values(itemizedShares).reduce((sum, share) => sum + share, 0);
 
   return (
     <PageShell>
@@ -186,35 +213,187 @@ export default async function ReceiptReviewPage({
 
       <section className="card mt-5 p-4 sm:p-5">
         <h2 className="text-lg font-semibold text-ink">Line items</h2>
-        {receipt.lineItems.length === 0 ? (
-          <p className="mt-3 text-sm text-muted">
-            No line items were detected. Add/edit itemized entries in the next receipt workflow
-            pass.
+        <p className="mt-1 text-sm text-muted">
+          Select every traveler sharing an item. Unselected travelers are excluded; an item cannot
+          be saved without at least one assignment.
+        </p>
+        {query.itemsSaved ? (
+          <p className="mt-3 rounded-lg bg-brand-soft p-3 text-sm text-ocean" role="status">
+            Line items saved.
           </p>
+        ) : null}
+        {query.itemError ? (
+          <p className="mt-3 rounded-lg bg-surface p-3 text-sm text-coral" role="alert">
+            Line item not saved. Check its values and choose travelers from this trip.
+          </p>
+        ) : null}
+        {receipt.lineItems.length === 0 ? (
+          <p className="mt-3 text-sm text-muted">No line items were detected.</p>
         ) : (
           <div className="mt-4 grid gap-3">
             {receipt.lineItems.map((item) => (
-              <div key={item.id} className="rounded-lg border border-line bg-surface p-3">
-                <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                  <div className="min-w-0">
-                    <p className="font-semibold text-ink">{item.name}</p>
-                    <p className="text-sm text-muted">
-                      Qty {Number(item.quantity).toString()} - assigned to{" "}
-                      {
-                        item.participants.filter((participant) => participant.role === "assigned")
-                          .length
-                      }{" "}
-                      participant(s)
-                    </p>
+              <article
+                key={item.id}
+                className="min-w-0 rounded-lg border border-line bg-surface p-3"
+              >
+                <form
+                  action={updateReceiptLineItem.bind(null, tripId, receipt.id, item.id)}
+                  className="grid min-w-0 gap-3"
+                >
+                  <div className="grid min-w-0 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                    <label className="text-sm font-medium text-ink sm:col-span-2">
+                      Item name
+                      <input
+                        className="field mt-1"
+                        defaultValue={item.name}
+                        disabled={!canEditReceipt}
+                        name="name"
+                        required
+                      />
+                    </label>
+                    <label className="text-sm font-medium text-ink">
+                      Quantity
+                      <input
+                        className="field mt-1"
+                        defaultValue={Number(item.quantity).toString()}
+                        disabled={!canEditReceipt}
+                        inputMode="decimal"
+                        name="quantity"
+                        required
+                      />
+                    </label>
+                    <label className="text-sm font-medium text-ink">
+                      Total
+                      <input
+                        className="field mt-1"
+                        defaultValue={Number(item.totalPrice).toFixed(2)}
+                        disabled={!canEditReceipt}
+                        inputMode="decimal"
+                        name="totalPrice"
+                        required
+                      />
+                    </label>
+                    <label className="text-sm font-medium text-ink">
+                      Unit price (optional)
+                      <input
+                        className="field mt-1"
+                        defaultValue={item.unitPrice ? Number(item.unitPrice).toFixed(2) : ""}
+                        disabled={!canEditReceipt}
+                        inputMode="decimal"
+                        name="unitPrice"
+                      />
+                    </label>
                   </div>
-                  <p className="break-all font-semibold tabular-nums text-ink sm:shrink-0">
-                    {formatCurrency(Number(item.totalPrice))}
-                  </p>
-                </div>
-              </div>
+                  <fieldset className="min-w-0">
+                    <legend className="text-sm font-medium text-ink">
+                      Travelers sharing this item
+                    </legend>
+                    <div className="mt-2 grid min-w-0 gap-2 sm:grid-cols-2 lg:grid-cols-3">
+                      {receipt.trip.participants.map((participant) => (
+                        <label
+                          className="flex min-w-0 items-center gap-2 text-sm"
+                          key={participant.id}
+                        >
+                          <input
+                            defaultChecked={item.participants.some(
+                              (assignment) =>
+                                assignment.role === "assigned" &&
+                                assignment.participantId === participant.id
+                            )}
+                            disabled={!canEditReceipt}
+                            name="participantIds"
+                            type="checkbox"
+                            value={participant.id}
+                          />
+                          <span className="min-w-0 break-words">{participant.name}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </fieldset>
+                  {canEditReceipt ? (
+                    <button className="btn-secondary w-full sm:w-auto" type="submit">
+                      Save item
+                    </button>
+                  ) : null}
+                </form>
+                {canEditReceipt ? (
+                  <form
+                    action={deleteReceiptLineItem.bind(null, tripId, receipt.id, item.id)}
+                    className="mt-2"
+                  >
+                    <button className="btn-danger w-full sm:w-auto" type="submit">
+                      Delete item
+                    </button>
+                  </form>
+                ) : null}
+              </article>
             ))}
           </div>
         )}
+        {canEditReceipt ? (
+          <form
+            action={createReceiptLineItem.bind(null, tripId, receipt.id)}
+            className="mt-4 grid min-w-0 gap-3 rounded-lg border border-dashed border-line p-3"
+          >
+            <h3 className="font-semibold text-ink">Add line item</h3>
+            <div className="grid min-w-0 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+              <input className="field sm:col-span-2" name="name" placeholder="Item name" required />
+              <input
+                className="field"
+                inputMode="decimal"
+                name="quantity"
+                defaultValue="1"
+                required
+              />
+              <input
+                className="field"
+                inputMode="decimal"
+                name="totalPrice"
+                placeholder="Total"
+                required
+              />
+              <input
+                className="field"
+                inputMode="decimal"
+                name="unitPrice"
+                placeholder="Unit price (optional)"
+              />
+            </div>
+            <fieldset>
+              <legend className="text-sm font-medium text-ink">Travelers sharing this item</legend>
+              <div className="mt-2 grid min-w-0 gap-2 sm:grid-cols-2 lg:grid-cols-3">
+                {receipt.trip.participants.map((participant) => (
+                  <label className="flex min-w-0 items-center gap-2 text-sm" key={participant.id}>
+                    <input name="participantIds" type="checkbox" value={participant.id} />
+                    <span className="min-w-0 break-words">{participant.name}</span>
+                  </label>
+                ))}
+              </div>
+            </fieldset>
+            <button className="btn-primary w-full sm:w-auto" type="submit">
+              Add item
+            </button>
+          </form>
+        ) : null}
+        {receipt.lineItems.length > 0 ? (
+          <div className="mt-5 rounded-lg border border-line p-3">
+            <h3 className="font-semibold text-ink">Itemized split preview</h3>
+            <div className="mt-2 grid gap-1 text-sm">
+              {receipt.trip.participants.map((participant) => (
+                <p className="flex justify-between gap-3" key={participant.id}>
+                  <span className="min-w-0 break-words">{participant.name}</span>
+                  <strong className="shrink-0 tabular-nums">
+                    {formatCurrency(itemizedShares[participant.id] || 0)}
+                  </strong>
+                </p>
+              ))}
+            </div>
+            <p className="mt-3 border-t border-line pt-2 text-sm text-muted">
+              Allocated {formatCurrency(allocatedTotal)} from item totals plus tax and tip. This
+              preview does not create or update an expense.
+            </p>
+          </div>
+        ) : null}
       </section>
     </PageShell>
   );

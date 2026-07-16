@@ -24,12 +24,139 @@ import {
   idSchema,
   optionalUsdMoneySchema,
   parseDateInput,
+  receiptLineItemSchema,
   receiptReviewSchema
 } from "@/lib/validation";
 
 function parsedReceiptDecimal(value: number | undefined) {
   if (value === undefined) return null;
   return new Prisma.Decimal(optionalUsdMoneySchema.parse(String(value))?.decimal ?? "0.00");
+}
+
+async function requireEditableReceipt(tripId: string, receiptId: string, userId: string) {
+  const resolved = await requireTripAccess(tripId, userId);
+  const receipt = await prisma.receipt.findFirst({
+    where: { id: receiptId, tripId },
+    select: { id: true, uploaderUserId: true }
+  });
+  if (!receipt) redirect(`/trips/${tripId}`);
+  if (receipt.uploaderUserId !== userId && !isTripManager(resolved.access.role)) {
+    redirect(`/trips/${tripId}?error=forbidden`);
+  }
+  return receipt;
+}
+
+async function parsedLineItemForm(tripId: string, receiptId: string, formData: FormData) {
+  const parsed = receiptLineItemSchema.safeParse({
+    name: formString(formData, "name"),
+    quantity: formString(formData, "quantity"),
+    unitPrice: formString(formData, "unitPrice"),
+    totalPrice: formString(formData, "totalPrice"),
+    participantIds: formData
+      .getAll("participantIds")
+      .filter((value): value is string => typeof value === "string")
+  });
+  if (!parsed.success) {
+    redirect(`/trips/${tripId}/receipts/${receiptId}?itemError=invalid`);
+  }
+  const uniqueParticipantIds = [...new Set(parsed.data.participantIds)];
+  const participantCount = await prisma.participant.count({
+    where: { tripId, id: { in: uniqueParticipantIds } }
+  });
+  if (participantCount !== uniqueParticipantIds.length) {
+    redirect(`/trips/${tripId}/receipts/${receiptId}?itemError=participants`);
+  }
+  return { ...parsed.data, participantIds: uniqueParticipantIds };
+}
+
+function lineItemData(parsed: Awaited<ReturnType<typeof parsedLineItemForm>>) {
+  return {
+    name: parsed.name,
+    quantity: new Prisma.Decimal(parsed.quantity),
+    unitPrice: parsed.unitPrice ? new Prisma.Decimal(parsed.unitPrice.decimal) : null,
+    totalPrice: new Prisma.Decimal(parsed.totalPrice.decimal)
+  };
+}
+
+export async function createReceiptLineItem(tripId: string, receiptId: string, formData: FormData) {
+  if (!getAppConfig().receiptUploadEnabled) redirect(`/trips/${tripId}?error=receipts_disabled`);
+  const userId = await requireCurrentUserId();
+  await requireEditableReceipt(tripId, receiptId, userId);
+  const parsed = await parsedLineItemForm(tripId, receiptId, formData);
+  const item = await prisma.receiptLineItem.create({
+    data: {
+      ...lineItemData(parsed),
+      receiptId,
+      participants: {
+        create: parsed.participantIds.map((participantId) => ({ participantId, role: "assigned" }))
+      }
+    }
+  });
+  await writeAuditLog({
+    actorUserId: userId,
+    tripId,
+    action: "receipt.line_item_created",
+    targetType: "receipt_line_item",
+    targetId: item.id,
+    metadata: { receiptId, participantCount: parsed.participantIds.length }
+  });
+  revalidatePath(`/trips/${tripId}/receipts/${receiptId}`);
+  redirect(`/trips/${tripId}/receipts/${receiptId}?itemsSaved=1`);
+}
+
+export async function updateReceiptLineItem(
+  tripId: string,
+  receiptId: string,
+  lineItemId: string,
+  formData: FormData
+) {
+  if (!getAppConfig().receiptUploadEnabled) redirect(`/trips/${tripId}?error=receipts_disabled`);
+  const userId = await requireCurrentUserId();
+  await requireEditableReceipt(tripId, receiptId, userId);
+  const item = await prisma.receiptLineItem.findFirst({ where: { id: lineItemId, receiptId } });
+  if (!item) redirect(`/trips/${tripId}/receipts/${receiptId}?itemError=missing`);
+  const parsed = await parsedLineItemForm(tripId, receiptId, formData);
+  await prisma.$transaction(async (tx) => {
+    await tx.receiptLineItem.update({ where: { id: item.id }, data: lineItemData(parsed) });
+    await tx.receiptLineItemParticipant.deleteMany({ where: { lineItemId: item.id } });
+    await tx.receiptLineItemParticipant.createMany({
+      data: parsed.participantIds.map((participantId) => ({
+        lineItemId: item.id,
+        participantId,
+        role: "assigned"
+      }))
+    });
+  });
+  await writeAuditLog({
+    actorUserId: userId,
+    tripId,
+    action: "receipt.line_item_updated",
+    targetType: "receipt_line_item",
+    targetId: item.id,
+    metadata: { receiptId, participantCount: parsed.participantIds.length }
+  });
+  revalidatePath(`/trips/${tripId}/receipts/${receiptId}`);
+  redirect(`/trips/${tripId}/receipts/${receiptId}?itemsSaved=1`);
+}
+
+export async function deleteReceiptLineItem(tripId: string, receiptId: string, lineItemId: string) {
+  if (!getAppConfig().receiptUploadEnabled) redirect(`/trips/${tripId}?error=receipts_disabled`);
+  const userId = await requireCurrentUserId();
+  await requireEditableReceipt(tripId, receiptId, userId);
+  const deletion = await prisma.receiptLineItem.deleteMany({
+    where: { id: lineItemId, receiptId }
+  });
+  if (deletion.count !== 1) redirect(`/trips/${tripId}/receipts/${receiptId}?itemError=missing`);
+  await writeAuditLog({
+    actorUserId: userId,
+    tripId,
+    action: "receipt.line_item_deleted",
+    targetType: "receipt_line_item",
+    targetId: lineItemId,
+    metadata: { receiptId }
+  });
+  revalidatePath(`/trips/${tripId}/receipts/${receiptId}`);
+  redirect(`/trips/${tripId}/receipts/${receiptId}?itemsSaved=1`);
 }
 
 export async function uploadReceipt(tripId: string, formData: FormData) {

@@ -150,6 +150,14 @@ It checks:
   security response headers; and
 - use of the configured HTTPS public origin instead of a localhost canonical.
 
+Enabled receipt coverage also edits itemized receipt data, assigns a trip
+participant, and verifies the calculated split preview before saving review
+state. Line-item totals plus tax and tip are allocated in integer cents with any
+rounding remainder assigned deterministically in participant order. Empty
+assignments are rejected when saving. Receipt review never creates or updates an
+expense automatically; attachment to an existing expense remains an explicit
+upload choice, preventing duplicate charges.
+
 Playwright keeps screenshots and video only for failed attempts. Do not commit
 generated `test-results/` artifacts. A manual in-app visual pass is useful when
 a browser backend is available, but it does not replace the repeatable checks.

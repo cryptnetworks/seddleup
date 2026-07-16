@@ -29,4 +29,30 @@ describe("itemized receipt splitting", () => {
       chris: 9
     });
   });
+
+  it("reconciles fractional cents deterministically without losing money", () => {
+    const shares = calculateReceiptItemizedShares({
+      participantIds: ["alice", "bob", "chris"],
+      tax: 0.01,
+      lineItems: [
+        {
+          id: "shared",
+          totalPrice: 10,
+          assignedParticipantIds: ["alice", "bob", "chris"]
+        }
+      ]
+    });
+
+    expect(shares).toEqual({ alice: 3.34, bob: 3.34, chris: 3.33 });
+    expect(Object.values(shares).reduce((sum, value) => sum + value, 0)).toBeCloseTo(10.01, 2);
+  });
+
+  it("defines an empty assignment as unallocated", () => {
+    expect(
+      calculateReceiptItemizedShares({
+        participantIds: ["alice"],
+        lineItems: [{ id: "unassigned", totalPrice: 5, assignedParticipantIds: [] }]
+      })
+    ).toEqual({ alice: 0 });
+  });
 });
