@@ -7,11 +7,7 @@ const [workflow, dockerignore, compose] = await Promise.all([
 ]);
 const failures = [];
 for (const fragment of [
-  "DOCKERHUB_NAMESPACE",
-  "DOCKERHUB_USERNAME",
-  "DOCKERHUB_TOKEN",
   "digest-manifest-ghcr-${{ matrix.artifact }}-${{ github.sha }}",
-  "digest-manifest-dockerhub-${{ matrix.artifact }}-${{ github.sha }}",
   "linux/amd64,linux/arm64",
   "org.opencontainers.image.revision=${{ github.sha }}",
   "type=raw,value=main,enable={{is_default_branch}}",
@@ -35,5 +31,5 @@ if (failures.length) {
   for (const failure of failures) console.error(failure);
   process.exitCode = 1;
 } else {
-  console.log("Validated dual-registry publication policy and Docker build-context exclusions.");
+  console.log("Validated GHCR publication policy and Docker build-context exclusions.");
 }
