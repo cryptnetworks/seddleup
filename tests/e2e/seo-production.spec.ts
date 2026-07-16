@@ -2,7 +2,7 @@ import { expect, test } from "@playwright/test";
 
 test.skip(process.env.PLAYWRIGHT_SERVER_MODE !== "production", "Production SEO coverage only.");
 
-const publicOrigin = "https://qa.seddleup.invalid";
+const publicOrigin = process.env.PLAYWRIGHT_PUBLIC_APP_URL ?? "https://qa.seddleup.invalid";
 const publicViewports = [320, 360, 375, 390, 430, 768, 1280];
 
 test("production homepage metadata, structured data, semantics, headers, and layouts are sound", async ({

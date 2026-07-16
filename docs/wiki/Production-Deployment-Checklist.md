@@ -72,7 +72,9 @@ commands, request certificates, or contact Cloudflare.
 - [ ] Confirm the proxy preserves `Host`, client forwarding headers, and
       `X-Forwarded-Proto: https`. Do not publish the app directly over plain HTTP.
 - [ ] Verify canonical metadata, `/robots.txt`, `/sitemap.xml`, and the manifest
-      use the final HTTPS origin. Follow the production procedure in
+      use the final HTTPS origin with
+      `PUBLIC_APP_URL=https://your-final-origin.example npm run test:e2e:seo:deployed`.
+      Follow the production procedure in
       [Testing and Production Readiness](Testing-and-Production-Readiness).
 - [ ] Confirm security headers remain present through the proxy and that
       `/_next/static/*` assets load without errors.

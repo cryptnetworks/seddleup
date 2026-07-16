@@ -154,6 +154,19 @@ Playwright keeps screenshots and video only for failed attempts. Do not commit
 generated `test-results/` artifacts. A manual in-app visual pass is useful when
 a browser backend is available, but it does not replace the repeatable checks.
 
+After deployment, run the same non-mutating browser QA against the final public
+origin:
+
+```bash
+PUBLIC_APP_URL=https://app.example.com npm run test:e2e:seo:deployed
+```
+
+The command fails unless the value is a credential-free HTTPS origin with no
+path. It does not start a local server or use a database; it checks the deployed
+homepage and public metadata endpoints plus the login page's private robots
+metadata. A successful local run against the isolated QA origin is not evidence
+that DNS, TLS, proxy headers, or metadata are correct at the final deployment.
+
 ## Local and Docker SQLite paths
 
 Local browser launchers always override an inherited `.env` Docker URL with
