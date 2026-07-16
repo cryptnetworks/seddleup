@@ -220,7 +220,7 @@ export async function resetUserMfa(formData: FormData) {
     redirect("/admin/users?mfa=confirmation");
   }
 
-  const rateLimit = checkRateLimit(`admin-mfa-reset:${actor.id}:${target.id}`, {
+  const rateLimit = await checkRateLimit(`admin-mfa-reset:${actor.id}:${target.id}`, {
     limit: 5,
     windowMs: 60 * 60 * 1000
   });

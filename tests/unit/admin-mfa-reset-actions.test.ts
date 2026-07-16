@@ -4,7 +4,7 @@ const mocks = vi.hoisted(() => {
   const transactionUserUpdate = vi.fn();
   const transactionClient = { user: { update: transactionUserUpdate } };
   return {
-    checkRateLimit: vi.fn(() => ({ allowed: true })),
+    checkRateLimit: vi.fn(async () => ({ allowed: true })),
     findUnique: vi.fn(),
     redirect: vi.fn((url: string) => {
       throw new Error(`redirect:${url}`);
@@ -56,7 +56,7 @@ describe("admin MFA reset", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mocks.requireAdminAction.mockResolvedValue({ id: "admin-id", role: "admin" });
-    mocks.checkRateLimit.mockReturnValue({ allowed: true });
+    mocks.checkRateLimit.mockResolvedValue({ allowed: true });
     mocks.findUnique.mockResolvedValue({
       id: "target-id",
       username: "target-user",
@@ -84,7 +84,7 @@ describe("admin MFA reset", () => {
   });
 
   it("rate-limits repeated resets per administrator and target", async () => {
-    mocks.checkRateLimit.mockReturnValueOnce({ allowed: false });
+    mocks.checkRateLimit.mockResolvedValueOnce({ allowed: false });
     const { resetUserMfa } = await import("@/lib/actions/admin");
 
     await expect(resetUserMfa(resetForm())).rejects.toThrow("redirect:/admin/users?mfa=rate-limit");
