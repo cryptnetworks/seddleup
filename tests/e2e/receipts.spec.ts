@@ -41,6 +41,12 @@ test("enabled receipt upload, review, file authorization, and cleanup path work"
   await page.getByLabel("Receipt file").setInputFiles("tests/fixtures/receipt-sample.pdf");
   await page.getByRole("button", { name: "Upload and parse" }).click();
   await expect(page.getByRole("heading", { name: "Review receipt" })).toBeVisible();
+  await page.setViewportSize({ width: 320, height: 800 });
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth > document.documentElement.clientWidth
+    )
+  ).toBe(false);
   const receiptPath = new URL(page.url()).pathname;
   const receiptId = receiptPath.split("/").at(-1) ?? "";
   const uploadRoot = process.env.PLAYWRIGHT_RECEIPT_UPLOAD_DIR ?? "";
