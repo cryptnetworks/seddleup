@@ -19,3 +19,4 @@ uploads/
 certbot/*.ini
 !certbot/*.ini.example
 cloudflare/credentials.json
+.env.docker
