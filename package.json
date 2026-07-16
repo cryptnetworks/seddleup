@@ -26,6 +26,7 @@
     "test:e2e": "node scripts/run-development-e2e.mjs",
     "test:e2e:ci": "node scripts/run-development-e2e.mjs tests/e2e/smoke.spec.ts tests/e2e/auth.spec.ts tests/e2e/accessibility.spec.ts tests/e2e/receipts.spec.ts tests/e2e/mobile-ios.spec.ts --project=Chromium --project='Mobile Safari'",
     "test:e2e:production": "node scripts/run-production-e2e.mjs",
+    "test:e2e:seo:deployed": "node scripts/run-deployed-seo-qa.mjs",
     "test:e2e:receipts": "node scripts/run-receipt-e2e.mjs",
     "test:e2e:ui": "node scripts/run-development-e2e.mjs --ui",
     "test:e2e:headed": "node scripts/run-development-e2e.mjs --headed",
