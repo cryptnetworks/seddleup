@@ -156,28 +156,13 @@ The Docker workflow builds the app image on Docker-relevant pull requests and
 publishes to GitHub Container Registry from `main` and tags. Images are tagged
 by branch, SHA, and `latest` where applicable.
 
-The same native AMD64 and ARM64 build results are pushed by digest to GHCR and
-to `${DOCKERHUB_NAMESPACE}/seddleup`. Final manifests are created separately
-from registry-specific digest artifacts only after both platforms, runtime
-probes, and the image scan pass. `main` publishes `latest`, `main`, and a short
-SHA tag. Stable `vX.Y.Z` tags also publish `X.Y.Z`, `X.Y`, and `X`; prereleases
-publish their exact leading-`v`, normalized prerelease, and SHA tags without
-moving stable tags.
-
-Docker Hub setup is manual:
-
-1. Create the `seddleup` repository with the intended visibility.
-2. Create a scoped Docker Hub access token with push access to only that repository.
-3. Add `DOCKERHUB_NAMESPACE` as a repository variable.
-4. Add `DOCKERHUB_USERNAME` and `DOCKERHUB_TOKEN` as Actions secrets.
-5. Merge only after pull-request builds and `npm run docker:publication:check` pass.
-6. Inspect both registry manifests after the first trusted `main` or version-tag run.
-
-Rotate the access token on the operator's normal credential schedule and revoke
-the old token after a successful verification run. Missing configuration fails
-publication with a named setting, without printing values. A registry outage can
-leave untagged platform digests, but no final tag is created until both platform
-digests are present; retrying the same commit is safe.
+The same native AMD64 and ARM64 build results are pushed by digest to GHCR. The
+final manifest is created only after both platforms, runtime probes, and the
+image scan pass. `main` publishes `latest`, `main`, and a short SHA tag. Stable
+`vX.Y.Z` tags also publish `X.Y.Z`, `X.Y`, and `X`; prereleases publish their
+exact leading-`v`, normalized prerelease, and SHA tags without moving stable
+tags. A registry outage can leave untagged platform digests, but no final tag is
+created until both platform digests are present; retrying the same commit is safe.
 
 Manifest publication waits for both runtime/migration probes and a dedicated
 high/critical dependency and image scan. Package-write permission is limited to
