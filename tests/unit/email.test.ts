@@ -5,6 +5,7 @@ import {
   buildEmailVerificationEmail,
   buildPasswordResetEmail,
   buildTwoFactorEmail,
+  EMAIL_BRAND,
   emailDeliveryAvailable
 } from "@/lib/email";
 
@@ -18,12 +19,29 @@ function expectSeddleUpBranding(message: { subject: string; text: string; html: 
   expect(message.text).not.toMatch(staleBrandPattern);
   expect(message.html).toContain("SeddleUp");
   expect(message.html).toContain("Travel together. Settle up easily.");
-  expect(message.html).toContain("#2563EB");
-  expect(message.html).toContain("#0F172A");
-  expect(message.html).toContain("#F8FAFC");
-  expect(message.html).toContain("#111827");
-  expect(message.html).toContain("#E2E8F0");
+  for (const color of [
+    EMAIL_BRAND.accent,
+    EMAIL_BRAND.primary,
+    EMAIL_BRAND.background,
+    EMAIL_BRAND.text,
+    EMAIL_BRAND.border
+  ]) {
+    expect(message.html).toContain(color);
+  }
   expect(message.html).not.toMatch(staleBrandPattern);
+}
+
+function emailTemplateSignature(message: { subject: string; html: string }) {
+  return {
+    subject: message.subject,
+    hasOuterBackground: message.html.includes(`background:${EMAIL_BRAND.background}`),
+    hasCardBorder: message.html.includes(`border:1px solid ${EMAIL_BRAND.border}`),
+    hasBrandHeader: message.html.includes(`background:${EMAIL_BRAND.brandSoft}`),
+    hasTagline: message.html.includes(EMAIL_BRAND.tagline),
+    headingCount: message.html.match(/<h1\b/g)?.length ?? 0,
+    actionKind: message.html.includes("<a href=") ? "link" : "code",
+    logoKind: message.html.includes("<img") ? "image" : "wordmark"
+  };
 }
 
 describe("SeddleUp emails", () => {
@@ -61,12 +79,79 @@ describe("SeddleUp emails", () => {
       expiresInMinutes: 45
     });
 
-    for (const color of ["#2563EB", "#0F172A", "#64748B"]) {
+    for (const color of [EMAIL_BRAND.accent, EMAIL_BRAND.primary, EMAIL_BRAND.muted]) {
       expect(logoSvg).toContain(color);
       expect(message.html).toContain(color);
     }
     expect(logoSvg).toContain("Travel together. Settle up easily.");
     expect(message.html).toContain("Travel together. Settle up easily.");
+  });
+
+  it("keeps stable structural signatures for every user-facing template", () => {
+    process.env.APP_BASE_URL = "https://app.seddleup.test";
+    const signatures = [
+      buildPasswordResetEmail({
+        to: "person@example.com",
+        resetUrl: "https://app.seddleup.test/reset-password?token=fixture",
+        expiresInMinutes: 45
+      }),
+      buildEmailVerificationEmail({
+        to: "person@example.com",
+        verifyUrl: "https://app.seddleup.test/verify-email?token=fixture",
+        expiresInHours: 24
+      }),
+      buildTwoFactorEmail({ to: "person@example.com", code: "123456", expiresInMinutes: 10 }),
+      buildInvitationEmail({
+        to: "person@example.com",
+        inviteUrl: "https://app.seddleup.test/invite/accept?token=fixture",
+        expiresInDays: 7
+      })
+    ].map(emailTemplateSignature);
+
+    expect(signatures).toMatchInlineSnapshot(`
+      [
+        {
+          "actionKind": "link",
+          "hasBrandHeader": true,
+          "hasCardBorder": true,
+          "hasOuterBackground": true,
+          "hasTagline": true,
+          "headingCount": 1,
+          "logoKind": "image",
+          "subject": "Reset your SeddleUp password",
+        },
+        {
+          "actionKind": "link",
+          "hasBrandHeader": true,
+          "hasCardBorder": true,
+          "hasOuterBackground": true,
+          "hasTagline": true,
+          "headingCount": 1,
+          "logoKind": "image",
+          "subject": "Verify your SeddleUp account",
+        },
+        {
+          "actionKind": "code",
+          "hasBrandHeader": true,
+          "hasCardBorder": true,
+          "hasOuterBackground": true,
+          "hasTagline": true,
+          "headingCount": 1,
+          "logoKind": "image",
+          "subject": "SeddleUp sign-in code",
+        },
+        {
+          "actionKind": "link",
+          "hasBrandHeader": true,
+          "hasCardBorder": true,
+          "hasOuterBackground": true,
+          "hasTagline": true,
+          "headingCount": 1,
+          "logoKind": "image",
+          "subject": "You're invited to SeddleUp",
+        },
+      ]
+    `);
   });
 
   it("builds a SeddleUp verification email", () => {

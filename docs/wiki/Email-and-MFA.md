@@ -31,6 +31,10 @@ Known stale legacy `EMAIL_APP_NAME` values such as `TripTally`, `Trip Tally`,
 and `trip-tally` are treated as SeddleUp to avoid leaking old user-facing
 branding.
 
+`EMAIL_BRAND` in `lib/email.ts` is the canonical source for email names, colors,
+tagline, and structural branding tests. Template tests consume those exported
+tokens instead of duplicating color literals.
+
 ## Deferred Compatibility Names
 
 The authoritative inventory, owners, release boundaries, migration procedures,
