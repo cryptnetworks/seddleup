@@ -17,7 +17,7 @@ export function SettlementList({
   const confirmableSettlementKeySet = new Set(confirmableSettlementKeys);
   if (settlements.length === 0) {
     return (
-      <div className="card p-4 text-sm text-muted" data-testid="settlement-empty">
+      <div className="rounded-xl bg-surface p-4 text-sm text-muted" data-testid="settlement-empty">
         No settlement recommendations yet.
       </div>
     );
@@ -28,7 +28,7 @@ export function SettlementList({
       {settlements.map((settlement) => (
         <div
           key={`${settlement.debtorId}-${settlement.creditorId}-${settlement.amount}`}
-          className="card p-4 text-sm font-medium text-ink"
+          className="rounded-xl border border-line bg-surface p-4 text-sm font-medium text-ink"
           data-testid="settlement-card"
         >
           <p className="break-words">{settlement.label}</p>

@@ -80,14 +80,14 @@ export default async function ReceiptReviewPage({
       <div className="grid min-w-0 gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(0,0.8fr)]">
         <section className="card p-4 sm:p-5">
           {query.saved ? (
-            <p className="mb-4 rounded-lg bg-brand-soft p-3 text-sm text-ocean">
+            <p className="alert-success mb-4" role="status">
               {receipt.status === "ready"
                 ? "Receipt review and linked expense saved."
                 : "Receipt review saved. Confirm the refreshed split preview before marking it ready."}
             </p>
           ) : null}
           {query.error && query.error !== "invalid" ? (
-            <p className="mb-4 rounded-lg bg-surface p-3 text-sm text-coral" role="alert">
+            <p className="alert-error mb-4" role="alert">
               {query.error === "stale"
                 ? "This receipt changed in another request. Review the latest values and try again."
                 : query.error === "preview"

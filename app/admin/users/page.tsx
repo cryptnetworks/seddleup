@@ -116,27 +116,19 @@ export default async function AdminUsersPage({
         description="Manage user roles, status, local passwords, and linked authentication providers."
       />
       {query.error ? (
-        <p className="mb-4 rounded-lg border border-line bg-surface p-3 text-sm text-coral">
+        <p className="alert-error mb-4">
           {query.error === "owned-trips"
             ? `Account deletion blocked: transfer ${query.count || "the"} owned trip(s) first.`
             : `Action blocked: ${query.error}.`}
         </p>
       ) : null}
       {transferMessage ? (
-        <p
-          className={`mb-4 rounded-lg border border-line p-3 text-sm ${
-            query.transfer === "success" ? "bg-teal-50 text-ocean" : "bg-surface text-coral"
-          }`}
-        >
+        <p className={`${query.transfer === "success" ? "alert-success" : "alert-error"} mb-4`}>
           {transferMessage}
         </p>
       ) : null}
       {inviteMessage ? (
-        <p
-          className={`mb-4 rounded-lg border border-line p-3 text-sm ${
-            isInviteSuccess(query.invite) ? "bg-teal-50 text-ocean" : "bg-surface text-coral"
-          }`}
-        >
+        <p className={`${isInviteSuccess(query.invite) ? "alert-success" : "alert-error"} mb-4`}>
           {inviteMessage}
         </p>
       ) : null}

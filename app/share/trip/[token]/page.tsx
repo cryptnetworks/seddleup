@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { headers } from "next/headers";
 import { BrandLogo } from "@/components/BrandLogo";
+import { StatCard } from "@/components/StatCard";
 import { formatCurrency, formatDate } from "@/lib/format";
 import { checkTripShareLookupRateLimit, resolveTripShareSummary } from "@/lib/trip-sharing";
 import { digestLookupToken } from "@/lib/token-digest";
@@ -53,20 +54,18 @@ export default async function SharedTripPage({ params }: { params: Promise<{ tok
 
   return (
     <div className="min-h-screen bg-brand-page">
-      <header className="border-b border-line bg-white px-4 py-4 sm:px-6">
+      <header className="border-b border-line bg-[var(--app-surface)] px-4 py-4 sm:px-6">
         <div className="mx-auto flex min-w-0 max-w-5xl flex-wrap items-center justify-between gap-3">
           <div className="min-w-0 w-40 sm:w-48">
             <BrandLogo />
           </div>
-          <span className="rounded-full bg-surface px-3 py-1 text-xs font-semibold text-muted">
-            Read-only shared summary
-          </span>
+          <span className="badge-neutral">Read-only shared summary</span>
         </div>
       </header>
 
       <main className="mx-auto min-w-0 w-full max-w-5xl px-4 py-6 sm:px-6 sm:py-10">
         <header className="mb-6">
-          <p className="text-xs font-bold uppercase tracking-normal text-ocean">
+          <p className="text-xs font-bold uppercase tracking-[0.12em] text-ocean">
             Shared trip costs
           </p>
           <h1 className="mt-1 break-words text-2xl font-bold leading-tight text-ink sm:text-4xl">
@@ -86,19 +85,10 @@ export default async function SharedTripPage({ params }: { params: Promise<{ tok
           className="mb-6 grid grid-cols-1 gap-3 min-[360px]:grid-cols-2 sm:grid-cols-3"
           aria-label="Trip totals"
         >
-          <div className="card p-3 sm:p-4">
-            <p className="text-sm text-muted">Included total</p>
-            <p className="mt-1 break-all text-2xl font-bold tabular-nums text-ink">
-              {formatCurrency(summary.totalCost)}
-            </p>
-          </div>
-          <div className="card p-3 sm:p-4">
-            <p className="text-sm text-muted">Included expenses</p>
-            <p className="mt-1 text-2xl font-bold text-ink">{summary.expenses.length}</p>
-          </div>
-          <div className="card p-3 min-[360px]:col-span-2 sm:col-span-1 sm:p-4">
-            <p className="text-sm text-muted">Participants</p>
-            <p className="mt-1 text-2xl font-bold text-ink">{summary.balances.length}</p>
+          <StatCard compact label="Included total" value={formatCurrency(summary.totalCost)} />
+          <StatCard compact label="Included expenses" value={summary.expenses.length} />
+          <div className="min-[360px]:col-span-2 sm:col-span-1">
+            <StatCard compact label="Participants" value={summary.balances.length} />
           </div>
         </section>
 

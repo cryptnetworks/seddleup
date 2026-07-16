@@ -21,7 +21,7 @@ export default async function ResetPasswordPage({
           Use at least 8 characters. Reset links can only be used once.
         </p>
         {query.error ? (
-          <p className="mt-4 rounded-lg bg-red-50 p-3 text-sm text-coral">
+          <p className="alert-error mt-4">
             This reset link is invalid or expired. Request a new link.
           </p>
         ) : null}

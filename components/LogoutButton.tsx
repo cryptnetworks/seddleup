@@ -10,9 +10,9 @@ type LogoutButtonProps = {
 
 const styles = {
   nav: "btn-secondary gap-2",
-  menu: "flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm font-semibold text-ink transition hover:bg-surface focus:outline-none focus:ring-2 focus:ring-ocean",
+  menu: "nav-link w-full justify-start text-ink",
   mobile:
-    "flex min-h-11 min-w-0 w-full flex-col items-center gap-1 rounded-lg px-1 py-2 text-xs font-medium text-muted focus:outline-none focus:ring-2 focus:ring-ocean",
+    "flex min-h-12 min-w-0 w-full flex-col items-center justify-center gap-1 rounded-lg px-1 py-1.5 text-xs font-semibold text-muted transition hover:bg-surface hover:text-ink",
   button: "btn-danger gap-2"
 };
 

@@ -52,7 +52,7 @@ export function ItemLookupBox() {
           {results.map((result) => (
             <button
               key={result.externalId}
-              className="min-h-11 min-w-0 rounded-lg border border-line bg-white p-3 text-left text-sm hover:border-ocean focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ocean focus-visible:ring-offset-2"
+              className="min-h-11 min-w-0 rounded-lg border border-line bg-[var(--app-surface)] p-3 text-left text-sm transition hover:border-ocean"
               type="button"
               onClick={() => applyResult(result)}
             >

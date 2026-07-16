@@ -29,7 +29,7 @@ function PaymentHelp() {
 function ErrorMessage({ error }: { error?: string }) {
   const message = paymentError(error);
   return message ? (
-    <p className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-coral" role="alert">
+    <p className="alert-error" role="alert">
       {message}
     </p>
   ) : null;

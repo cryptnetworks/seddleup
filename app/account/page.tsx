@@ -113,13 +113,7 @@ export default async function AccountPage({
             These details are used for login and account identification.
           </p>
           {profileStatus ? (
-            <p
-              className={
-                query.profile === "updated"
-                  ? "mt-4 rounded-lg bg-brand-soft p-3 text-sm text-ocean"
-                  : "mt-4 rounded-lg border border-line bg-surface p-3 text-sm text-coral"
-              }
-            >
+            <p className={query.profile === "updated" ? "alert-success mt-4" : "alert-error mt-4"}>
               {profileStatus}
             </p>
           ) : null}
@@ -195,13 +189,7 @@ export default async function AccountPage({
             payments or stores payment credentials.
           </p>
           {paymentStatus ? (
-            <p
-              className={
-                query.payment === "invalid"
-                  ? "mt-4 rounded-lg border border-line bg-surface p-3 text-sm text-coral"
-                  : "mt-4 rounded-lg bg-brand-soft p-3 text-sm text-ocean"
-              }
-            >
+            <p className={query.payment === "invalid" ? "alert-error mt-4" : "alert-success mt-4"}>
               {paymentStatus}
             </p>
           ) : null}
@@ -306,8 +294,8 @@ export default async function AccountPage({
             <p
               className={
                 query.twoFactor === "updated" || query.twoFactor === "authenticator-enabled"
-                  ? "mt-4 rounded-lg bg-brand-soft p-3 text-sm text-ocean"
-                  : "mt-4 rounded-lg border border-line bg-surface p-3 text-sm text-coral"
+                  ? "alert-success mt-4"
+                  : "alert-error mt-4"
               }
             >
               {twoFactorStatus}
@@ -422,13 +410,7 @@ export default async function AccountPage({
             Discord linking is used by slash commands and never relies on matching emails.
           </p>
           {discordStatus ? (
-            <p
-              className={
-                query.discord === "invalid"
-                  ? "mt-4 rounded-lg border border-line bg-surface p-3 text-sm text-coral"
-                  : "mt-4 rounded-lg bg-brand-soft p-3 text-sm text-ocean"
-              }
-            >
+            <p className={query.discord === "invalid" ? "alert-error mt-4" : "alert-success mt-4"}>
               {discordStatus}
             </p>
           ) : null}
@@ -509,13 +491,7 @@ export default async function AccountPage({
             Enter your current password before choosing a new one.
           </p>
           {passwordStatus ? (
-            <p
-              className={
-                query.password === "updated"
-                  ? "mt-4 rounded-lg bg-brand-soft p-3 text-sm text-ocean"
-                  : "mt-4 rounded-lg border border-line bg-surface p-3 text-sm text-coral"
-              }
-            >
+            <p className={query.password === "updated" ? "alert-success mt-4" : "alert-error mt-4"}>
               {passwordStatus}
             </p>
           ) : null}

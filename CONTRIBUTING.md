@@ -15,6 +15,13 @@ npm run dev
 
 Open `http://localhost:3000`.
 
+### VS Code run and debug
+
+Open the Run and Debug view and select `Next.js: full stack` to start the
+development server with server-side breakpoints and open a browser debugger when
+the app is ready. Separate server-only and browser-only configurations are also
+available, along with `Vitest: current file` for debugging the active test file.
+
 ## Branch Naming
 
 Use short, descriptive branch names:
