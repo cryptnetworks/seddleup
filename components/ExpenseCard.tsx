@@ -1,6 +1,6 @@
 import type { Expense, Participant } from "@prisma/client";
 import Link from "next/link";
-import { Pencil } from "lucide-react";
+import { Pencil, ReceiptText } from "lucide-react";
 import { formatCurrency, formatDate } from "@/lib/format";
 import { StatusBadge } from "@/components/StatusBadge";
 
@@ -25,18 +25,26 @@ export function ExpenseCard({ expense, tripId, canEdit = true }: ExpenseCardProp
           : "neutral";
 
   return (
-    <article className="rounded-xl border border-line bg-surface p-4" data-testid="expense-card">
+    <article
+      className="rounded-xl border border-line bg-surface p-4 transition hover:border-ocean/30"
+      data-testid="expense-card"
+    >
       <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-        <div className="min-w-0">
-          <div className="flex min-w-0 flex-wrap items-center gap-2">
-            <h3 className="min-w-0 break-words text-base font-semibold text-ink">
-              {expense.title}
-            </h3>
-            <StatusBadge tone={statusTone}>{expense.status}</StatusBadge>
+        <div className="flex min-w-0 gap-3">
+          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-brand-soft text-ocean">
+            <ReceiptText className="h-4 w-4" aria-hidden />
+          </span>
+          <div className="min-w-0">
+            <div className="flex min-w-0 flex-wrap items-center gap-2">
+              <h3 className="min-w-0 break-words text-base font-semibold text-ink">
+                {expense.title}
+              </h3>
+              <StatusBadge tone={statusTone}>{expense.status}</StatusBadge>
+            </div>
+            <p className="mt-1 text-sm text-muted">
+              {expense.category} - {formatDate(expense.date)}
+            </p>
           </div>
-          <p className="mt-1 text-sm text-muted">
-            {expense.category} - {formatDate(expense.date)}
-          </p>
         </div>
         <div className="min-w-0 text-left sm:max-w-[45%] sm:text-right">
           <p className="break-all font-bold tabular-nums text-ink">

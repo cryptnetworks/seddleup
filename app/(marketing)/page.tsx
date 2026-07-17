@@ -88,11 +88,11 @@ export default async function HomePage() {
       <section className="mx-auto grid w-full max-w-7xl gap-12 px-4 pb-20 pt-10 sm:px-6 md:pb-28 md:pt-16 lg:grid-cols-[minmax(0,0.9fr)_minmax(30rem,1.1fr)] lg:items-center lg:gap-16 lg:px-8">
         <div className="max-w-2xl">
           <p className="mb-5 text-xs font-bold uppercase tracking-[0.14em] text-ocean">
-            A calmer way to share trip costs
+            Shared travel costs, made simple
           </p>
           <h1 className="text-5xl font-bold leading-[1.02] tracking-[-0.045em] text-ink sm:text-6xl lg:text-7xl">
-            Travel together.
-            <span className="mt-1 block text-ocean">Settle up clearly.</span>
+            Make memories.
+            <span className="mt-1 block text-ocean">We’ll handle the math.</span>
           </h1>
           <p className="mt-6 max-w-xl text-base leading-7 text-muted sm:text-lg sm:leading-8">
             SeddleUp keeps group spending, participants, balances, and settlements organized from
