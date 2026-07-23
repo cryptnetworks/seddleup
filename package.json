@@ -49,11 +49,11 @@
     "bcryptjs": "^3.0.3",
     "emailjs": "^5.0.2",
     "lucide-react": "^1.24.0",
-    "next": "^16.2.10",
+    "next": "^16.2.11",
     "next-auth": "^4.24.14",
     "prisma": "^7.8.0",
-    "react": "^19.2.7",
-    "react-dom": "^19.2.7",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
     "zod": "^4.4.3"
   },
   "devDependencies": {
@@ -65,7 +65,7 @@
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
     "eslint": "^9.39.5",
-    "eslint-config-next": "^16.2.10",
+    "eslint-config-next": "^16.2.11",
     "markdownlint-cli2": "^0.23.0",
     "picomatch": "^4.0.5",
     "postcss": "8.5.19",
