@@ -50,7 +50,7 @@
     "emailjs": "^5.0.2",
     "lucide-react": "^1.24.0",
     "next": "^16.2.10",
-    "next-auth": "^4.24.14",
+    "next-auth": "^4.24.15",
     "prisma": "^7.8.0",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
