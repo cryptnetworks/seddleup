@@ -49,7 +49,7 @@
     "bcryptjs": "^3.0.3",
     "emailjs": "^5.0.2",
     "lucide-react": "^1.24.0",
-    "next": "^16.2.10",
+    "next": "^16.3.0",
     "next-auth": "^4.24.14",
     "prisma": "^7.8.0",
     "react": "^19.2.7",
