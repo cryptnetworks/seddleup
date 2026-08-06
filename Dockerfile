@@ -2,7 +2,7 @@
 
 # Install dependencies in a dedicated stage so app source changes do not
 # invalidate the dependency cache.
-FROM node:24.18.0-alpine AS deps
+FROM node:24.18.1-alpine AS deps
 WORKDIR /app
 ENV NPM_CONFIG_UPDATE_NOTIFIER=false
 RUN apk add --no-cache openssl
@@ -11,7 +11,7 @@ RUN npm ci --no-audit --no-fund --loglevel=error
 
 # Build with the same Alpine runtime family used by the final image. Prisma is
 # generated here so the production image always contains a matching client.
-FROM node:24.18.0-alpine AS builder
+FROM node:24.18.1-alpine AS builder
 WORKDIR /app
 ENV DATABASE_URL=file:/app/data/seddleup.db
 ENV NEXT_TELEMETRY_DISABLED=1
@@ -25,7 +25,7 @@ RUN npm prune --omit=dev --no-audit --no-fund --loglevel=error
 
 # Runtime image: non-root user, production env, persisted SQLite path, and a
 # startup entrypoint that validates config and applies migrations.
-FROM node:24.18.0-alpine AS runner
+FROM node:24.18.1-alpine AS runner
 WORKDIR /app
 
 ENV NODE_ENV=production
